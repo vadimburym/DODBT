@@ -191,7 +191,7 @@ namespace VadimBurym.DodBehaviourTree
 #if UNITY_EDITOR
                     state.DebugStatus[index] = leafStatus;
                     if (leafStatus == NodeStatus.Running)
-                        state.DebugRunningLeafs.Add(DebugUtils<TContext, TLeafState>.GetLeafName(leaf));
+                        state.DebugRunningLeafs.Add(DebugUtils.GetLeafName(leaf));
 #endif
                     if (leafStatus != NodeStatus.Running)
                     {

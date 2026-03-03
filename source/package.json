@@ -1,8 +1,8 @@
 {
   "name": "com.vadimburym.dodbt",
-  "version": "0.1.0-early",
+  "version": "0.1.4-early",
   "displayName": "VadimBurym-DODBT",
-  "description": "High-performance Behaviour Tree system inspired by Data-Oriented Design. Zero MonoBehaviour, zero runtime allocations, graph-to-runtime compilation and production-ready architecture.",
+  "description": "High-performance Behaviour Tree system inspired by Data-Oriented Design. Zero MonoBehaviour, zero runtime allocations, graph-to-runtime compilation and production-ready ECS-friendly architecture.",
   "unity": "6000.0",
   "unityRelease": "0f1",
   "author": {
