@@ -53,7 +53,7 @@ https://github.com/vadimburym/DODBT.git?path=/source
 
 ## Начало работы
 
-- **Создайте per-agent контекст**: внешний runtime-контекст агента в котором работает BT.
+- **Создайте per-agent контекст**: `class` внешний runtime-контекст агента в котором работает BT.
 > **[ПРИМЕР]** Пример контекста для LeoEcsLite.
 ```c#
 public sealed class LeoEcsContext
@@ -61,7 +61,7 @@ public sealed class LeoEcsContext
     public int AgentIndex = -1;
 }
 ```
-- **Создайте per-leaf состояние**: состояние leaf-нод для конкретного агента.
+- **Создайте per-leaf состояние**: `struct` состояние leaf-нод для конкретного агента.
 > **[ПРИМЕР]** Пример состояния для LeoEcsLite.
 ```c#
 [Serializable]
@@ -71,7 +71,7 @@ public struct LeoEcsLeafState
     public void Reset() => StateIndex = -1;
 }
 ```
-- **Создайте листья**: конечные узлы BT, которые могут быть проверками условий, конкретными действиями или состояниями, выполняемые в контексте агента и обладающие собственным состоянием выполнения.
+- **Создайте листья**: конечные узлы BT, которые могут быть проверками условий, конкретными действиями или состояниями, выполняемые в контексте агента и обладающие собственным состоянием выполнения. Создайте их наследуя от `ILeaf<контекст, состояние>` в любом месте проекта - `Odin Inspector` сам их найдет и предложит в качестве выбора в редакторе графов. Добавьте аттрибут `[Serializable]` и обозначьте `[SerializeField]` параметры, которые вы хотите редактировать из графа.
 > **[ПРИМЕР]** Пример листа "Выстрели N раз в игрока" для LeoEcsLite с использованием DI. Лист не тикает поведение агента - он лишь добавляет/убирает у него состояние. Поведение тикают отдельные ECS-системы с фильтром по добавленному состоянию.
 ```c#
 [Serializable]
@@ -149,4 +149,7 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 > ⚠ **ВАЖНО!** Данный модуль работает только при наличии плагина `Odin Inspector`.
 
 - **Откройте редактор графов**: Tools → VadimBurym → BT Editor.
-- 
+
+![Graph Editor](docs~/Images/graph-editor-01.png)
+![Graph Editor](docs~/Images/graph-editor-02.png)
+![Graph Editor](docs~/Images/graph-editor-03.png)
