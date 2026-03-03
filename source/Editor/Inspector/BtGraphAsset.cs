@@ -16,7 +16,7 @@ using Sirenix.OdinInspector;
 #if ODIN_INSPECTOR
 [HideMonoScript]
 #endif
-[Icon("Packages/com.vadimburym.dodbt/source/Editor/Icons/dodbt-icon.png")]
+[Icon("Packages/com.vadimburym.dodbt/Editor/Icons/dodbt-icon.png")]
 internal sealed class BtGraphAsset : ScriptableObject
 {
     [HideInInspector] public BehaviourTreeAsset CompiledAsset;

@@ -15,7 +15,7 @@ namespace VadimBurym.DodBehaviourTree
 #if ODIN_INSPECTOR
     [HideMonoScript]
 #endif
-    [Icon("Packages/com.vadimburym.dodbt/source/Editor/Icons/dodbt-icon.png")]
+    [Icon("Packages/com.vadimburym.dodbt/Editor/Icons/dodbt-icon.png")]
     public sealed class BehaviourTreeAsset : ScriptableObject
     {
         public string GUID => InternalGUID;
