@@ -329,11 +329,11 @@
       }
     },
     "com.vadimburym.dodbt": {
-      "version": "https://github.com/vadimburym/DODBT.git",
+      "version": "https://github.com/vadimburym/DODBT.git?path=/source",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "6e0558a3e21a383a2e0178556ea9224ccef95bff"
+      "hash": "58a43805ceb13c2189e015f34f2e4421454a5127"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
