@@ -1,0 +1,76 @@
+GridBackground {
+    --grid-background-color: rgb(33, 58, 84);
+    --line-color: rgba(113, 115, 119, 0.35);
+    --thick-line-color: rgba(165, 165, 165, 0.9);
+    --spacing: 50;
+}
+.bt-port-pill {
+    width: 56px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.35);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255,255,255,0.14);
+    border-right-color: rgba(255,255,255,0.14);
+    border-top-color: rgba(255,255,255,0.14);
+    border-bottom-color: rgba(255,255,255,0.14);
+    justify-content: center;
+    align-items: center;
+}
+.bt-port-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 6px;
+    background-color: rgba(255,255,255,0.75);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(0,0,0,0.45);
+    border-right-color: rgba(0,0,0,0.45);
+    border-top-color: rgba(0,0,0,0.45);
+    border-bottom-color: rgba(0,0,0,0.45);
+}
+/* вход/выход разные */
+.bt-port-in .bt-port-dot {
+    background-color: rgba(120, 180, 255, 0.95);
+}
+.bt-port-out .bt-port-dot {
+    background-color: rgba(120, 255, 170, 0.95);
+}
+/* hover эффект */
+.bt-port-pill.is-hover {
+    background-color: rgba(255,255,255,0.06);
+    border-left-color: rgba(255,255,255,0.25);
+    border-right-color: rgba(255,255,255,0.25);
+    border-top-color: rgba(255,255,255,0.25);
+    border-bottom-color: rgba(255,255,255,0.25);
+}
+/* Port — делаем flex-контейнером и центрируем содержимое */
+.bt-port {
+    justify-content: center;
+    align-items: center;
+}
+/* Внутренний кружок GraphView (точка, к которой цепляется линия) */
+.bt-port .connector {
+    width: 14px;
+    height: 14px;
+    border-radius: 6px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+/* Иногда GraphView задаёт direction-specific выравнивание — перебьём */
+.bt-port-input .connector,
+.bt-port-output .connector {
+    position: relative;
+    left: 0px;
+    right: 0px;
+}
+/*Линия соединения нод*/
+.bt-graph-view .edge {
+    --edge-width: 5;
+    --selected-edge-color: rgb(255, 0, 0);
+}
