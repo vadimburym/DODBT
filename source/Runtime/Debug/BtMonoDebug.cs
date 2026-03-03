@@ -22,11 +22,10 @@ namespace VadimBurym.DodBehaviourTree
         [ShowInInspector, ReadOnly] 
 #endif
         internal BehaviourTreeAsset BehaviourTreeAsset;
+#if UNITY_EDITOR
 #if ODIN_INSPECTOR
         [ShowInInspector, ReadOnly] 
 #endif
-        
-#if UNITY_EDITOR
         public IReadOnlyList<string> RunningLeafs { get; private set; }
         internal NodeStatus[] DebugStatus;
         
