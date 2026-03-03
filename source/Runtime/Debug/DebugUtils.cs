@@ -10,14 +10,13 @@ using System.Collections.Generic;
 namespace VadimBurym.DodBehaviourTree
 {
     #if UNITY_EDITOR
-    internal static class DebugUtils<TContext, TLeafStatus>
-        where TContext : class where TLeafStatus : struct
+    internal static class DebugUtils
     {
         private const string Suffix = "Leaf";
 
         private static readonly Dictionary<Type, string> _cache = new();
 
-        public static string GetLeafName(ILeaf<TContext, TLeafStatus> leaf)
+        public static string GetLeafName(ILeaf leaf)
         {
             if (leaf == null)
                 return string.Empty;

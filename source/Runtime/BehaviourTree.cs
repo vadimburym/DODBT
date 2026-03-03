@@ -28,7 +28,25 @@ namespace VadimBurym.DodBehaviourTree
             _asset = asset;
             _leafs = new ILeaf<TContext, TLeafState>[asset.Leafs.Length];
             for (int i = 0; i < _leafs.Length; i++)
+            {
+#if UNITY_EDITOR
+                try
+                {
+                    _leafs[i] = (ILeaf<TContext, TLeafState>)asset.Leafs[i];
+                }
+                catch (InvalidCastException)
+                {
+                    var actualType = asset.Leafs[i]?.GetType();
+                    throw new InvalidOperationException(
+                        $"[BehaviourTree] Leaf at index {i} has type '{actualType?.FullName}', " +
+                        $"but BehaviourTree was constructed with <{typeof(TContext).Name}, {typeof(TLeafState).Name}>. " +
+                        $"Make sure all leafs implement ILeaf<{typeof(TContext).Name}, {typeof(TLeafState).Name}>.",
+                        innerException: null);
+                }
+#else
                 _leafs[i] = (ILeaf<TContext, TLeafState>)asset.Leafs[i];
+#endif
+            }
             _buffer = new int[asset.ChildBufferSize];
         }
         
