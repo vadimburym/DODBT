@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72b0eab5a6954804b878ff26c47da372, type: 3}
+  m_Name: Enemy_01
+  m_EditorClassIdentifier: 
+  Id: 0
+  DifficultyWeight: 0
+  Brain: {fileID: 11400000, guid: 1db2b2fac3e945a45a47551cdba9b709, type: 2}
+  BrainTickInterval: 0.2
+  MoveSpeed: 4
+  MaxHealth: 100
+  Armour: 20
+  Weapon: 1
+  InitAmmo: 1127
+  DetectDistance: 12
+  HuntingDistance: 20
+  PlayerVisibilitySensorTickInterval: 0.2

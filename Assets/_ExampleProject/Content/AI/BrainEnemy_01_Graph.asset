@@ -1,0 +1,324 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14627dfdb24d4be0bc005970e5642721, type: 3}
+  m_Name: BrainEnemy_01_Graph
+  m_EditorClassIdentifier: 
+  CompiledAsset: {fileID: 11400000, guid: 1db2b2fac3e945a45a47551cdba9b709, type: 2}
+  GuidsByCompiledId:
+  - a6d1a5dec181413994f2cea9d3395135
+  - 7d4bbe99976d4209bc84548dbedc037c
+  - 3ef125c0bc4a4df79122181b2b1e69eb
+  - cb2e175a2dd84ed5a70e5097c968d601
+  - cbc4268565dd453fa24ea801d5cf0098
+  - 0cffa998717443adb97d65d7e14cb2bd
+  - e6766ddf9fe34b169858388bff22194e
+  - c4b242a5570a44268ada8659b05fdbed
+  - 0a432b9bd37d4c82994c327ede4ecee3
+  - 4871cd9a650247b7a6a3d88fff7bc96a
+  - fe765624ed154c41b83c7f256c7e9d1c
+  - 983cfb634b8046f8b6d469cdb494f2fc
+  - ac9451dbb126412294404e84d18fc7c7
+  - a5d6f2cffc9c47408ca7a604be1bf17b
+  - 24cfcb3429394a9598b7045635ffd61e
+  - d310d10f59ff4fcc9155356bd45adaaf
+  - a64f7311589e49789b85ef8974c265ff
+  - 0fee11088d6e4b8bb1f8dd1d839472b1
+  - bc1329113d00420290bca57688fdb555
+  - fc63e59d21ed4e1a9b997ece403f60fb
+  - 838fc82c10cd4323bb2a39c80f787c82
+  - b4fb1653a3b74a098f0bcbd4893f3491
+  - 2bef806607d44aa99ac31377dfd5a1c0
+  CreationDate: 26.02.2026 0:50:44
+  LastModifiedDate: 01.03.2026 16:21:08
+  CompiledVersion: 01.03.2026 16:21:08
+  NodesCount: 23
+  LeafNodesCount: 12
+  NotActualCompiledVersion: 0
+  RootNode:
+    Guid: 280f3304b0dc47b78e8e390e80108f49
+    Position: {x: 171, y: -145}
+    ChildrenGuid: a6d1a5dec181413994f2cea9d3395135
+  Nodes:
+  - Guid: 3ef125c0bc4a4df79122181b2b1e69eb
+    Kind: 2
+    Position: {x: 675, y: 166}
+    Title: Patrol
+    ParentGuid: a6d1a5dec181413994f2cea9d3395135
+  - Guid: a6d1a5dec181413994f2cea9d3395135
+    Kind: 4
+    Position: {x: 171, y: -17}
+    Title: Selector
+    ParentGuid: 280f3304b0dc47b78e8e390e80108f49
+  - Guid: 7d4bbe99976d4209bc84548dbedc037c
+    Kind: 3
+    Position: {x: -412, y: 166}
+    Title: Sequence
+    ParentGuid: a6d1a5dec181413994f2cea9d3395135
+  - Guid: cb2e175a2dd84ed5a70e5097c968d601
+    Kind: 2
+    Position: {x: -619, y: 311}
+    Title: IsPlayerDetected
+    ParentGuid: 7d4bbe99976d4209bc84548dbedc037c
+  - Guid: a64f7311589e49789b85ef8974c265ff
+    Kind: 2
+    Position: {x: -145, y: 1096}
+    Title: ChasePlayer
+    ParentGuid: fe765624ed154c41b83c7f256c7e9d1c
+  - Guid: a5d6f2cffc9c47408ca7a604be1bf17b
+    Kind: 2
+    Position: {x: -1255, y: 1096}
+    Title: DistanceToPlayer <= 12
+    ParentGuid: 4871cd9a650247b7a6a3d88fff7bc96a
+  - Guid: 24cfcb3429394a9598b7045635ffd61e
+    Kind: 2
+    Position: {x: -904, y: 1096}
+    Title: IsPlayerRayCast
+    ParentGuid: 4871cd9a650247b7a6a3d88fff7bc96a
+  - Guid: ac9451dbb126412294404e84d18fc7c7
+    Kind: 2
+    Position: {x: 786, y: 881}
+    Title: ShootPlayer
+    ParentGuid: 0a432b9bd37d4c82994c327ede4ecee3
+  - Guid: cbc4268565dd453fa24ea801d5cf0098
+    Kind: 5
+    Position: {x: -218, y: 311}
+    Title: MemorySequence
+    ParentGuid: 7d4bbe99976d4209bc84548dbedc037c
+  - Guid: 0cffa998717443adb97d65d7e14cb2bd
+    Kind: 2
+    Position: {x: -619, y: 512}
+    Title: IsAmmoEnough
+    ParentGuid: cbc4268565dd453fa24ea801d5cf0098
+  - Guid: e6766ddf9fe34b169858388bff22194e
+    Kind: 3
+    Position: {x: 34, y: 512}
+    Title: Sequence
+    ParentGuid: cbc4268565dd453fa24ea801d5cf0098
+  - Guid: 0a432b9bd37d4c82994c327ede4ecee3
+    Kind: 7
+    Position: {x: 550, y: 664}
+    Title: Parallel
+    ParentGuid: e6766ddf9fe34b169858388bff22194e
+  - Guid: b4fb1653a3b74a098f0bcbd4893f3491
+    Kind: 2
+    Position: {x: 51, y: 1328}
+    Title: DistanceToPlayer <= 7
+    ParentGuid: 0fee11088d6e4b8bb1f8dd1d839472b1
+  - Guid: 2bef806607d44aa99ac31377dfd5a1c0
+    Kind: 2
+    Position: {x: 410, y: 1328}
+    Title: RetreatPlayer
+    ParentGuid: 0fee11088d6e4b8bb1f8dd1d839472b1
+  - Guid: 0fee11088d6e4b8bb1f8dd1d839472b1
+    Kind: 5
+    Position: {x: 230, y: 1096}
+    Title: MemorySequence
+    ParentGuid: 983cfb634b8046f8b6d469cdb494f2fc
+  - Guid: bc1329113d00420290bca57688fdb555
+    Kind: 2
+    Position: {x: 644, y: 1096}
+    Title: StrafePlayer
+    ParentGuid: 983cfb634b8046f8b6d469cdb494f2fc
+  - Guid: 983cfb634b8046f8b6d469cdb494f2fc
+    Kind: 4
+    Position: {x: 371, y: 881}
+    Title: Selector
+    ParentGuid: 0a432b9bd37d4c82994c327ede4ecee3
+  - Guid: 4871cd9a650247b7a6a3d88fff7bc96a
+    Kind: 3
+    Position: {x: -1064, y: 954}
+    Title: Sequence
+    ParentGuid: c4b242a5570a44268ada8659b05fdbed
+  - Guid: c4b242a5570a44268ada8659b05fdbed
+    Kind: 6
+    Position: {x: -619, y: 716}
+    Title: MemorySelector
+    ParentGuid: e6766ddf9fe34b169858388bff22194e
+  - Guid: fe765624ed154c41b83c7f256c7e9d1c
+    Kind: 3
+    Position: {x: -429, y: 954}
+    Title: Sequence
+    ParentGuid: c4b242a5570a44268ada8659b05fdbed
+  - Guid: fc63e59d21ed4e1a9b997ece403f60fb
+    Kind: 2
+    Position: {x: -680, y: 1272}
+    Title: DistanceToPlayer >=10
+    ParentGuid: d310d10f59ff4fcc9155356bd45adaaf
+  - Guid: d310d10f59ff4fcc9155356bd45adaaf
+    Kind: 4
+    Position: {x: -520, y: 1096}
+    Title: Selector
+    ParentGuid: fe765624ed154c41b83c7f256c7e9d1c
+  - Guid: 838fc82c10cd4323bb2a39c80f787c82
+    Kind: 2
+    Position: {x: -331, y: 1272}
+    Title: IsPlayerRayCast
+    ParentGuid: d310d10f59ff4fcc9155356bd45adaaf
+  LeafNodes:
+  - Guid: 3ef125c0bc4a4df79122181b2b1e69eb
+    Leaf:
+      rid: 3666612396540821704
+  - Guid: cb2e175a2dd84ed5a70e5097c968d601
+    Leaf:
+      rid: 3666612415604457545
+  - Guid: a64f7311589e49789b85ef8974c265ff
+    Leaf:
+      rid: 3666612415604457550
+  - Guid: a5d6f2cffc9c47408ca7a604be1bf17b
+    Leaf:
+      rid: 3666612415604457551
+  - Guid: 24cfcb3429394a9598b7045635ffd61e
+    Leaf:
+      rid: 3666612415604457553
+  - Guid: ac9451dbb126412294404e84d18fc7c7
+    Leaf:
+      rid: 3666612436213170291
+  - Guid: 0cffa998717443adb97d65d7e14cb2bd
+    Leaf:
+      rid: 3666612436213170257
+  - Guid: b4fb1653a3b74a098f0bcbd4893f3491
+    Leaf:
+      rid: 3666612436213170266
+  - Guid: 2bef806607d44aa99ac31377dfd5a1c0
+    Leaf:
+      rid: 3666612436213170267
+  - Guid: bc1329113d00420290bca57688fdb555
+    Leaf:
+      rid: 3666612436213170303
+  - Guid: fc63e59d21ed4e1a9b997ece403f60fb
+    Leaf:
+      rid: 3666612436213170341
+  - Guid: 838fc82c10cd4323bb2a39c80f787c82
+    Leaf:
+      rid: 3666612436213170343
+  SequenceNodes:
+  - Guid: 7d4bbe99976d4209bc84548dbedc037c
+    ChildrenGuids:
+    - cb2e175a2dd84ed5a70e5097c968d601
+    - cbc4268565dd453fa24ea801d5cf0098
+  - Guid: e6766ddf9fe34b169858388bff22194e
+    ChildrenGuids:
+    - c4b242a5570a44268ada8659b05fdbed
+    - 0a432b9bd37d4c82994c327ede4ecee3
+  - Guid: 4871cd9a650247b7a6a3d88fff7bc96a
+    ChildrenGuids:
+    - a5d6f2cffc9c47408ca7a604be1bf17b
+    - 24cfcb3429394a9598b7045635ffd61e
+  - Guid: fe765624ed154c41b83c7f256c7e9d1c
+    ChildrenGuids:
+    - d310d10f59ff4fcc9155356bd45adaaf
+    - a64f7311589e49789b85ef8974c265ff
+  MemorySequenceNodes:
+  - Guid: cbc4268565dd453fa24ea801d5cf0098
+    ChildrenGuids:
+    - 0cffa998717443adb97d65d7e14cb2bd
+    - e6766ddf9fe34b169858388bff22194e
+    ResetOnFailure: 1
+    ResetOnAbort: 0
+  - Guid: 0fee11088d6e4b8bb1f8dd1d839472b1
+    ChildrenGuids:
+    - b4fb1653a3b74a098f0bcbd4893f3491
+    - 2bef806607d44aa99ac31377dfd5a1c0
+    ResetOnFailure: 1
+    ResetOnAbort: 1
+  SelectorNodes:
+  - Guid: a6d1a5dec181413994f2cea9d3395135
+    ChildrenGuids:
+    - 7d4bbe99976d4209bc84548dbedc037c
+    - 3ef125c0bc4a4df79122181b2b1e69eb
+  - Guid: 983cfb634b8046f8b6d469cdb494f2fc
+    ChildrenGuids:
+    - 0fee11088d6e4b8bb1f8dd1d839472b1
+    - bc1329113d00420290bca57688fdb555
+  - Guid: d310d10f59ff4fcc9155356bd45adaaf
+    ChildrenGuids:
+    - fc63e59d21ed4e1a9b997ece403f60fb
+    - 838fc82c10cd4323bb2a39c80f787c82
+  MemorySelectorNodes:
+  - Guid: c4b242a5570a44268ada8659b05fdbed
+    PickRandom: 0
+    ResetOnAbort: 0
+    ChildrenGuids:
+    - 4871cd9a650247b7a6a3d88fff7bc96a
+    - fe765624ed154c41b83c7f256c7e9d1c
+  ParallelNodes:
+  - Guid: 0a432b9bd37d4c82994c327ede4ecee3
+    FailureThreshold: 1
+    SuccessThreshold: -1
+    CacheChildStatus: 0
+    ChildrenGuids:
+    - 983cfb634b8046f8b6d469cdb494f2fc
+    - ac9451dbb126412294404e84d18fc7c7
+  references:
+    version: 2
+    RefIds:
+    - rid: 3666612396540821704
+      type: {class: PatrolLeaf, ns: _ExampleProject.Code.Features._Core.AiLeafs, asm: Assembly-CSharp}
+      data: 
+    - rid: 3666612415604457545
+      type: {class: IsPlayerDetectedLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data: 
+    - rid: 3666612415604457550
+      type: {class: ChasePlayerLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data: 
+    - rid: 3666612415604457551
+      type: {class: DistanceToPlayerThresholdLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _threshold: 12
+        _comparison:
+          rid: 3666612415604457552
+    - rid: 3666612415604457552
+      type: {class: LessOrEqualComparison, ns: Utils, asm: Assembly-CSharp}
+      data: 
+    - rid: 3666612415604457553
+      type: {class: IsPlayerRayCastLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _isNot: 0
+    - rid: 3666612436213170257
+      type: {class: IsAmmoEnoughLeaf, ns: _ExampleProject.Code.Features._Core.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _shotCount: 3
+    - rid: 3666612436213170266
+      type: {class: DistanceToPlayerThresholdLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _threshold: 7
+        _comparison:
+          rid: 3666612436213170268
+    - rid: 3666612436213170267
+      type: {class: RetreatPlayerLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _retreatDistance: 4
+    - rid: 3666612436213170268
+      type: {class: LessOrEqualComparison, ns: Utils, asm: Assembly-CSharp}
+      data: 
+    - rid: 3666612436213170291
+      type: {class: ShootPlayerLeaf, ns: _ExampleProject.Code.Features._Core.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _targetShots: 3
+    - rid: 3666612436213170303
+      type: {class: StrafePlayerLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _strafeDistance: 1.5
+        _strafeCooldown: 0.75
+    - rid: 3666612436213170341
+      type: {class: DistanceToPlayerThresholdLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _threshold: 10
+        _comparison:
+          rid: 3666612436213170342
+    - rid: 3666612436213170342
+      type: {class: GreaterOrEqualComparison, ns: Utils, asm: Assembly-CSharp}
+      data: 
+    - rid: 3666612436213170343
+      type: {class: IsPlayerRayCastLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _isNot: 1

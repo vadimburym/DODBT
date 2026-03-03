@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30b2fe9e34a64966ae9ab63a97d04aa0, type: 3}
+  m_Name: MemoryPoolPipeline
+  m_EditorClassIdentifier: 
+  GameObjectMemoryPools:
+  - PoolId: 1
+    TransformId: 1
+    Asset: {fileID: 6589749451802570509, guid: d3bc840d23093524392cbeb9f68091b5, type: 3}
+    InitialCount: 1
+  - PoolId: 2
+    TransformId: 1
+    Asset: {fileID: 6589749451802570509, guid: b3f9df9a60f6d4e498d6c44bd9190904, type: 3}
+    InitialCount: 1
+  - PoolId: 3
+    TransformId: 1
+    Asset: {fileID: 8055880438897396821, guid: fc1bdd548932ce349bb287aa332e2ab4, type: 3}
+    InitialCount: 10
