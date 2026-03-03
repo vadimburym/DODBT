@@ -229,14 +229,14 @@ runtimeBt.Tick(btContext, btState);
 
 > ⚠ **ВАЖНО!** Данный модуль работает только при наличии плагина `Odin Inspector`.
 
-- **Добавьте отладку для вашего агента**: Добавьте компонент `BtMonoDebug` и свяжите его с конкретными runtime-BT и состоянием агента.
+- **Добавьте отладку для вашего агента**: Добавьте компонент `BtMonoDebug` и свяжите его с конкретным BT-ассетом и ссылкой на состояние агента.
 <p align="center">
   <img src="docs~/debug-01.png" width="450">
 </p>
 
 ```c#
 #if UNITY_EDITOR
-btMonoDebug.Construct(runtimeBt, btState);
+_btMonoDebug.Construct(btAsset, btState);
 #endif
 ```
 - **Откройте Debug-Mode**: Дебаг-режим открывает граф и окрашивает ноды в текущее состояние конкретного агента: `зеленый - success`, `красный - failure`, `синий - running`, `серый - none`. Также BtMonoDebug предоставляет публичное поле `RunningLeafs`, которое можно использовать в своих интересах, например для вывода текущих running-leafs в качестве текста возле каждого агента.
