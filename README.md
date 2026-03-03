@@ -145,11 +145,11 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 ```
 
 ## Редактор графов
-![Graph Editor](docs~/Images/graph-editor-00.png)
+![Graph Editor](docs~/graph-editor-00.png)
 > ⚠ **ВАЖНО!** Данный модуль работает только при наличии плагина `Odin Inspector`.
 
 - **Откройте редактор графов**: Tools → VadimBurym → BT Editor.
 
-![Graph Editor](docs~/Images/graph-editor-01.png)
-![Graph Editor](docs~/Images/graph-editor-02.png)
-![Graph Editor](docs~/Images/graph-editor-03.png)
+![Graph Editor](docs~/graph-editor-01.png)
+![Graph Editor](docs~/graph-editor-02.png)
+![Graph Editor](docs~/graph-editor-03.png)
