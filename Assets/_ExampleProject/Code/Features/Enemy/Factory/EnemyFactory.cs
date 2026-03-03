@@ -48,9 +48,11 @@ namespace _ExampleProject.Code.Features.Enemy.Factory
             var btContext = _memoryPoolService.DequeueObject<LeoEcsContext>();
             btContext.AgentIndex = entity;
             
+#if UNITY_EDITOR
+            enemyFacade.BtMonoDebug.Construct(enemyData.Brain, btState);
+#endif
             enemyFacade.EcsEntity.Construct(_world, entity);
             enemyFacade.Rigidbody.position = position;
-            enemyFacade.BtMonoDebug.Construct(enemyData.Brain, btState);
             enemyFacade.NavMeshAgent.speed = enemyData.MoveSpeed;
             enemyFacade.NavMeshAgent.avoidancePriority = Random.Range(10, 90);
             

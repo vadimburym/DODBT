@@ -5,6 +5,7 @@ namespace _ExampleProject.Code.Features._Core.Behaviours
 {
     public sealed class SimpleLeafsDebugExample : MonoBehaviour
     {
+#if UNITY_EDITOR
         [SerializeField] private BtMonoDebug _btDebug;
         [SerializeField] private TextMesh _text;
 
@@ -18,5 +19,6 @@ namespace _ExampleProject.Code.Features._Core.Behaviours
             }
             _text.text = text;
         }
+#endif
     }
 }

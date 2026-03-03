@@ -77,7 +77,7 @@ namespace _Project.Infrastructure
             InjectSystems(ecsSystems);
             return ecsSystems;
         }
-
+#if UNITY_EDITOR
         public static void AddSystemsDebug(IEcsSystems systems, string systemsName, bool isMainDebug = false)
         {
             systems.Add(new Leopotam.EcsLite.UnityEditor.EcsSystemsDebugSystem(systemsName));
@@ -92,7 +92,7 @@ namespace _Project.Infrastructure
                 }
             }
         }
-
+#endif
         public static void InjectSystems(IEcsSystems systems)
         {
             foreach (var world in _worlds)
