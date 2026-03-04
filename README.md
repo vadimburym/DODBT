@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="README.en.md">English</a> |
+  <a href="README.md">Русский</a>
+</p>
+
 ## 10⭐ Почему DODBT? (Data-oriented design Behaviour Tree)
 
 ⭐ **0 MonoBehaviour**  
