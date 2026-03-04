@@ -58,9 +58,14 @@ Game designers can configure BTs without touching code.
 - [Public Classes and Methods](#публичные-классы-и-методы)
 
 ## Installation
-- **As a Unity module** `RECOMMENDED`: Window → Package Manager → Install package from git URL:
+- **As a Unity module**: Window → Package Manager → Install package from git URL:
+- **Latest version**:
 ```
 https://github.com/vadimburym/DODBT.git?path=/source
+```
+- **Stable version** `RECOMMENDED`:
+```
+https://github.com/vadimburym/DODBT.git?path=/source#v0.1.0-early
 ```
 - **As source code**: the repository can also be cloned or downloaded as an archive.
 
