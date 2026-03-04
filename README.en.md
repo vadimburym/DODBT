@@ -194,7 +194,7 @@ var btAsset = //Reference to your BehaviourTreeAsset
 var runtimeBt = new BehaviourTree<LeoEcsContext, LeoEcsLeafState>();
 runtimeBt.Construct(asset);
 ```
-- **Inject dependencies into every leaf of each runtime BT**: Resolve leaves using your DI container or ServiceLocator.
+- **Inject dependencies into every leaf of each runtime BT**: Construct leaves using your DI container or ServiceLocator.
 
 > ⚠ **IMPORTANT!** This is done once before the game starts.
 
@@ -243,6 +243,7 @@ runtimeBt.Tick(btContext, btState);
 <p align="center">
   <img src="docs~/debug-01.png" width="450">
 </p>
+
 ```c#
 #if UNITY_EDITOR
 _btMonoDebug.Construct(btAsset, btState);
