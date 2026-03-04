@@ -67,7 +67,8 @@ without explicit permission from the original author.
 5. Attribution in Games
 
 Attribution is NOT required in shipped games or commercial products
-that merely use the Software as part of a larger work.
+that merely use the Software as part of a larger work. However,
+attribution is appreciated (for example in a Credits or Thanks section).
 
 6. Disclaimer
 
@@ -154,7 +155,8 @@ c) Размещать на любых asset store, маркетплейсах и
 
 Указание авторства в готовых играх или коммерческих продуктах,
 которые используют Программное обеспечение как часть более крупного
-проекта, НЕ требуется.
+проекта, НЕ требуется. Однако указание авторства приветствуется (например,
+в разделе Credits или Thanks).
 
 6. Отказ от гарантий
 
