@@ -12,6 +12,10 @@ namespace VadimBurym.DodBehaviourTree
     internal struct Node
     {
         public NodeId Id;
-        public int DataIndex;
+#if DODBT_SMALL_SIZE
+        public byte DataIndex;
+#else
+        public ushort DataIndex;
+#endif
     }
 }

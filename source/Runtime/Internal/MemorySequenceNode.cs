@@ -11,8 +11,12 @@ namespace VadimBurym.DodBehaviourTree
     [Serializable]
     internal struct MemorySequenceNode
     {
-        public int FirstChild;
-        public int ChildCount;
+#if DODBT_SMALL_SIZE
+        public byte FirstChild;
+#else
+        public ushort FirstChild;
+#endif
+        public byte ChildCount;
         public bool ResetOnFailure;
         public bool ResetOnAbort;
     }

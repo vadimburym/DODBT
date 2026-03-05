@@ -182,11 +182,13 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 
 - **Canvas**: Right-click → Add/... to create a new node. Execution order for composite children goes from left to right. Build your behavior graph using available nodes and your custom leaves.
 - **Side panel**: The `Details` panel displays information about the selected node. Here you can rename the node, verify child execution order, edit node settings, and read a description of how the node works.
+
+> ⚠ **IMPORTANT!** As a respected AI Lead from a AAA project once said, decorators are basically crutches in the Behaviour Tree world and he tries to avoid them. I agree with this approach, and since this plugin was originally built for personal use, decorators are currently not implemented. Available nodes at the moment are: `Selector`, `Sequence`, `MemorySelector`, `MemorySequence`, `Parallel`. These are enough to build most BTs, but decorators may be added later if there is demand from the community.
+
+> ⚠ **IMPORTANT!** The maximum number of child nodes per composite is `127`, and the maximum number of nodes per Behaviour Tree is `65,535`. If you are sure your trees will contain ≤ `255` nodes, you can add `DODBT_SMALL_SIZE` to the Scripting Define Symbols to slightly optimize memory usage.
 <img src="docs~/graph-editor-03.png" width="1050">
 
 - **Bottom panel**: The `Outputs` panel shows logs. It may include compilation errors, warnings about cyclic dependencies, or notifications about changes in composite child order.
-
-> ⚠ **IMPORTANT!** As a respected AI Lead from a AAA project once said, decorators are basically crutches in the Behaviour Tree world and he tries to avoid them. I agree with this approach, and since this plugin was originally built for personal use, decorators are currently not implemented. Available nodes at the moment are: `Selector`, `Sequence`, `MemorySelector`, `MemorySequence`, `Parallel`. These are enough to build most BTs, but decorators may be added later if there is demand from the community.
 
 ## Compilation and Build
 

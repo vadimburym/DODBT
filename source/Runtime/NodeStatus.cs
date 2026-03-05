@@ -6,7 +6,7 @@
 
 namespace VadimBurym.DodBehaviourTree
 {
-    public enum NodeStatus : sbyte
+    public enum NodeStatus : byte
     {
         None = 0,
         Running = 1,

@@ -13,16 +13,19 @@ namespace VadimBurym.DodBehaviourTree
     internal struct NodeState
     {
         [SerializeField] internal bool IsEntered;
-        [SerializeField] internal int Cursor;
         [SerializeField] internal sbyte CachedStatus;
-        [SerializeField] internal int LeafStateIndex;
+        [SerializeField] internal sbyte Cursor;
+#if DODBT_SMALL_SIZE
+        [SerializeField] internal byte LeafStateIndex;
+#else
+        [SerializeField] internal ushort LeafStateIndex;
+#endif
         
         internal void Reset()
         {
             IsEntered = false;
             Cursor = -1;
             CachedStatus = 0;
-            LeafStateIndex = -1;
         }
     }
 }

@@ -66,10 +66,10 @@ internal static class BtCompiler
                 //if (selectorChildren.Count > _bufferSize) _bufferSize = selectorChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.Selector, 
-                    DataIndex = _selectorNodes.Count });
+                    DataIndex = Convert(_selectorNodes.Count) });
                 _selectorNodes.Add(new SelectorNode {
-                    FirstChild = _nodes.Count + _nodesQueue.Count,
-                    ChildCount = selectorChildren.Count });
+                    FirstChild = Convert(_nodes.Count + _nodesQueue.Count),
+                    ChildCount = (byte)selectorChildren.Count });
                 for (int i = 0; i < selectorChildren.Count; i++)
                     _nodesQueue.Enqueue(asset.FindHeader(selectorChildren[i]));
                 return string.Empty;
@@ -80,10 +80,10 @@ internal static class BtCompiler
                 if (memorySelectorChildren.Count > _bufferSize) _bufferSize = memorySelectorChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.MemorySelector,
-                    DataIndex = _memorySelectorNodes.Count });
+                    DataIndex = Convert(_memorySelectorNodes.Count) });
                 _memorySelectorNodes.Add(new MemorySelectorNode {
-                    FirstChild = _nodes.Count + _nodesQueue.Count,
-                    ChildCount = memorySelectorChildren.Count,
+                    FirstChild = Convert(_nodes.Count + _nodesQueue.Count),
+                    ChildCount = (byte)memorySelectorChildren.Count,
                     PickRandom = memorySelectorData.PickRandom,
                     ResetOnAbort = memorySelectorData.ResetOnAbort });
                 for (int i = 0; i < memorySelectorChildren.Count; i++)
@@ -96,10 +96,10 @@ internal static class BtCompiler
                 //if (memorySequenceChildren.Count > _bufferSize) _bufferSize = memorySequenceChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.MemorySequence,
-                    DataIndex = _memorySequenceNodes.Count });
+                    DataIndex = Convert(_memorySequenceNodes.Count) });
                 _memorySequenceNodes.Add(new MemorySequenceNode {
-                    FirstChild = _nodes.Count + _nodesQueue.Count,
-                    ChildCount = memorySequenceChildren.Count,
+                    FirstChild = Convert(_nodes.Count + _nodesQueue.Count),
+                    ChildCount = (byte)memorySequenceChildren.Count,
                     ResetOnAbort = memorySequenceData.ResetOnAbort,
                     ResetOnFailure = memorySequenceData.ResetOnFailure });
                 for (int i = 0; i < memorySequenceChildren.Count; i++)
@@ -112,10 +112,10 @@ internal static class BtCompiler
                 //if (sequenceChildren.Count > _bufferSize) _bufferSize = sequenceChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.Sequence,
-                    DataIndex = _sequenceNodes.Count });
+                    DataIndex = Convert(_sequenceNodes.Count) });
                 _sequenceNodes.Add(new SequenceNode {
-                    FirstChild = _nodes.Count + _nodesQueue.Count,
-                    ChildCount = sequenceChildren.Count });
+                    FirstChild = Convert(_nodes.Count + _nodesQueue.Count),
+                    ChildCount = (byte)sequenceChildren.Count });
                 for (int i = 0; i < sequenceChildren.Count; i++)
                     _nodesQueue.Enqueue(asset.FindHeader(sequenceChildren[i]));
                 return string.Empty;
@@ -123,7 +123,7 @@ internal static class BtCompiler
                 var leafData = asset.FindLeafData(nodeData.Guid);
                 _nodes.Add(new Node {
                     Id = NodeId.Leaf,
-                    DataIndex = _leafs.Count });
+                    DataIndex = Convert(_leafs.Count) });
                 if (leafData.Leaf == null) return "One of your Leafs does not have an ILeaf implementation.";
                 byte[] bytes = SerializationUtility.SerializeValue(leafData.Leaf, DataFormat.Binary);
                 var leaf = SerializationUtility.DeserializeValue<ILeaf>(bytes, DataFormat.Binary);
@@ -136,13 +136,13 @@ internal static class BtCompiler
                 //if (parallelChildren.Count > _bufferSize) _bufferSize = parallelChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.Parallel,
-                    DataIndex = _parallelNodes.Count });
+                    DataIndex = Convert(_parallelNodes.Count) });
                 _parallelNodes.Add(new ParallelNode {
-                    FirstChild = _nodes.Count + _nodesQueue.Count,
-                    ChildCount = parallelChildren.Count,
+                    FirstChild = Convert(_nodes.Count + _nodesQueue.Count),
+                    ChildCount = (byte)parallelChildren.Count,
                     CacheChildStatus = parallelData.CacheChildStatus,
-                    FailsThreshold = parallelData.FailureThreshold == -1 ? parallelChildren.Count : parallelData.FailureThreshold,
-                    SuccessThreshold = parallelData.SuccessThreshold == -1 ? parallelChildren.Count : parallelData.SuccessThreshold });
+                    FailsThreshold = parallelData.FailureThreshold == -1 ? (byte)parallelChildren.Count : (byte)parallelData.FailureThreshold,
+                    SuccessThreshold = parallelData.SuccessThreshold == -1 ? (byte)parallelChildren.Count : (byte)parallelData.SuccessThreshold });
                 for (int i = 0; i < parallelChildren.Count; i++)
                     _nodesQueue.Enqueue(asset.FindHeader(parallelChildren[i]));
                 return string.Empty;
@@ -163,5 +163,10 @@ internal static class BtCompiler
         _bufferSize = 0;
         _guidsByCompiled.Clear();
     }
+#if DODBT_SMALL_SIZE
+    private static byte Convert(int value) => (byte)value;
+#else
+    private static ushort Convert(int value) => (ushort)value;
+#endif
 }
 #endif

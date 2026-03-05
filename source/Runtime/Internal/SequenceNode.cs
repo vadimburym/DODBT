@@ -11,7 +11,11 @@ namespace VadimBurym.DodBehaviourTree
     [Serializable]
     internal struct SequenceNode
     {
-        public int FirstChild;
-        public int ChildCount;
+#if DODBT_SMALL_SIZE
+        public byte FirstChild;
+#else
+        public ushort FirstChild;
+#endif
+        public byte ChildCount;
     }
 }

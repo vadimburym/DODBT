@@ -17,6 +17,7 @@ namespace VadimBurym.DodBehaviourTree
         private const sbyte Failure = -1;
         private const sbyte Success = 1;
         private const sbyte Running = 2;
+        private const sbyte None = -1;
 
         public ILeaf[] Leafs => _asset.Leafs;
         private BehaviourTreeAsset _asset;
@@ -108,12 +109,12 @@ namespace VadimBurym.DodBehaviourTree
                         state.DebugStatus[selectorNode.FirstChild + i] = status;
 #endif
                         if (status == NodeStatus.Failure) continue;
-                        if (nodeState.Cursor != i && nodeState.Cursor != -1)
+                        if (nodeState.Cursor != i && nodeState.Cursor != None)
                             AbortNode(context, state, selectorNode.FirstChild + nodeState.Cursor);
-                        nodeState.Cursor = status == NodeStatus.Running ? i : -1;
+                        nodeState.Cursor = status == NodeStatus.Running ? (sbyte)i : None;
                         return status;
                     }
-                    nodeState.Cursor = -1;
+                    nodeState.Cursor = None;
                     return NodeStatus.Failure;
                 
                 case NodeId.Sequence:
@@ -125,18 +126,18 @@ namespace VadimBurym.DodBehaviourTree
                         state.DebugStatus[sequenceNode.FirstChild + i] = status;
 #endif
                         if (status == NodeStatus.Success) continue;
-                        if (nodeState.Cursor != i && nodeState.Cursor != -1)
+                        if (nodeState.Cursor != i && nodeState.Cursor != None)
                             AbortNode(context, state, sequenceNode.FirstChild + nodeState.Cursor);
-                        nodeState.Cursor = status == NodeStatus.Running ? i : -1;
+                        nodeState.Cursor = status == NodeStatus.Running ? (sbyte)i : None;
                         return status;
                     }
-                    nodeState.Cursor = -1;
+                    nodeState.Cursor = None;
                     return NodeStatus.Success;
                 
                 case NodeId.MemorySequence:
                     ref var memorySequenceNode = ref _asset.MemorySequenceNodes[node.DataIndex];
                     var cursor = nodeState.Cursor;
-                    if (cursor != -1) cursor--;
+                    if (cursor != None) cursor--;
                     for (; ++cursor < memorySequenceNode.ChildCount;)
                     {
                         var status = TickNode(context, state, memorySequenceNode.FirstChild + cursor);
@@ -144,15 +145,15 @@ namespace VadimBurym.DodBehaviourTree
                         state.DebugStatus[memorySequenceNode.FirstChild + cursor] = status;
 #endif
                         if (status == NodeStatus.Success) continue;
-                        nodeState.Cursor = status == NodeStatus.Failure && memorySequenceNode.ResetOnFailure ? -1 : cursor;
+                        nodeState.Cursor = status == NodeStatus.Failure && memorySequenceNode.ResetOnFailure ? None : cursor;
                         return status;
                     }
-                    nodeState.Cursor = -1;
+                    nodeState.Cursor = None;
                     return NodeStatus.Success;
                 
                 case NodeId.MemorySelector:
                     ref var memorySelectorNode = ref _asset.MemorySelectorNodes[node.DataIndex];
-                    if (nodeState.Cursor != -1)
+                    if (nodeState.Cursor != None)
                     {
                         var status = TickNode(context, state, memorySelectorNode.FirstChild + nodeState.Cursor);
 #if UNITY_EDITOR
@@ -160,7 +161,7 @@ namespace VadimBurym.DodBehaviourTree
 #endif
                         if (status != NodeStatus.Failure)
                         {
-                            if (status == NodeStatus.Success) nodeState.Cursor = -1;
+                            if (status == NodeStatus.Success) nodeState.Cursor = None;
                             return status;
                         }
                     }
@@ -173,10 +174,10 @@ namespace VadimBurym.DodBehaviourTree
                         state.DebugStatus[memorySelectorNode.FirstChild + bufferCursor] = status;
 #endif
                         if (status == NodeStatus.Failure) continue;
-                        nodeState.Cursor = status == NodeStatus.Running ? bufferCursor : -1;
+                        nodeState.Cursor = status == NodeStatus.Running ? (sbyte)bufferCursor : None;
                         return status;
                     }
-                    nodeState.Cursor = -1;
+                    nodeState.Cursor = None;
                     return NodeStatus.Failure;
                 
                 case NodeId.Leaf:
@@ -202,7 +203,7 @@ namespace VadimBurym.DodBehaviourTree
                 
                 case NodeId.Parallel:
                     ref var parallelNode = ref _asset.ParallelNodes[node.DataIndex];
-                    int success = 0; int fails = 0;
+                    byte success = 0; byte fails = 0;
                     for (int i = 0; i < parallelNode.ChildCount; i++)
                     {
                         ref var childState = ref state.NodeStates[parallelNode.FirstChild + i];
@@ -229,7 +230,7 @@ namespace VadimBurym.DodBehaviourTree
                     }
                     if (success >= parallelNode.SuccessThreshold || fails >= parallelNode.FailsThreshold)
                     {
-                        for (int i = 0; i < parallelNode.ChildCount; i++)
+                        for (sbyte i = 0; i < parallelNode.ChildCount; i++)
                         {
                             ref var childState = ref state.NodeStates[parallelNode.FirstChild + i];
                             if (childState.CachedStatus == Running) AbortNode(context, state, parallelNode.FirstChild + i);
@@ -252,30 +253,30 @@ namespace VadimBurym.DodBehaviourTree
             {
                 case NodeId.Selector:
                     ref var selectorNode = ref _asset.SelectorNodes[node.DataIndex];
-                    if (nodeState.Cursor == -1) return;
+                    if (nodeState.Cursor == None) return;
                     AbortNode(context, state, selectorNode.FirstChild + nodeState.Cursor);
-                    nodeState.Cursor = -1;
+                    nodeState.Cursor = None;
                     return;
                 
                 case NodeId.Sequence:
                     ref var sequenceNode = ref _asset.SequenceNodes[node.DataIndex];
-                    if (nodeState.Cursor == -1) return;
+                    if (nodeState.Cursor == None) return;
                     AbortNode(context, state, sequenceNode.FirstChild + nodeState.Cursor);
-                    nodeState.Cursor = -1;
+                    nodeState.Cursor = None;
                     return;
                 
                 case NodeId.MemorySequence:
                     ref var memorySequenceNode = ref _asset.MemorySequenceNodes[node.DataIndex];
-                    if (nodeState.Cursor == -1) return;
+                    if (nodeState.Cursor == None) return;
                     AbortNode(context, state, memorySequenceNode.FirstChild + nodeState.Cursor);
-                    if (memorySequenceNode.ResetOnAbort) nodeState.Cursor = -1;
+                    if (memorySequenceNode.ResetOnAbort) nodeState.Cursor = None;
                     return;
                 
                 case NodeId.MemorySelector:
                     ref var memorySelectorNode = ref _asset.MemorySelectorNodes[node.DataIndex];
-                    if (nodeState.Cursor == -1) return;
+                    if (nodeState.Cursor == None) return;
                     AbortNode(context, state, memorySelectorNode.FirstChild + nodeState.Cursor);
-                    if (memorySelectorNode.ResetOnAbort) nodeState.Cursor = -1;
+                    if (memorySelectorNode.ResetOnAbort) nodeState.Cursor = None;
                     return;
                 
                 case NodeId.Leaf:

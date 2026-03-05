@@ -11,10 +11,14 @@ namespace VadimBurym.DodBehaviourTree
     [Serializable]
     internal struct ParallelNode
     {
-        public int FirstChild;
-        public int ChildCount;
-        public int FailsThreshold;
-        public int SuccessThreshold;
+#if DODBT_SMALL_SIZE
+        public byte FirstChild;
+#else
+        public ushort FirstChild;
+#endif
+        public byte ChildCount;
+        public byte FailsThreshold;
+        public byte SuccessThreshold;
         public bool CacheChildStatus;
     }
 }
