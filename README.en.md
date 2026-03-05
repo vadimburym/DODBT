@@ -11,7 +11,7 @@ Completely decoupled from the Unity lifecycle.
 ⭐ **0 runtime allocations**  
 Predictable execution without GC.
 
-⭐ **1 BT instance for N agents**  
+⭐ **1 shared BT for N agents**  
 Memory-efficient architecture.
 
 ⭐ **Runtime Debug Mode**  
@@ -24,12 +24,12 @@ Logs, hints, and clear visualization.
 The graph is compiled into a compact and performant BT.  
 Neither graph data nor editor tools are included in builds.
 
-⭐ **BT is responsible only for behavior selection**  
-The tree does not tick the behavior itself.  
-BT can be updated at any frequency (for example once every N seconds).
+⭐ **BT is decision-layer**  
+Tree is responsible only for behavior selection and transitions.
+It can be updated at any frequency, for example once every N seconds.
 
 ⭐ **No Blackboard**  
-Dependencies are passed directly via DI or ServiceLocator.
+Dependencies can be injected directly, via DI, or through a Service Locator.
 
 ⭐ **ECS-friendly**  
 Works great with ECS architecture.
@@ -42,6 +42,9 @@ Game designers can configure BTs without touching code.
 > ⚠ **IMPORTANT!** DODBT has been tested on `UNITY 6000.051f1` and `Odin Inspector 4.0`. Compatibility with earlier versions is not guaranteed.
 
 > ⚠ **IMPORTANT!** DODBT was originally built for internal use and is currently in early access. The plugin is already usable in production, but development, improvements, and bug fixing are ongoing.
+
+> ⚠ **IMPORTANT!** A dedicated DOTS version of this plugin with BlobAsset and Burst support is currently in development.
+This version can still be used if you're comfortable running the Behaviour Tree as a main-thread decision layer, ticking it once every N seconds.
 
 <p align="center">
   <img src="docs~/logo.png" width="1050">
@@ -215,6 +218,16 @@ var leafs = runtimeBt.Leafs;
 for (int i = 0; i < leafs.Length; i++)
     if (leafs[i] is IConstruct constructable)
         constructable.Construct();
+```
+> **[EXAMPLE]** No `DI` and `ServiceLocator`: Provide dependencies through context.
+```c#
+public sealed class LeoEcsContext
+{
+    public int AgentIndex = -1;
+    public EcsPool<Component1> PoolC1;
+    public EcsPool<Component2> PoolC2;
+    public IService1 Service1;
+}
 ```
 - **Create agent contexts and states**: Wherever agents are created, create a context and a `BtState` for each agent. Initialize the state from the desired `BehaviourTree`.
 
