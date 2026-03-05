@@ -43,7 +43,7 @@ Game designers can configure BTs without touching code.
 
 > ⚠ **IMPORTANT!** DODBT was originally built for internal use and is currently in early access. The plugin is already usable in production, but development, improvements, and bug fixing are ongoing.
 
-> ⚠ **IMPORTANT!** A dedicated DOTS version of this plugin with BlobAsset and Burst support is currently in development.
+> ⚠ **IMPORTANT!** A dedicated `DOTS` version of this plugin with `BlobAsset` and `Burst` support is currently in development.
 This version can still be used if you're comfortable running the Behaviour Tree and states as a main-thread managed decision layer, ticking it once every N seconds.
 
 <p align="center">
