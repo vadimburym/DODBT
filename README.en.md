@@ -94,6 +94,8 @@ public struct LeoEcsLeafState
 ```
 - **Create leaves**: terminal BT nodes that represent condition checks, actions, or states executed within an agent context and maintaining their own execution state. Implement them by inheriting from `ILeaf<context, state>` anywhere in the project — `Odin Inspector` will automatically detect them and make them available in the graph editor. Add the `[Serializable]` attribute and mark parameters you want to edit from the graph with `[SerializeField]`.
 
+> ⚠ **IMPORTANT!** It is important to understand the order of execution when the current Running node changes: `OnEnter`, `OnTick` of the new Running node → `OnAbort` of the previous Running node.
+
 > **[EXAMPLE]** Example leaf "Shoot the player N times" for `LeoEcsLite` using `DI`. The leaf does not tick the agent behavior itself — it only adds/removes a state from the agent. Actual behavior is ticked by separate ECS systems filtering entities by that state.
 ```c#
 [Serializable]
