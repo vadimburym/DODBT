@@ -70,7 +70,7 @@ https://github.com/vadimburym/DODBT.git?path=/source
 ```
 https://github.com/vadimburym/DODBT.git?path=/source#v0.1.0-early
 ```
-- **As source code**: the repository can also be cloned or downloaded as an archive.
+- **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
 
 ## Getting Started
 
