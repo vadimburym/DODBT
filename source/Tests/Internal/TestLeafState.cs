@@ -4,7 +4,17 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-using System.Runtime.CompilerServices;
+using System;
 
-[assembly: InternalsVisibleTo("VadimBurym.DodBehaviourTree.Editor")]
-[assembly: InternalsVisibleTo("VadimBurym.DodBehaviourTree.Tests")]
+namespace VadimBurym.DodBehaviourTree.Tests
+{
+    [Serializable]
+    internal struct TestLeafState
+    {
+        public int EnterCount;
+        public int TickCount;
+        public int ExitCount;
+        public int AbortCount;
+        public NodeStatus LastExitStatus;
+    }
+}
