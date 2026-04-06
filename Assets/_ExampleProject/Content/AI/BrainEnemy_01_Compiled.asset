@@ -1,0 +1,177 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 526ae62ac9b84af3a0d5d5f6f1b45f06, type: 3}
+  m_Name: BrainEnemy_01_Compiled
+  m_EditorClassIdentifier: 
+  InternalGUID: 5792a1a0677bf9948a0a54888d56c7ee
+  RootIndex: 0
+  Nodes:
+  - Id: 1
+    DataIndex: 0
+  - Id: 2
+    DataIndex: 0
+  - Id: 0
+    DataIndex: 0
+  - Id: 0
+    DataIndex: 1
+  - Id: 4
+    DataIndex: 0
+  - Id: 0
+    DataIndex: 2
+  - Id: 2
+    DataIndex: 1
+  - Id: 3
+    DataIndex: 0
+  - Id: 5
+    DataIndex: 0
+  - Id: 2
+    DataIndex: 2
+  - Id: 2
+    DataIndex: 3
+  - Id: 1
+    DataIndex: 1
+  - Id: 0
+    DataIndex: 3
+  - Id: 0
+    DataIndex: 4
+  - Id: 0
+    DataIndex: 5
+  - Id: 1
+    DataIndex: 2
+  - Id: 0
+    DataIndex: 6
+  - Id: 4
+    DataIndex: 1
+  - Id: 0
+    DataIndex: 7
+  - Id: 0
+    DataIndex: 8
+  - Id: 0
+    DataIndex: 9
+  - Id: 0
+    DataIndex: 10
+  - Id: 0
+    DataIndex: 11
+  SelectorNodes:
+  - FirstChild: 1
+    ChildCount: 2
+  - FirstChild: 17
+    ChildCount: 2
+  - FirstChild: 19
+    ChildCount: 2
+  SequenceNodes:
+  - FirstChild: 3
+    ChildCount: 2
+  - FirstChild: 7
+    ChildCount: 2
+  - FirstChild: 13
+    ChildCount: 2
+  - FirstChild: 15
+    ChildCount: 2
+  MemorySelectorNodes:
+  - FirstChild: 9
+    ChildCount: 2
+    PickRandom: 0
+    ResetOnAbort: 0
+  MemorySequenceNodes:
+  - FirstChild: 5
+    ChildCount: 2
+    ResetOnFailure: 1
+    ResetOnAbort: 0
+  - FirstChild: 21
+    ChildCount: 2
+    ResetOnFailure: 1
+    ResetOnAbort: 1
+  ParallelNodes:
+  - FirstChild: 11
+    ChildCount: 2
+    FailsThreshold: 1
+    SuccessThreshold: 2
+    CacheChildStatus: 0
+  Leafs:
+  - rid: 1545528644590633171
+  - rid: 1545528644590633172
+  - rid: 1545528644590633173
+  - rid: 1545528644590633174
+  - rid: 1545528644590633175
+  - rid: 1545528644590633176
+  - rid: 1545528644590633177
+  - rid: 1545528644590633178
+  - rid: 1545528644590633179
+  - rid: 1545528644590633180
+  - rid: 1545528644590633181
+  - rid: 1545528644590633182
+  ChildBufferSize: 2
+  references:
+    version: 2
+    RefIds:
+    - rid: 1545528644590633171
+      type: {class: PatrolLeaf, ns: _ExampleProject.Code.Features._Core.AiLeafs, asm: Assembly-CSharp}
+      data: 
+    - rid: 1545528644590633172
+      type: {class: IsPlayerDetectedLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data: 
+    - rid: 1545528644590633173
+      type: {class: IsAmmoEnoughLeaf, ns: _ExampleProject.Code.Features._Core.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _shotCount: 3
+    - rid: 1545528644590633174
+      type: {class: ShootPlayerLeaf, ns: _ExampleProject.Code.Features._Core.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _targetShots: 3
+    - rid: 1545528644590633175
+      type: {class: DistanceToPlayerThresholdLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _threshold: 12
+        _comparison:
+          rid: 1545528644590633183
+    - rid: 1545528644590633176
+      type: {class: IsPlayerRayCastLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _isNot: 0
+    - rid: 1545528644590633177
+      type: {class: ChasePlayerLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data: 
+    - rid: 1545528644590633178
+      type: {class: StrafePlayerLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _strafeDistance: 1.5
+        _strafeCooldown: 0.75
+    - rid: 1545528644590633179
+      type: {class: DistanceToPlayerThresholdLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _threshold: 10
+        _comparison:
+          rid: 1545528644590633184
+    - rid: 1545528644590633180
+      type: {class: IsPlayerRayCastLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _isNot: 1
+    - rid: 1545528644590633181
+      type: {class: DistanceToPlayerThresholdLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _threshold: 7
+        _comparison:
+          rid: 1545528644590633185
+    - rid: 1545528644590633182
+      type: {class: RetreatPlayerLeaf, ns: _ExampleProject.Code.Features.Player.AiLeafs, asm: Assembly-CSharp}
+      data:
+        _retreatDistance: 4
+    - rid: 1545528644590633183
+      type: {class: LessOrEqualComparison, ns: Utils, asm: Assembly-CSharp}
+      data: 
+    - rid: 1545528644590633184
+      type: {class: GreaterOrEqualComparison, ns: Utils, asm: Assembly-CSharp}
+      data: 
+    - rid: 1545528644590633185
+      type: {class: LessOrEqualComparison, ns: Utils, asm: Assembly-CSharp}
+      data: 
