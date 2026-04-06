@@ -230,7 +230,7 @@ namespace VadimBurym.DodBehaviourTree
                     }
                     if (success >= parallelNode.SuccessThreshold || fails >= parallelNode.FailsThreshold)
                     {
-                        for (sbyte i = 0; i < parallelNode.ChildCount; i++)
+                        for (byte i = 0; i < parallelNode.ChildCount; i++)
                         {
                             ref var childState = ref state.NodeStates[parallelNode.FirstChild + i];
                             if (childState.CachedStatus == Running) AbortNode(context, state, parallelNode.FirstChild + i);
