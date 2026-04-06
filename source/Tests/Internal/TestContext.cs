@@ -4,7 +4,12 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
-[assembly: InternalsVisibleTo("VadimBurym.DodBehaviourTree.Editor")]
-[assembly: InternalsVisibleTo("VadimBurym.DodBehaviourTree.Tests")]
+namespace VadimBurym.DodBehaviourTree.Tests
+{
+    internal sealed class TestContext
+    {
+        public readonly List<string> Events = new();
+    }
+}

@@ -63,7 +63,6 @@ internal static class BtCompiler
                 var selectorData = asset.FindSelectorData(nodeData.Guid);
                 var selectorChildren = selectorData.ChildrenGuids;
                 if (selectorChildren.Count == 0) return "One of your Selectors does not have children.";
-                //if (selectorChildren.Count > _bufferSize) _bufferSize = selectorChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.Selector, 
                     DataIndex = Convert(_selectorNodes.Count) });
@@ -93,7 +92,6 @@ internal static class BtCompiler
                 var memorySequenceData = asset.FindMemorySequenceData(nodeData.Guid);
                 var memorySequenceChildren = memorySequenceData.ChildrenGuids;
                 if (memorySequenceChildren.Count == 0) return "One of your MemorySequences does not have children.";
-                //if (memorySequenceChildren.Count > _bufferSize) _bufferSize = memorySequenceChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.MemorySequence,
                     DataIndex = Convert(_memorySequenceNodes.Count) });
@@ -109,7 +107,6 @@ internal static class BtCompiler
                 var sequenceData = asset.FindSequenceData(nodeData.Guid);
                 var sequenceChildren = sequenceData.ChildrenGuids;
                 if (sequenceChildren.Count == 0) return "One of your Sequences does not have children.";
-                //if (sequenceChildren.Count > _bufferSize) _bufferSize = sequenceChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.Sequence,
                     DataIndex = Convert(_sequenceNodes.Count) });
@@ -133,7 +130,6 @@ internal static class BtCompiler
                 var parallelData = asset.FindParallelData(nodeData.Guid);
                 var parallelChildren = parallelData.ChildrenGuids;
                 if (parallelChildren.Count == 0) return "One of your Parallels does not have children.";
-                //if (parallelChildren.Count > _bufferSize) _bufferSize = parallelChildren.Count;
                 _nodes.Add(new Node {
                     Id = NodeId.Parallel,
                     DataIndex = Convert(_parallelNodes.Count) });

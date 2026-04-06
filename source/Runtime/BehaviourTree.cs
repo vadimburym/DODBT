@@ -13,11 +13,11 @@ namespace VadimBurym.DodBehaviourTree
     public sealed class BehaviourTree<TContext, TLeafState>
         where TContext : class where TLeafState : struct
     {
-        private const sbyte Unknown = 0;
-        private const sbyte Failure = -1;
-        private const sbyte Success = 1;
-        private const sbyte Running = 2;
-        private const sbyte None = -1;
+        private const byte Unknown = 0;
+        private const byte Failure = 0xFF;
+        private const byte Success = 1;
+        private const byte Running = 2;
+        private const byte None = 0xFF;
 
         public ILeaf[] Leafs => _asset.Leafs;
         private BehaviourTreeAsset _asset;
@@ -111,7 +111,7 @@ namespace VadimBurym.DodBehaviourTree
                         if (status == NodeStatus.Failure) continue;
                         if (nodeState.Cursor != i && nodeState.Cursor != None)
                             AbortNode(context, state, selectorNode.FirstChild + nodeState.Cursor);
-                        nodeState.Cursor = status == NodeStatus.Running ? (sbyte)i : None;
+                        nodeState.Cursor = status == NodeStatus.Running ? (byte)i : None;
                         return status;
                     }
                     nodeState.Cursor = None;
@@ -128,7 +128,7 @@ namespace VadimBurym.DodBehaviourTree
                         if (status == NodeStatus.Success) continue;
                         if (nodeState.Cursor != i && nodeState.Cursor != None)
                             AbortNode(context, state, sequenceNode.FirstChild + nodeState.Cursor);
-                        nodeState.Cursor = status == NodeStatus.Running ? (sbyte)i : None;
+                        nodeState.Cursor = status == NodeStatus.Running ? (byte)i : None;
                         return status;
                     }
                     nodeState.Cursor = None;
@@ -174,7 +174,7 @@ namespace VadimBurym.DodBehaviourTree
                         state.DebugStatus[memorySelectorNode.FirstChild + bufferCursor] = status;
 #endif
                         if (status == NodeStatus.Failure) continue;
-                        nodeState.Cursor = status == NodeStatus.Running ? (sbyte)bufferCursor : None;
+                        nodeState.Cursor = status == NodeStatus.Running ? (byte)bufferCursor : None;
                         return status;
                     }
                     nodeState.Cursor = None;
@@ -230,7 +230,7 @@ namespace VadimBurym.DodBehaviourTree
                     }
                     if (success >= parallelNode.SuccessThreshold || fails >= parallelNode.FailsThreshold)
                     {
-                        for (sbyte i = 0; i < parallelNode.ChildCount; i++)
+                        for (byte i = 0; i < parallelNode.ChildCount; i++)
                         {
                             ref var childState = ref state.NodeStates[parallelNode.FirstChild + i];
                             if (childState.CachedStatus == Running) AbortNode(context, state, parallelNode.FirstChild + i);

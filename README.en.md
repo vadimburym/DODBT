@@ -34,8 +34,8 @@ Dependencies can be injected directly, via DI, or through a Service Locator.
 ⭐ **ECS-friendly**  
 Works great with ECS architecture.
 
-⭐ **Production-ready**  
-Game designers can configure BTs without touching code.
+⭐ **Production-grade**  
+Tests coverage. Game designers can configure BTs without touching code.
 
 > ⚠ **IMPORTANT!** To access `EDITOR` and `DEBUG` tools you must install the `Odin Inspector` plugin. All other functionality (including builds) works without it, meaning only the game designer needs `Odin Inspector`.
 
@@ -68,7 +68,7 @@ https://github.com/vadimburym/DODBT.git?path=/source
 ```
 - **Stable version** `RECOMMENDED`:
 ```
-https://github.com/vadimburym/DODBT.git?path=/source#v0.1.0-early
+https://github.com/vadimburym/DODBT.git?path=/source#v0.2.0-early
 ```
 - **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
 
@@ -187,7 +187,7 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 
 > ⚠ **IMPORTANT!** As a respected AI Lead from a AAA project once said, decorators are basically crutches in the Behaviour Tree world and he tries to avoid them. I agree with this approach, and since this plugin was originally built for personal use, decorators are currently not implemented. Available nodes at the moment are: `Selector`, `Sequence`, `MemorySelector`, `MemorySequence`, `Parallel`. These are enough to build most BTs, but decorators may be added later if there is demand from the community.
 
-> ⚠ **IMPORTANT!** The maximum number of child nodes per composite is `127`, and the maximum number of nodes per Behaviour Tree is `65,535`. If you are sure your trees will contain ≤ `255` nodes, you can add `DODBT_SMALL_SIZE` to the Scripting Define Symbols to slightly optimize memory usage.
+> ⚠ **IMPORTANT!** The maximum number of child nodes per composite is `255`, and the maximum number of nodes per Behaviour Tree is `65,535`. If you are sure your trees will contain ≤ `255` nodes, you can add `DODBT_SMALL_SIZE` to the Scripting Define Symbols to slightly optimize memory usage.
 <img src="docs~/graph-editor-03.png" width="1050">
 
 - **Bottom panel**: The `Outputs` panel shows logs. It may include compilation errors, warnings about cyclic dependencies, or notifications about changes in composite child order.
