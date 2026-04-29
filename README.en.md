@@ -59,6 +59,7 @@ This version can still be used if you're comfortable running the Behaviour Tree 
 - [Debug Mode](#дебаг-режим)
 - [Example Project](#проект-для-примера)
 - [Public Classes and Methods](#публичные-классы-и-методы)
+- [Roadmap](#roadmap)
 
 ## Installation
 - **As a Unity module**: Window → Package Manager → Install package from git URL:
@@ -299,3 +300,18 @@ The `example-project` branch contains a project demonstrating how to use this pl
 | interface `ILeaf` |  | Marker interface used internally to detect all leaves |
 | interface `IBtDebugState` |  | Interface representing debug state. Implemented by BtState. Editor-only |
 | enum `NodeStatus` |  | Node execution status |
+
+## Roadmap
+
+- DOTS-compatible version:
+    - ~~Burst compatibility~~ ✅
+    - ~~BlobAsset compatibility~~ ✅
+    - ~~Jobs compatibility~~ ✅
+    - ~~Quality of Life extension~~ ✅
+    - Code generation
+    - Debug mode compatibility
+- Decorators
+- More examples
+- Documentation improvements
+- Polishing
+- Attempt to make the editor independent from Odin Inspector
