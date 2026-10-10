@@ -4,7 +4,6 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -175,12 +174,18 @@ internal sealed class BtGraphView : GraphView
         _edgeColorsDirty = true;
     }
     
+    internal void DisposeInspectors()
+    {
+        foreach (var view in _nodeViewsByGuid.Values) view.DisposeInspector();
+    }
+
     public void Bind(BtGraphAsset graphAsset)
     {
         _isBinding = true;
         try
         {
             GraphAsset = graphAsset;
+            DisposeInspectors();
             _nodeViewsByGuid.Clear();
             DeleteElements(graphElements.ToList());
             if (GraphAsset == null)
@@ -280,6 +285,7 @@ internal sealed class BtGraphView : GraphView
             return;
         }
 
+        Undo.RegisterCompleteObjectUndo(GraphAsset, "BT Add Node");
         string guid = System.Guid.NewGuid().ToString("N");
 
         var header = new BtNodeHeader
@@ -327,7 +333,7 @@ internal sealed class BtGraphView : GraphView
                 GraphAsset.MemorySelectorNodes.Add(new BtMemorySelectorNodeData { Guid = guid });
                 break;
             case BtNodeKind.Parallel:
-                GraphAsset.ParallelNodes.Add(new BtParallelNodeData { Guid = guid });
+                GraphAsset.ParallelNodes.Add(new BtParallelNodeData { Guid = guid, FailureThreshold = 1, SuccessThreshold = -1 });
                 break;
         }
     }
@@ -344,6 +350,7 @@ internal sealed class BtGraphView : GraphView
         if (IsReadOnly)
             return;
         
+        Undo.RegisterCompleteObjectUndo(GraphAsset, "BT Connect Nodes");
         if (edge.output?.node is not BtNodeView parentNodeView)
             return;
 
@@ -575,6 +582,7 @@ internal sealed class BtGraphView : GraphView
             return change;
         }
         
+        Undo.RegisterCompleteObjectUndo(GraphAsset, "BT Edit Graph");
         bool nodeWasDeleted = false;
         bool isAssetDirty = false;
         bool isAssetMovedDirty = false;
@@ -633,7 +641,10 @@ internal sealed class BtGraphView : GraphView
                 }
 
                 foreach (string guid in guidsToDelete)
+                {
+                    if (_nodeViewsByGuid.TryGetValue(guid, out var removed)) removed.DisposeInspector();
                     _nodeViewsByGuid.Remove(guid);
+                }
 
                 isAssetDirty = true;
             }
@@ -831,4 +842,3 @@ internal sealed class BtGraphView : GraphView
         UpdateViewTransform(position, Vector3.one);
     }
 }
-#endif

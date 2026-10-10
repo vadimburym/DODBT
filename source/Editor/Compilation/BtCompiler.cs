@@ -4,9 +4,7 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR 
 using System.Collections.Generic;
-using Sirenix.Serialization;
 using UnityEngine;
 using VadimBurym.DodBehaviourTree;
 
@@ -25,6 +23,9 @@ internal static class BtCompiler
     
     internal static string TryCompileAsset(BtGraphAsset asset, BehaviourTreeAsset compiled)
     {
+        if (compiled == null) return "No compiled asset provided.";
+        string validation = BtGraphValidation.Validate(asset);
+        if (!string.IsNullOrEmpty(validation)) return validation;
         var root = asset.FindHeader(asset.RootNode.ChildrenGuid);
         if (root == null) return "There is no entry point in the graph (Root node has no outputs).";
         ClearBuffers();
@@ -33,7 +34,12 @@ internal static class BtCompiler
         {
             var node = _nodesQueue.Dequeue();
             _guidsByCompiled.Add(node.Guid);
-            var error = CompileNode(node, asset);
+            string error;
+            try { error = CompileNode(node, asset); }
+            catch (System.Exception exception)
+            {
+                return "Cannot compile node '" + node.Title + "': " + exception.GetBaseException().Message;
+            }
             if (!string.IsNullOrEmpty(error)) return error;
         }
         compiled.SetupCompiledTree(
@@ -52,6 +58,10 @@ internal static class BtCompiler
             compiled.InternalGUID = UnityEditor.AssetDatabase.AssetPathToGUID(assetPath);
         }
         asset.GuidsByCompiledId = _guidsByCompiled.ToArray();
+        asset.SetupNewCompiledVersion();
+        UnityEditor.EditorUtility.SetDirty(compiled);
+        UnityEditor.EditorUtility.SetDirty(asset);
+        if (UnityEditor.EditorUtility.IsPersistent(compiled)) UnityEditor.AssetDatabase.SaveAssets();
         return string.Empty;
     }
 
@@ -122,8 +132,7 @@ internal static class BtCompiler
                     Id = NodeId.Leaf,
                     DataIndex = Convert(_leafs.Count) });
                 if (leafData.Leaf == null) return "One of your Leafs does not have an ILeaf implementation.";
-                byte[] bytes = SerializationUtility.SerializeValue(leafData.Leaf, DataFormat.Binary);
-                var leaf = SerializationUtility.DeserializeValue<ILeaf>(bytes, DataFormat.Binary);
+                var leaf = BtLeafSnapshot.Clone(leafData.Leaf);
                 _leafs.Add(leaf);
                 return string.Empty;
             case BtNodeKind.Parallel:
@@ -165,4 +174,3 @@ internal static class BtCompiler
     private static ushort Convert(int value) => (ushort)value;
 #endif
 }
-#endif

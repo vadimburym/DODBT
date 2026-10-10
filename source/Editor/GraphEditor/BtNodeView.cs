@@ -4,7 +4,6 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR
 using System;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -13,9 +12,6 @@ using UnityEngine.UIElements;
 using VadimBurym.DodBehaviourTree;
 using Node = UnityEditor.Experimental.GraphView.Node;
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector.Editor;
-#endif
 
 internal sealed class BtNodeView : Node
 {
@@ -42,8 +38,8 @@ internal sealed class BtNodeView : Node
     private VisualElement _outputVisual;
     private VisualElement _inputVisual;
     
-    private IMGUIContainer _leafOdinContainer;
-    private PropertyTree _leafNodeTree;
+    private IMGUIContainer _leafContainer;
+    private BtNodeInspector _leafInspector;
     
     private bool _isReadOnly;
     private Color _currentDebugColor = new Color(0.10f, 0.70f, 1.00f, 1f);
@@ -199,6 +195,7 @@ internal sealed class BtNodeView : Node
     
     public void Bind(BtGraphAsset graphAsset, Action<string> onDataChanged, bool isReadOnly, Action onPortsColorChanged)
     {
+        DisposeInspector();
         _isReadOnly = isReadOnly;
         _graphAsset = graphAsset;
         _onDataChanged = onDataChanged;
@@ -261,7 +258,7 @@ internal sealed class BtNodeView : Node
         }
         if (Kind == BtNodeKind.Leaf)
         {
-            _leafOdinContainer?.MarkDirtyRepaint();
+            _leafContainer?.MarkDirtyRepaint();
         }
     }
 
@@ -391,10 +388,10 @@ internal sealed class BtNodeView : Node
         }
         if (Kind == BtNodeKind.Leaf)
         {
-            _leafOdinContainer = new IMGUIContainer(DrawLeafOdinInNode);
-            _leafOdinContainer.style.marginTop = 2;
-            _leafOdinContainer.SetEnabled(allowEdit);
-            extensionContainer.Add(_leafOdinContainer);
+            _leafContainer = new IMGUIContainer(DrawLeafInNode);
+            _leafContainer.style.marginTop = 2;
+            _leafContainer.SetEnabled(allowEdit);
+            extensionContainer.Add(_leafContainer);
             RefreshExpandedState();
             RefreshPorts();
             return;
@@ -411,67 +408,21 @@ internal sealed class BtNodeView : Node
         }
     }
     
-    private void EnsureLeafTree()
+    private void DrawLeafInNode()
     {
-        if (_leafNodeTree != null)
-            return;
-        if (_graphAsset == null)
-            return;
-        BtLeafNodeData leafData = _graphAsset.FindLeafData(Guid);
-        if (leafData == null)
-            return;
-        _leafNodeTree = PropertyTree.Create(leafData);
+        if (Kind != BtNodeKind.Leaf || _graphAsset == null) return;
+        _leafInspector ??= new BtNodeInspector(_graphAsset, Guid, Kind, typeChanged =>
+        {
+            if (typeChanged) TryAutoRenameLeafNodeTitle(_graphAsset);
+            _onDataChanged?.Invoke(Guid);
+        });
+        _leafInspector.Draw(_isReadOnly);
     }
 
-    private void DrawLeafOdinInNode()
+    internal void DisposeInspector()
     {
-        if (Kind != BtNodeKind.Leaf || _graphAsset == null)
-            return;
-
-        bool prevGuiEnabled = GUI.enabled;
-        if (_isReadOnly)
-            GUI.enabled = false;
-        
-        EnsureLeafTree();
-        if (_leafNodeTree == null)
-            return;
-        if (_isReadOnly)
-        {
-            _leafNodeTree.BeginDraw(false);
-            var leafProp = _leafNodeTree.RootProperty.Children["Leaf"];
-            leafProp?.Draw();
-            _leafNodeTree.EndDraw();
-            GUI.enabled = prevGuiEnabled;
-            return;
-        }
-        
-        Undo.RecordObject(_graphAsset, "BT Leaf Change");
-        
-        BtLeafNodeData leafData = _graphAsset.FindLeafData(Guid);
-        string typeBefore = leafData?.Leaf == null ? null : leafData.Leaf.GetType().FullName;
-
-        _leafNodeTree.BeginDraw(false);
-        var leafProperty = _leafNodeTree.RootProperty.Children["Leaf"];
-        leafProperty?.Draw();
-        _leafNodeTree.EndDraw();
-        
-        string typeAfter = leafData?.Leaf == null ? null : leafData.Leaf.GetType().FullName;
-        bool typeChanged = typeBefore != typeAfter;
-
-        if (GUI.changed || typeChanged)
-        {
-            EditorUtility.SetDirty(_graphAsset);
-            if (typeChanged && leafData?.Leaf != null)
-                TryAutoRenameLeafNodeTitle(_graphAsset);
-            _onDataChanged?.Invoke(Guid);
-        }
-
-        if (Event.current.type == EventType.Repaint)
-        {
-            RefreshExpandedState();
-            RefreshPorts();
-        }
-        GUI.enabled = prevGuiEnabled;
+        _leafInspector?.Dispose();
+        _leafInspector = null;
     }
 
     private void TryAutoRenameLeafNodeTitle(BtGraphAsset asset)
@@ -500,8 +451,7 @@ internal sealed class BtNodeView : Node
 
     private void DisposeNodeTrees()
     {
-        _leafNodeTree?.Dispose();
-        _leafNodeTree = null;
+        DisposeInspector();
     }
 
     private VisualElement CreatePortHost(bool isTop)
@@ -575,4 +525,3 @@ internal sealed class BtNodeView : Node
         return pill;
     }
 }
-#endif

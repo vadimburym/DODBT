@@ -8,16 +8,11 @@ using System;
 using UnityEngine;
 using VadimBurym.DodBehaviourTree;
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 [Serializable]
 internal sealed class BtLeafNodeData
 {
     public string Guid;
-#if ODIN_INSPECTOR
-    [HideLabel]
-#endif
+
     [SerializeReference] public ILeaf Leaf;
 }

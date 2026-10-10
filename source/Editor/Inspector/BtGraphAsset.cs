@@ -9,49 +9,28 @@ using UnityEditor;
 using UnityEngine;
 using VadimBurym.DodBehaviourTree;
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
-
-#if ODIN_INSPECTOR
-[HideMonoScript]
-#endif
 [Icon("Packages/com.vadimburym.dodbt/Editor/Icons/dodbt-icon.png")]
 internal sealed class BtGraphAsset : ScriptableObject
 {
     [HideInInspector] public BehaviourTreeAsset CompiledAsset;
     [HideInInspector] public string[] GuidsByCompiledId;
     
-#if ODIN_INSPECTOR
-    [ReadOnly] public string CreationDate;
-    [ReadOnly] public string LastModifiedDate;
-    [ReadOnly] public string CompiledVersion;
-    [ReadOnly] public int NodesCount;
-    [ReadOnly] public int LeafNodesCount;
-#else
     [HideInInspector] public string CreationDate;
     [HideInInspector] public string LastModifiedDate;
     [HideInInspector] public string CompiledVersion;
     [HideInInspector] public int NodesCount;
     [HideInInspector] public int LeafNodesCount;
-#endif
     
     [HideInInspector] public bool NotActualCompiledVersion;
     [HideInInspector] public BtRootNodeData RootNode;
     [HideInInspector] public List<BtNodeHeader> Nodes = new();
-    [HideInInspector] public List<BtLeafNodeData> LeafNodes = new();
+    public List<BtLeafNodeData> LeafNodes = new();
     [HideInInspector] public List<BtSequenceNodeData> SequenceNodes = new();
     [HideInInspector] public List<BtMemorySequenceNodeData> MemorySequenceNodes = new();
     [HideInInspector] public List<BtSelectorNodeData> SelectorNodes = new();
     [HideInInspector] public List<BtMemorySelectorNodeData> MemorySelectorNodes = new();
     [HideInInspector] public List<BtParallelNodeData> ParallelNodes = new();
 
-#if ODIN_INSPECTOR
-    [InfoBox(
-        "The compiled version is different from the current version of the graph. Open in Editor and compile the asset to the current version.",
-        InfoMessageType.Warning,
-        "NotActualCompiled")]
-    [Button("Open In Editor", ButtonSizes.Large)] //[GUIColor(0.45f, 0.55f, 0.95f)]
     internal void OpenAsset() => BtEditorWindow.OpenWithAsset(this);
     internal bool NotActualCompiled() => NotActualCompiledVersion;
     
@@ -161,7 +140,6 @@ internal sealed class BtGraphAsset : ScriptableObject
         EditorUtility.SetDirty(this);
         EditorUtility.SetDirty(CompiledAsset);
     }
-#endif
 }
 
 

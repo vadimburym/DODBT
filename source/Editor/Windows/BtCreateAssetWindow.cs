@@ -4,7 +4,6 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR
 using System;
 using System.Reflection;
 using UnityEditor;
@@ -213,4 +212,3 @@ internal sealed class BtCreateAssetWindow : EditorWindow
         return new Rect(0, 0, width, height);
     }
 }
-#endif

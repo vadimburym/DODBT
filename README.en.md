@@ -37,11 +37,9 @@ Works great with ECS architecture.
 ⭐ **Production-grade**  
 Tests coverage. Game designers can configure BTs without touching code.
 
-> ⚠ **IMPORTANT!** To access `EDITOR` and `DEBUG` tools you must install the `Odin Inspector` plugin. All other functionality (including builds) works without it, meaning only the game designer needs `Odin Inspector`.
+**DODBT 0.3.0**: graph editing, inspectors, compilation, and debugging use Unity APIs. Odin Inspector is not required.
 
-> ⚠ **IMPORTANT!** DODBT has been tested on `UNITY 6000.051f1` and `Odin Inspector 4.0`. Compatibility with earlier versions is not guaranteed.
-
-> ⚠ **IMPORTANT!** DODBT was originally built for internal use and is currently in early access. The plugin is already usable in production, but development, improvements, and bug fixing are ongoing.
+Validated with **Unity 6000.0.51f1**. See the [0.3.0 release notes](docs~/releases/v0.3.0.md) for test results, verified builds, and validation scope.
 
 > ⚠ **IMPORTANT!** A dedicated `DOTS` [version of this plugin](https://github.com/vadimburym/DOTS-Battle-Simulator-Prototype) with `BlobAsset` and `Burst` support is currently in development.
 This version can still be used if you're comfortable running the Behaviour Tree and states as a main-thread managed decision layer, ticking it once every N seconds.
@@ -52,13 +50,13 @@ This version can still be used if you're comfortable running the Behaviour Tree 
 
 ## 📑 Table of Contents
 
-- [Installation](#установка)
-- [Getting Started](#начало-работы)
-- [Graph Editor](#редактор-графов)
-- [Compilation and Build](#компиляция-и-сборка)
-- [Debug Mode](#дебаг-режим)
-- [Example Project](#проект-для-примера)
-- [Public Classes and Methods](#публичные-классы-и-методы)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Graph Editor](#graph-editor)
+- [Compilation and Build](#compilation-and-build)
+- [Debug Mode](#debug-mode)
+- [Example Project](#example-project)
+- [Public Classes and Methods](#public-classes-and-methods)
 - [Roadmap](#roadmap)
 
 ## Installation
@@ -69,9 +67,15 @@ https://github.com/vadimburym/DODBT.git?path=/source
 ```
 - **Stable version** `RECOMMENDED`:
 ```
-https://github.com/vadimburym/DODBT.git?path=/source#v0.2.0-early
+https://github.com/vadimburym/DODBT.git?path=/source#v0.3.0
 ```
 - **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
+
+### Upgrading to 0.3.0
+
+Update the package URL to the `v0.3.0` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
+
+See the [CHANGELOG](source/CHANGELOG.md) for release changes. Remove Odin from the consuming project only if no other plugins or game code depend on it.
 
 ## Getting Started
 
@@ -93,7 +97,7 @@ public struct LeoEcsLeafState
     public void Reset() => StateIndex = -1;
 }
 ```
-- **Create leaves**: terminal BT nodes that represent condition checks, actions, or states executed within an agent context and maintaining their own execution state. Implement them by inheriting from `ILeaf<context, state>` anywhere in the project — `Odin Inspector` will automatically detect them and make them available in the graph editor. Add the `[Serializable]` attribute and mark parameters you want to edit from the graph with `[SerializeField]`.
+- **Create leaves**: terminal BT nodes that represent condition checks, actions, or states executed within an agent context and maintaining their own execution state. Implement them by inheriting from `ILeaf<context, state>` anywhere in the project — the DODBT editor discovers serializable leaf classes in the project's runtime assemblies and lists them as `ClassName (Namespace)`. Add the `[Serializable]` attribute and mark parameters you want to edit from the graph with `[SerializeField]`.
 
 > ⚠ **IMPORTANT!** It is important to understand the order of execution when the current Running node changes: `OnEnter`, `OnTick` of the new Running node → `OnAbort` of the previous Running node.
 
@@ -174,8 +178,6 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
   <img src="docs~/graph-editor-00.png" width="700">
 </p>
 
-> ⚠ **IMPORTANT!** This module requires the `Odin Inspector` plugin.
-
 - **Open the graph editor**: Tools → VadimBurym → BT Editor.
 
 <img src="docs~/graph-editor-01.png" width="1050">
@@ -205,7 +207,7 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 ```c#
 var btAsset = //Reference to your BehaviourTreeAsset
 var runtimeBt = new BehaviourTree<LeoEcsContext, LeoEcsLeafState>();
-runtimeBt.Construct(asset);
+runtimeBt.Construct(btAsset);
 ```
 - **Inject dependencies into every leaf of each runtime BT**: Construct leaves using your DI container or ServiceLocator.
 
@@ -259,8 +261,6 @@ runtimeBt.Tick(btContext, btState);
   <img src="docs~/debug-00.png" width="1050">
 </p>
 
-> ⚠ **IMPORTANT!** This module requires the `Odin Inspector` plugin.
-
 - **Add debugging for your agent**: Add the `BtMonoDebug` component and link it to the specific BT asset and the agent's state reference.
 
 <p align="center">
@@ -277,7 +277,7 @@ _btMonoDebug.Construct(btAsset, btState);
 
 ## Example Project
 
-The `example-project` branch contains a project demonstrating how to use this plugin. The project is built with `LeoEcsLite`. You can run the gameplay scene to see Debug Mode in action, inspect the graph, and observe the full build and runtime integration process in a working example.
+The complete [DODBT 0.3.0 example project](https://github.com/vadimburym/DODBT/tree/feature/odin-removal) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
 
 ## Public Classes and Methods
 
@@ -314,4 +314,3 @@ The `example-project` branch contains a project demonstrating how to use this pl
 - More examples
 - Documentation improvements
 - Polishing
-- Attempt to make the editor independent from Odin Inspector
