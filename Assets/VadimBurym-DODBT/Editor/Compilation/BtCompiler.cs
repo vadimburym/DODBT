@@ -4,9 +4,7 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR 
 using System.Collections.Generic;
-using Sirenix.Serialization;
 using UnityEngine;
 using VadimBurym.DodBehaviourTree;
 
@@ -122,8 +120,7 @@ internal static class BtCompiler
                     Id = NodeId.Leaf,
                     DataIndex = Convert(_leafs.Count) });
                 if (leafData.Leaf == null) return "One of your Leafs does not have an ILeaf implementation.";
-                byte[] bytes = SerializationUtility.SerializeValue(leafData.Leaf, DataFormat.Binary);
-                var leaf = SerializationUtility.DeserializeValue<ILeaf>(bytes, DataFormat.Binary);
+                var leaf = BtLeafSnapshot.Clone(leafData.Leaf);
                 _leafs.Add(leaf);
                 return string.Empty;
             case BtNodeKind.Parallel:
@@ -165,4 +162,3 @@ internal static class BtCompiler
     private static ushort Convert(int value) => (ushort)value;
 #endif
 }
-#endif

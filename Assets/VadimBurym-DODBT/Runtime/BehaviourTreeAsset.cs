@@ -4,17 +4,12 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 using UnityEngine;
 
 namespace VadimBurym.DodBehaviourTree
 {
-#if ODIN_INSPECTOR
-    [HideMonoScript]
-#endif
+
     [Icon("Packages/com.vadimburym.dodbt/Editor/Icons/dodbt-icon.png")]
     public sealed class BehaviourTreeAsset : ScriptableObject
     {

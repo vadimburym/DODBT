@@ -4,7 +4,6 @@
 // Licensed under the Custom Game-Use and Redistribution License.
 // See LICENSE file in the project root for full license information.
 
-#if ODIN_INSPECTOR
 using System;
 using System.Globalization;
 using UnityEditor;
@@ -12,8 +11,6 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VadimBurym.DodBehaviourTree;
-using SerializationUtility = Sirenix.Serialization.SerializationUtility;
-using Sirenix.OdinInspector.Editor;
 
 internal sealed class BtEditorWindow : EditorWindow
 {
@@ -30,8 +27,8 @@ internal sealed class BtEditorWindow : EditorWindow
     private Label _childrenOrderTitleLabel;
     private Label _descriptionTitleLabel;
     private Label _descriptionTextLabel;
-    private IMGUIContainer _odinDetailsContainer;
-    private PropertyTree _selectedNodeTree;
+    private IMGUIContainer _detailsContainer;
+    private BtNodeInspector _selectedNodeTree;
     private string _selectedNodeTreeGuid;
     
     private ScrollView _outputScroll;
@@ -78,6 +75,8 @@ internal sealed class BtEditorWindow : EditorWindow
     
     private void Enable()
     {
+        _graphView?.DisposeInspectors();
+        DisposeDetailsTree();
         rootVisualElement.Clear();
         var root = new VisualElement();
         root.style.flexDirection = FlexDirection.Column;
@@ -138,7 +137,7 @@ internal sealed class BtEditorWindow : EditorWindow
             {
                 RefreshDetails(_selectedNodeView);
                 RebuildDetailsTreeIfNeeded(_selectedNodeView);
-                _odinDetailsContainer?.MarkDirtyRepaint();
+                _detailsContainer?.MarkDirtyRepaint();
             }
         };
         _graphAssetField.RegisterValueChangedCallback(eventData =>
@@ -159,6 +158,8 @@ internal sealed class BtEditorWindow : EditorWindow
 
     private void EnableReadOnly()
     {
+        _graphView?.DisposeInspectors();
+        DisposeDetailsTree();
         rootVisualElement.Clear();
         var root = new VisualElement();
         root.style.flexDirection = FlexDirection.Column;
@@ -174,6 +175,8 @@ internal sealed class BtEditorWindow : EditorWindow
     
     private void OnDisable()
     {
+        Undo.undoRedoPerformed -= OnUndoRedo;
+        _graphView?.DisposeInspectors();
         if (_graphView != null)
         {
             _graphView.GraphStructureChanged -= RefreshCounters;
@@ -181,6 +184,20 @@ internal sealed class BtEditorWindow : EditorWindow
             _graphView.GraphStructureChanged -= RefreshCounters;
         }
         DisposeDetailsTree();
+    }
+
+    private void OnEnable()
+    {
+        Undo.undoRedoPerformed -= OnUndoRedo;
+        Undo.undoRedoPerformed += OnUndoRedo;
+    }
+
+    private void OnUndoRedo()
+    {
+        if (_graphView == null) return;
+        if (!_isReadOnly) ClearDetails();
+        _graphView.ReloadWithoutLog();
+        Repaint();
     }
 
     public void LateDebugUpdate()
@@ -312,9 +329,9 @@ internal sealed class BtEditorWindow : EditorWindow
         nodeSettingsHeader.style.marginTop = 2;
         details.Add(nodeSettingsHeader);
         
-        _odinDetailsContainer = new IMGUIContainer(DrawDetailsOdin);
-        _odinDetailsContainer.style.marginTop = 2;
-        details.Add(_odinDetailsContainer);
+        _detailsContainer = new IMGUIContainer(DrawDetails);
+        _detailsContainer.style.marginTop = 2;
+        details.Add(_detailsContainer);
         
         var bigSpacer2 = new VisualElement();
         bigSpacer2.style.height = 22;
@@ -391,7 +408,7 @@ internal sealed class BtEditorWindow : EditorWindow
         _selectedNodeView = node;
         RefreshDetails(node);
         RebuildDetailsTreeIfNeeded(node);
-        _odinDetailsContainer?.MarkDirtyRepaint();
+        _detailsContainer?.MarkDirtyRepaint();
     }
 
     private void RefreshDetails(BtNodeView node)
@@ -500,7 +517,7 @@ internal sealed class BtEditorWindow : EditorWindow
         _childrenOrderLabel.text = "";
         _descriptionTextLabel.text = "";
         DisposeDetailsTree();
-        _odinDetailsContainer?.MarkDirtyRepaint();
+        _detailsContainer?.MarkDirtyRepaint();
     }
 
 
@@ -522,103 +539,19 @@ internal sealed class BtEditorWindow : EditorWindow
             return;
         DisposeDetailsTree();
         var asset = _graphView.GraphAsset;
-        if (node.Kind == BtNodeKind.Leaf)
+        _selectedNodeTree = new BtNodeInspector(asset, node.Guid, node.Kind, typeChanged =>
         {
-            var leafData = asset.FindLeafData(node.Guid);
-            if (leafData != null)
-            {
-                _selectedNodeTree = PropertyTree.Create(leafData);
-                _selectedNodeTreeGuid = node.Guid;
-            }
-        }
-        else if (node.Kind == BtNodeKind.MemorySequence)
-        {
-            var memoryData = asset.FindMemorySequenceData(node.Guid);
-            if (memoryData != null)
-            {
-                _selectedNodeTree = PropertyTree.Create(memoryData);
-                _selectedNodeTreeGuid = node.Guid;
-            }
-        }
-        else if (node.Kind == BtNodeKind.MemorySelector)
-        {
-            var memoryData = asset.FindMemorySelectorData(node.Guid);
-            if (memoryData != null)
-            {
-                _selectedNodeTree = PropertyTree.Create(memoryData);
-                _selectedNodeTreeGuid = node.Guid;
-            }
-        }
-        else if (node.Kind == BtNodeKind.Parallel)
-        {
-            var parallelData = asset.FindParallelData(node.Guid);
-            if (parallelData != null)
-            {
-                _selectedNodeTree = PropertyTree.Create(parallelData);
-                _selectedNodeTreeGuid = node.Guid;
-            }
-        }
+            if (typeChanged) TryAutoRenameLeafTitleFromAsset(asset, node.Guid);
+            _graphView.NotifyNodeDataChanged(node.Guid);
+        });
+        _selectedNodeTreeGuid = node.Guid;
     }
 
-    private void DrawDetailsOdin()
+    private void DrawDetails()
     {
-        var asset = _graphView.GraphAsset;
-        if (asset == null || _selectedNodeView == null)
-            return;
+        if (_graphView?.GraphAsset == null || _selectedNodeView == null) return;
         RebuildDetailsTreeIfNeeded(_selectedNodeView);
-        if (_selectedNodeTree == null)
-            return;
-        Undo.RecordObject(asset, "BT Node Settings Change");
-        _selectedNodeTree.BeginDraw(false);
-        BtLeafNodeData leafData = null;
-        string leafTypeBefore = null;
-        if (_selectedNodeView.Kind == BtNodeKind.Leaf)
-        {
-            leafData = asset.FindLeafData(_selectedNodeView.Guid);
-            leafTypeBefore = leafData?.Leaf == null ? null : leafData.Leaf.GetType().FullName;
-
-            var leafProperty = _selectedNodeTree.RootProperty.Children["Leaf"];
-            leafProperty?.Draw();
-        }
-        else if (_selectedNodeView.Kind == BtNodeKind.MemorySequence)
-        {
-            var resetOnFailureProperty = _selectedNodeTree.RootProperty.Children["ResetOnFailure"];
-            var resetOnAbortProperty = _selectedNodeTree.RootProperty.Children["ResetOnAbort"];
-            resetOnFailureProperty?.Draw();
-            resetOnAbortProperty?.Draw();
-        }
-        else if (_selectedNodeView.Kind == BtNodeKind.MemorySelector)
-        {
-            var pickRandomProperty = _selectedNodeTree.RootProperty.Children["PickRandom"];
-            var resetOnAbortProperty = _selectedNodeTree.RootProperty.Children["ResetOnAbort"];
-            pickRandomProperty?.Draw();
-            resetOnAbortProperty?.Draw();
-        }
-        else if (_selectedNodeView.Kind == BtNodeKind.Parallel)
-        {
-            var cacheChildProperty = _selectedNodeTree.RootProperty.Children["CacheChildStatus"];
-            var FailureThresholdProperty = _selectedNodeTree.RootProperty.Children["FailureThreshold"];
-            var SuccessThresholdProperty = _selectedNodeTree.RootProperty.Children["SuccessThreshold"];
-            cacheChildProperty?.Draw();
-            FailureThresholdProperty?.Draw();
-            SuccessThresholdProperty?.Draw();
-        }
-
-        _selectedNodeTree.EndDraw();
-        bool leafTypeChanged = false;
-        if (_selectedNodeView.Kind == BtNodeKind.Leaf)
-        {
-            string leafTypeAfter = leafData?.Leaf == null ? null : leafData.Leaf.GetType().FullName;
-            leafTypeChanged = leafTypeBefore != leafTypeAfter;
-        }
-        if (GUI.changed || leafTypeChanged)
-        {
-            asset.MarkModified();
-            //EditorUtility.SetDirty(asset);
-            if (leafTypeChanged && leafData?.Leaf != null)
-                TryAutoRenameLeafTitleFromAsset(asset, _selectedNodeView.Guid);
-            _graphView.NotifyNodeDataChanged(_selectedNodeView.Guid);
-        }
+        _selectedNodeTree?.Draw(_isReadOnly);
     }
 
     private static void TryAutoRenameLeafTitleFromAsset(BtGraphAsset asset, string guid)
@@ -733,9 +666,6 @@ internal sealed class BtEditorWindow : EditorWindow
                 string folderPath = BtEditorPaths.GetEditorAssetsFolderPath();
                 BtEditorPaths.EnsureFolderExists(folderPath);
                 
-                //var clone = SerializationUtility.DeserializeValue<BtGraphAsset>(
-                //    SerializationUtility.SerializeValue(sourceAsset, DataFormat.Binary),
-                //    DataFormat.Binary);
                 var clone = UnityEngine.Object.Instantiate(sourceAsset);
                 clone.name = newAssetName;
                 clone.CreationDate = System.DateTime.Now.ToString("G", CultureInfo.CurrentCulture);
@@ -746,9 +676,6 @@ internal sealed class BtEditorWindow : EditorWindow
                 
                 folderPath = BtEditorPaths.GetAssetsFolderPath();
                 BtEditorPaths.EnsureFolderExists(folderPath);
-                //var cloneCompiled = SerializationUtility.DeserializeValue<BehaviourTreeAsset>(
-                //    SerializationUtility.SerializeValue(sourceAsset, DataFormat.Binary),
-                //    DataFormat.Binary);
                 var cloneCompiled = UnityEngine.Object.Instantiate(sourceAsset.CompiledAsset);
                 cloneCompiled.name = newAssetName;
                 string newCompiledPath = AssetDatabase.GenerateUniqueAssetPath($"{folderPath}/{newAssetName}.asset");
@@ -924,40 +851,3 @@ public enum LogLevel
     Warning,
     Error
 }
-#else
-using UnityEditor;
-using UnityEngine;
-
-namespace VadimBurym.DodBehaviourTree
-{
-    internal sealed class BtEditorFallbackWindow : EditorWindow
-    {
-        [MenuItem("Tools/VadimBurym/Bt Editor")]
-        private static void Open()
-        {
-            var window = GetWindow<BtEditorFallbackWindow>("BT Editor");
-            window.minSize = new Vector2(400, 300);
-        }
-
-        private void OnGUI()
-        {
-            EditorGUILayout.Space(15);
-
-            EditorGUILayout.HelpBox(
-                "Odin Inspector is required for the full BehaviourTree editor experience.\n" +
-                "Please install Odin Inspector to enable this inspector." +
-                "If you have already installed Odin Inspector and this window did not disappear,\n" +
-                "make sure that 'ODIN_INSPECTOR' is present in:\n" +
-                "Project Settings → Player → Scripting Define Symbols.",
-                MessageType.Info);
-
-            EditorGUILayout.Space(10);
-
-            if (GUILayout.Button("Open Odin Inspector Page", GUILayout.Height(30)))
-            {
-                Application.OpenURL("https://odininspector.com/");
-            }
-        }
-    }
-}
-#endif

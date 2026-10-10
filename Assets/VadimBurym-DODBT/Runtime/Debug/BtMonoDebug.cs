@@ -7,25 +7,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 namespace VadimBurym.DodBehaviourTree
 {
-#if ODIN_INSPECTOR
-    [HideMonoScript]
-#endif
+
     public sealed class BtMonoDebug : MonoBehaviour
     {
-#if ODIN_INSPECTOR
-        [ShowInInspector, ReadOnly] 
-#endif
+
         internal BehaviourTreeAsset BehaviourTreeAsset;
 #if UNITY_EDITOR
-#if ODIN_INSPECTOR
-        [ShowInInspector, ReadOnly] 
-#endif
+
         public IReadOnlyList<string> RunningLeafs { get; private set; }
         internal NodeStatus[] DebugStatus;
         

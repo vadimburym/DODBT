@@ -3,9 +3,6 @@ using _ExampleProject.Code.Infrastructure.StaticData.Enemy;
 using UnityEngine;
 using Utils;
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 namespace _ExampleProject.Code.Features.Enemy.Behaviours
 {
@@ -14,15 +11,10 @@ namespace _ExampleProject.Code.Features.Enemy.Behaviours
         public PatrolPosition[] PatrolPositions => _patrolPositions;
         
         [SerializeField] private GameObject _markersRoot;
-#if ODIN_INSPECTOR
-        [ReadOnly]
-#endif
+        [HideInInspector]
         [SerializeField] private PatrolPosition[] _patrolPositions;
         private readonly List<int> _buffer = new();
-        
-#if ODIN_INSPECTOR
-        [Button("Collect Patrol Points", ButtonSizes.Large)]
-#endif
+
         public void Collect()
         {
             if (_markersRoot == null)

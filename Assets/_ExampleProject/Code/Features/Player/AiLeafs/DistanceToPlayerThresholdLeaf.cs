@@ -7,9 +7,6 @@ using UnityEngine;
 using Utils;
 using VadimBurym.DodBehaviourTree;
 
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 
 namespace _ExampleProject.Code.Features.Player.AiLeafs
 {
@@ -17,9 +14,7 @@ namespace _ExampleProject.Code.Features.Player.AiLeafs
     public sealed class DistanceToPlayerThresholdLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>, IConstruct
     {
         [SerializeField] private float _threshold;
-#if ODIN_INSPECTOR
-[HideLabel]
-#endif
+
         [SerializeReference] private IComparison _comparison;
         
         private EcsPool<PlayerVisibility> _playerVisibilityPool;

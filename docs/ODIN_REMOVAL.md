@@ -14,7 +14,7 @@ Unity: `6000.0.51f1`. The embedded DODBT C# sources match main at `81019bf`.
 ## Stages
 
 1. [x] Create the isolated branch and record the baseline and acceptance scope.
-2. [ ] Replace Odin inspectors, polymorphic editing, and compiler cloning with Unity-backed implementations; remove all source dependencies, including the example helpers.
+2. [x] Replace Odin inspectors, polymorphic editing, and compiler cloning with Unity-backed implementations; remove all source dependencies, including the example helpers.
 3. [ ] Add and run serialization/compiler/editor regression tests against both fixtures and the existing example tree; harden validation and editing lifecycle.
 4. [ ] Build and exercise the example without Odin, document verified targets and outstanding platform/UI checks.
 
@@ -36,3 +36,5 @@ Unity: `6000.0.51f1`. The embedded DODBT C# sources match main at `81019bf`.
 - No Odin plugin files are present in the tracked project.
 - Baseline: 39 runtime tests; no compiler/serialized-asset regression suite.
 - Validation results will be recorded as stages complete. Generated logs and builds remain under ignored Logs/ and Builds/.
+- Baseline run: Unity 6000.0.51f1, 39/39 EditMode tests passed.
+- Stage 2 run: editor compiles without Odin; 39/39 existing tests passed. New UI and serialized-asset paths still require stage 3 regression checks.

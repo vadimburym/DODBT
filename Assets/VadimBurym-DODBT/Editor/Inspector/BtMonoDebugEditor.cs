@@ -1,81 +1,31 @@
-// DODBT (Data Oriented Design Behaviour Tree for Unity)
-// Repository: https://github.com/vadimburym/DODBT
-// Copyright (c) 2026 vadimburym (Vadim Burym)
-// Licensed under the Custom Game-Use and Redistribution License.
-// See LICENSE file in the project root for full license information.
-
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities.Editor;
 using UnityEditor;
-using VadimBurym.DodBehaviourTree;
-
-[CustomEditor(typeof(BtMonoDebug))]
-internal sealed class BtMonoDebugEditor : OdinEditor
-{
-    private Editor compiledEditor;
-    private BtGraphAsset graphAsset;
-    
-    private void OpenDebugMode()
-    {
-        if (graphAsset == null)
-        {
-            return;
-        }
-        BtEditorWindow.OpenWithDebugMode(graphAsset, (BtMonoDebug)target);
-    }
-    
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-        var monoDebug = (BtMonoDebug)target;
-        var btAsset = monoDebug.BehaviourTreeAsset;
-        if (btAsset == null)
-            return;
-        var path = UnityEditor.AssetDatabase.GUIDToAssetPath(btAsset.GUID);
-        graphAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<BtGraphAsset>(path);
-    }
-    
-    public override void OnInspectorGUI()
-    {
-        if (graphAsset == null)
-        {
-            EditorGUILayout.HelpBox("Could not find data about the Graph. If you renamed the asset from outside the Editor window - find this graph in Editor and rename through rename-button. If you haven't used the Construct method in BtMonoDebug, use it.", MessageType.Warning);
-            return;
-        }
-
-        if (graphAsset.LastModifiedDate != graphAsset.CompiledVersion)
-        {
-            EditorGUILayout.HelpBox("The compiled version is different from the current version of the graph. Open in Editor and compile the asset to the current version.", MessageType.Warning);
-        }
-        
-        using (new EditorGUI.DisabledScope(graphAsset == null || graphAsset.LastModifiedDate != graphAsset.CompiledVersion))
-        {
-            if (SirenixEditorGUI.Button("Open In Debug-Mode", ButtonSizes.Large))
-            {
-                OpenDebugMode();
-            }
-        }
-        base.OnInspectorGUI();
-    }
-}
-#else
-using UnityEditor;
+using UnityEngine;
 using VadimBurym.DodBehaviourTree;
 
 [CustomEditor(typeof(BtMonoDebug))]
 internal sealed class BtMonoDebugEditor : Editor
 {
+    private bool _showRunning = true;
+    public override bool RequiresConstantRepaint() => EditorApplication.isPlaying;
+
     public override void OnInspectorGUI()
     {
-        EditorGUILayout.HelpBox(
-            "Odin Inspector is required for the full BehaviourTree editor experience.\n" +
-            "Please install Odin Inspector to enable this inspector." +
-            "If you have already installed Odin Inspector and this window did not disappear,\n" +
-            "make sure that 'ODIN_INSPECTOR' is present in:\n" +
-            "Project Settings → Player → Scripting Define Symbols.",
-            MessageType.Info);
+        var debug = (BtMonoDebug)target;
+        var asset = debug.BehaviourTreeAsset;
+        var graph = asset == null ? null : AssetDatabase.LoadAssetAtPath<BtGraphAsset>(AssetDatabase.GUIDToAssetPath(asset.GUID));
+        bool ready = graph != null && debug.DebugStatus != null && !graph.NotActualCompiledVersion;
+        if (graph == null)
+            EditorGUILayout.HelpBox("Construct BtMonoDebug with a compiled tree and agent state to inspect its source graph.", MessageType.Info);
+        else if (graph.NotActualCompiledVersion)
+            EditorGUILayout.HelpBox("The graph has changed. Compile it before starting Debug Mode.", MessageType.Warning);
+        using (new EditorGUI.DisabledScope(!ready))
+            if (GUILayout.Button("Open In Debug-Mode", GUILayout.Height(30))) BtEditorWindow.OpenWithDebugMode(graph, debug);
+        using (new EditorGUI.DisabledScope(true))
+        {
+            EditorGUILayout.ObjectField("Behaviour Tree Asset", asset, typeof(BehaviourTreeAsset), false);
+            _showRunning = EditorGUILayout.Foldout(_showRunning, "Running Leafs (" + (debug.RunningLeafs?.Count ?? 0) + ")", true);
+            if (_showRunning && debug.RunningLeafs != null)
+                for (int i = 0; i < debug.RunningLeafs.Count; i++) EditorGUILayout.TextField(debug.RunningLeafs[i]);
+        }
     }
 }
-#endif
