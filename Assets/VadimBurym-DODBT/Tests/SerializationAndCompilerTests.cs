@@ -262,6 +262,44 @@ namespace VadimBurym.DodBehaviourTree.Tests
             Assert.That(((SnapshotTestLeaf)tree.Leafs[0]).Ticks, Is.EqualTo(1));
 #endif
         }
+
+        [Test]
+        public void Inspector_LeafChildrenIncludePrivateSerializedFieldsAndRespectHiddenFields()
+        {
+            var graph = Graph();
+            using var serialized = new SerializedObject(graph);
+            var leaf = serialized.FindProperty("LeafNodes.Array.data[0].Leaf");
+            var children = new List<string>();
+            var cursor = leaf.Copy();
+            var end = cursor.GetEndProperty();
+            if (cursor.NextVisible(true))
+                do
+                {
+                    if (SerializedProperty.EqualContents(cursor, end)) break;
+                    children.Add(cursor.name);
+                } while (cursor.NextVisible(false));
+            Assert.That(children, Does.Contain("_privateNumber"));
+            Assert.That(children, Does.Contain("Value"));
+            Assert.That(children, Does.Not.Contain("HiddenNumber"));
+            Assert.That(children, Does.Not.Contain("RuntimeOnly"));
+        }
+
+        [Test]
+        public void Inspector_ExampleLeafExposesThresholdAndNestedComparison()
+        {
+            var graph = AssetDatabase.LoadAssetAtPath<BtGraphAsset>("Assets/_ExampleProject/Content/AI/BrainEnemy_01_Graph.asset");
+            int index = graph.LeafNodes.FindIndex(n => n.Leaf?.GetType().Name == "DistanceToPlayerThresholdLeaf");
+            Assert.That(index, Is.GreaterThanOrEqualTo(0));
+            using var serialized = new SerializedObject(graph);
+            var cursor = serialized.FindProperty($"LeafNodes.Array.data[{index}].Leaf");
+            var end = cursor.GetEndProperty();
+            Assert.That(cursor.NextVisible(true), Is.True);
+            Assert.That(SerializedProperty.EqualContents(cursor, end), Is.False);
+            Assert.That(cursor.name, Is.EqualTo("_threshold"));
+            Assert.That(cursor.NextVisible(false), Is.True);
+            Assert.That(cursor.name, Is.EqualTo("_comparison"));
+        }
+
     }
 
     public interface ISnapshotTestValue { }
@@ -276,6 +314,9 @@ namespace VadimBurym.DodBehaviourTree.Tests
     [Serializable]
     internal sealed class SnapshotTestLeaf : ILeaf<TestContext, TestLeafState>
     {
+        [SerializeField] private int _privateNumber = 11;
+        [HideInInspector] public int HiddenNumber;
+        public int PrivateNumber => _privateNumber;
         public int Number;
         public Texture2D Texture;
         [SerializeReference] public ISnapshotTestValue Value;

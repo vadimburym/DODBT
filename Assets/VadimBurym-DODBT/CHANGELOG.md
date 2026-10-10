@@ -2,6 +2,9 @@
 
 ## [Unreleased] - Odin removal experiment
 
+- Fixed missing serialized leaf fields in inline and Details inspectors.
+- Shortened type picker labels to class and assembly names.
+
 - Replaced the plugin's Odin editor integration with Unity inspectors, searchable managed-reference type selection, and inline/Details editing.
 - Replaced compiler binary serialization with native Unity leaf snapshots, preserving managed references and Unity asset references.
 - Added serialization/compiler regression tests and opt-in Windows/WebGL player verification.

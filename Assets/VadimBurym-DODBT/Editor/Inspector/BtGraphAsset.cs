@@ -24,7 +24,7 @@ internal sealed class BtGraphAsset : ScriptableObject
     [HideInInspector] public bool NotActualCompiledVersion;
     [HideInInspector] public BtRootNodeData RootNode;
     [HideInInspector] public List<BtNodeHeader> Nodes = new();
-    [HideInInspector] public List<BtLeafNodeData> LeafNodes = new();
+    public List<BtLeafNodeData> LeafNodes = new();
     [HideInInspector] public List<BtSequenceNodeData> SequenceNodes = new();
     [HideInInspector] public List<BtMemorySequenceNodeData> MemorySequenceNodes = new();
     [HideInInspector] public List<BtSelectorNodeData> SelectorNodes = new();

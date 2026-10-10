@@ -38,7 +38,9 @@ internal sealed class BtTypePicker : AdvancedDropdown
                 && assemblies.Contains(t.Assembly.GetName().Name)
                 && t.GetConstructor(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public |
                     System.Reflection.BindingFlags.NonPublic, null, Type.EmptyTypes, null) != null)
-            .Distinct().OrderBy(t => t.FullName, StringComparer.Ordinal).ToArray();
+            .Distinct().OrderBy(t => t.Name, StringComparer.Ordinal)
+            .ThenBy(t => t.Assembly.GetName().Name, StringComparer.Ordinal)
+            .ThenBy(t => t.FullName, StringComparer.Ordinal).ToArray();
         Cache[baseType] = types;
         return types;
     }
@@ -53,11 +55,13 @@ internal sealed class BtTypePicker : AdvancedDropdown
         foreach (var type in GetTypes(_baseType))
         {
             _types[id] = type;
-            root.AddChild(new AdvancedDropdownItem(type.FullName + " (" + type.Assembly.GetName().Name + ")") { id = id++ });
+            root.AddChild(new AdvancedDropdownItem(DisplayName(type)) { id = id++ });
         }
         return root;
     }
 
     protected override void ItemSelected(AdvancedDropdownItem item) =>
         _select(item.id == 0 ? null : _types[item.id]);
+
+    private static string DisplayName(Type type) => type.Name + " (" + type.Assembly.GetName().Name + ")";
 }
