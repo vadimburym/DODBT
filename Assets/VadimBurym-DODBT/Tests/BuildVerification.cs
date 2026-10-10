@@ -12,6 +12,10 @@ namespace VadimBurym.DodBehaviourTree.Tests
 {
     public static class BuildVerification
     {
+        [MenuItem("Tools/VadimBurym/Verification/Open temporary example graph", true)]
+        private static bool CanOpenTemporaryGraph() =>
+            AssetDatabase.LoadAssetAtPath<BtGraphAsset>("Assets/_ExampleProject/Content/AI/BrainEnemy_01_Graph.asset") != null;
+
         [MenuItem("Tools/VadimBurym/Verification/Open temporary example graph")]
         public static void OpenTemporaryGraph()
         {

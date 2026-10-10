@@ -7,7 +7,7 @@ Unity: `6000.0.51f1`. The embedded DODBT C# sources match main at `81019bf`.
 
 - Develop and validate in this complete Unity project.
 - Commit and push each completed stage to the work branch.
-- Keep the main branch and standalone package untouched. Porting a tested release is a separate iteration.
+- Develop the migration in this branch first. The separately authorized release iteration publishes the standalone package to main as version 0.3.0.
 - Only replace Odin usage belonging to `Assets/VadimBurym-DODBT`. Leave Odin-dependent code and inspectors elsewhere in the example project unchanged. Example assets may be used as regression fixtures.
 - Preserve script meta GUIDs, serialized field names, and existing graph/compiled assets.
 - Report unverified platforms and unresolved issues explicitly; passing editor compilation is not a player test.
@@ -18,7 +18,8 @@ Unity: `6000.0.51f1`. The embedded DODBT C# sources match main at `81019bf`.
 2. [x] Replace the plugin's Odin inspectors, polymorphic editing, and compiler cloning with Unity-backed implementations; remove Odin source dependencies inside the plugin only.
 3. [x] Add and run serialization/compiler/editor regression tests against both fixtures and the existing example tree; harden validation and editing lifecycle.
 4. [x] Build and exercise the example without Odin on installed Windows/WebGL targets; document verified targets and outstanding checks.
-5. [ ] Complete interactive visual acceptance of the replacement inspectors before declaring full parity or porting the package to main.
+5. [ ] Complete interactive visual acceptance of the replacement inspectors before declaring full visual parity.
+6. [x] Prepare the separately authorized 0.3.0 package release for main, preserving the documented verification scope.
 
 ## Acceptance scope
 
@@ -68,10 +69,19 @@ The verification builder creates a temporary compiled tree using the new compile
 - EditMode tests can also be launched in an open editor from `Tools > VadimBurym > Verification > Run EditMode tests`; results are written to `Logs/EditorVerification.xml` without closing Unity.
 - Verification: 55/55 EditMode tests passed in a separate validation copy using the same Unity 6000.0.51f1 and package versions. The user's open editor and local graph/compiled asset changes were preserved. Native window capture still failed; visual acceptance of the updated controls remains pending.
 
+## Release 0.3.0
+
+- Type picker labels use `ClassName (Namespace)`; assembly names are omitted.
+- Package version is 0.3.0. The standalone package contains only DODBT; unrelated example code and assets are not copied to main.
+- The test assembly is optional for UPM consumers. Three example integration tests explicitly skip when the example fixtures are not installed; the temporary example graph command is disabled in that case.
+- Release checks: 55/55 EditMode tests in the example validation copy, 55/55 with `DODBT_SMALL_SIZE`, and 52 passed / 3 example-only skipped in a clean package project. The package also imports and compiles without Test Framework installed.
+- Clean package Windows x64 / Mono / High stripping build: 0 errors, 0 warnings. Its verification player passed the serialization and runtime smoke checks with exit code 0.
+- Release notes, installation instructions, validation evidence, and remaining coverage are published with `v0.3.0` in the main branch.
+
 ## Remaining acceptance
 
 - Interactive Unity visual acceptance is pending. The editor launched with a temporary copy of the example graph, but the Windows capture helper failed twice (`FrameArrived timed out`, then `window capture timed out`). No successful screenshot or interaction evidence was obtained. Do not infer visual parity from the automated tests.
 - Use `Tools > VadimBurym > Verification > Open temporary example graph` for a nonpersistent test copy. Check inline and Details editors, searchable leaf and nested comparison pickers, collection add/remove/reorder, long labels, field editing/Undo/Redo, compiling, debug-mode read-only behavior and live status, then domain reload with the editor open. This test copy is not a saved project asset.
 - Android, iOS, consoles, macOS and Linux players were not built or run; their SDKs/host environments were not available in this validation. Windows IL2CPP was not tested; the AOT test above is WebGL IL2CPP.
 - Odin is absent from this clone. The plugin has no remaining Odin/Sirenix source dependency, but coexistence with an installed Odin package has not been run. Unrelated example-project Odin code remains identical to the base commit.
-- Main and the standalone package have not been changed. Keep this branch as an experiment until the remaining acceptance is complete.
+- The 0.3.0 release does not claim verification of the platforms or interactive scenarios listed above.
