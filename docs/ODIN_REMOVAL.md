@@ -64,7 +64,7 @@ The verification builder creates a temporary compiled tree using the new compile
 ## Inspector follow-up
 
 - Inspector field regression fixed: `HideInInspector` on the graph's `LeafNodes` container made `NextVisible` return no leaf children. The custom graph inspector already controls asset-level presentation, so the container no longer needs that attribute. Individual leaf fields marked `HideInInspector` remain hidden. Two regressions reproduced the empty child list before the fix and passed afterward, covering private `SerializeField`, nested `SerializeReference`, and the example leaf's threshold/comparison fields.
-- Type picker entries now show `ClassName (AssemblyName; Namespace)` and sort by class name. Types without a namespace display `global namespace`. Comments remain intact.
+- Type picker entries now show `ClassName (Namespace)` and sort by class name. Types without a namespace display `global namespace`. Comments remain intact.
 - EditMode tests can also be launched in an open editor from `Tools > VadimBurym > Verification > Run EditMode tests`; results are written to `Logs/EditorVerification.xml` without closing Unity.
 - Verification: 55/55 EditMode tests passed in a separate validation copy using the same Unity 6000.0.51f1 and package versions. The user's open editor and local graph/compiled asset changes were preserved. Native window capture still failed; visual acceptance of the updated controls remains pending.
 

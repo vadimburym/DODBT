@@ -64,5 +64,5 @@ internal sealed class BtTypePicker : AdvancedDropdown
         _select(item.id == 0 ? null : _types[item.id]);
 
     private static string DisplayName(Type type) =>
-        type.Name + " (" + type.Assembly.GetName().Name + "; " + (type.Namespace ?? "global namespace") + ")";
+        type.Name + " (" + (type.Namespace ?? "global namespace") + ")";
 }

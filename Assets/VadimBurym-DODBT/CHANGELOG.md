@@ -3,7 +3,7 @@
 ## [Unreleased] - Odin removal experiment
 
 - Fixed missing serialized leaf fields in inline and Details inspectors.
-- Type picker labels show the class name followed by assembly and namespace.
+- Type picker labels show the class name followed by its namespace.
 
 - Replaced the plugin's Odin editor integration with Unity inspectors, searchable managed-reference type selection, and inline/Details editing.
 - Replaced compiler binary serialization with native Unity leaf snapshots, preserving managed references and Unity asset references.
