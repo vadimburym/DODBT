@@ -238,6 +238,30 @@ namespace VadimBurym.DodBehaviourTree.Tests
             graph.ParallelNodes.Add(new BtParallelNodeData { Guid = "parallel", SuccessThreshold = threshold, FailureThreshold = 1, ChildrenGuids = new List<string> { "leaf" } });
             Assert.That(BtCompiler.TryCompileAsset(graph, graph.CompiledAsset), Does.Contain("thresholds"));
         }
+
+        [Test]
+        public void Compiler_HonorsConfiguredNodeIndexCapacity()
+        {
+            var graph = Graph();
+            string child = "leaf";
+            for (int i = 0; i < 255; i++)
+            {
+                string guid = "sequence-" + i;
+                graph.Nodes.Add(new BtNodeHeader { Guid = guid, Kind = BtNodeKind.Sequence });
+                graph.SequenceNodes.Add(new BtSequenceNodeData { Guid = guid, ChildrenGuids = new List<string> { child } });
+                child = guid;
+            }
+            graph.RootNode.ChildrenGuid = child;
+#if DODBT_SMALL_SIZE
+            Assert.That(BtCompiler.TryCompileAsset(graph, graph.CompiledAsset), Does.Contain("255 reachable nodes"));
+#else
+            Assert.That(BtCompiler.TryCompileAsset(graph, graph.CompiledAsset), Is.Empty);
+            Assert.That(graph.CompiledAsset.Nodes.Length, Is.EqualTo(256));
+            var tree = TestTreeFactory.CreateTree(graph.CompiledAsset);
+            tree.Tick(new TestContext(), TestTreeFactory.CreateInitializedState(tree));
+            Assert.That(((SnapshotTestLeaf)tree.Leafs[0]).Ticks, Is.EqualTo(1));
+#endif
+        }
     }
 
     public interface ISnapshotTestValue { }
