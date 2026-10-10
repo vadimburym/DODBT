@@ -23,6 +23,9 @@ internal static class BtCompiler
     
     internal static string TryCompileAsset(BtGraphAsset asset, BehaviourTreeAsset compiled)
     {
+        if (compiled == null) return "No compiled asset provided.";
+        string validation = BtGraphValidation.Validate(asset);
+        if (!string.IsNullOrEmpty(validation)) return validation;
         var root = asset.FindHeader(asset.RootNode.ChildrenGuid);
         if (root == null) return "There is no entry point in the graph (Root node has no outputs).";
         ClearBuffers();
@@ -31,7 +34,12 @@ internal static class BtCompiler
         {
             var node = _nodesQueue.Dequeue();
             _guidsByCompiled.Add(node.Guid);
-            var error = CompileNode(node, asset);
+            string error;
+            try { error = CompileNode(node, asset); }
+            catch (System.Exception exception)
+            {
+                return "Cannot compile node '" + node.Title + "': " + exception.GetBaseException().Message;
+            }
             if (!string.IsNullOrEmpty(error)) return error;
         }
         compiled.SetupCompiledTree(
@@ -50,6 +58,10 @@ internal static class BtCompiler
             compiled.InternalGUID = UnityEditor.AssetDatabase.AssetPathToGUID(assetPath);
         }
         asset.GuidsByCompiledId = _guidsByCompiled.ToArray();
+        asset.SetupNewCompiledVersion();
+        UnityEditor.EditorUtility.SetDirty(compiled);
+        UnityEditor.EditorUtility.SetDirty(asset);
+        if (UnityEditor.EditorUtility.IsPersistent(compiled)) UnityEditor.AssetDatabase.SaveAssets();
         return string.Empty;
     }
 

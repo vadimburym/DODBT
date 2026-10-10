@@ -21,11 +21,10 @@ internal sealed class BtMonoDebugEditor : Editor
         using (new EditorGUI.DisabledScope(!ready))
             if (GUILayout.Button("Open In Debug-Mode", GUILayout.Height(30))) BtEditorWindow.OpenWithDebugMode(graph, debug);
         using (new EditorGUI.DisabledScope(true))
-        {
             EditorGUILayout.ObjectField("Behaviour Tree Asset", asset, typeof(BehaviourTreeAsset), false);
-            _showRunning = EditorGUILayout.Foldout(_showRunning, "Running Leafs (" + (debug.RunningLeafs?.Count ?? 0) + ")", true);
-            if (_showRunning && debug.RunningLeafs != null)
+        _showRunning = EditorGUILayout.Foldout(_showRunning, "Running Leafs (" + (debug.RunningLeafs?.Count ?? 0) + ")", true);
+        if (_showRunning && debug.RunningLeafs != null)
+            using (new EditorGUI.DisabledScope(true))
                 for (int i = 0; i < debug.RunningLeafs.Count; i++) EditorGUILayout.TextField(debug.RunningLeafs[i]);
-        }
     }
 }

@@ -333,7 +333,7 @@ internal sealed class BtGraphView : GraphView
                 GraphAsset.MemorySelectorNodes.Add(new BtMemorySelectorNodeData { Guid = guid });
                 break;
             case BtNodeKind.Parallel:
-                GraphAsset.ParallelNodes.Add(new BtParallelNodeData { Guid = guid });
+                GraphAsset.ParallelNodes.Add(new BtParallelNodeData { Guid = guid, FailureThreshold = 1, SuccessThreshold = -1 });
                 break;
         }
     }

@@ -34,8 +34,9 @@ internal sealed class BtEditorWindow : EditorWindow
     private ScrollView _outputScroll;
     private Label _outputLabel;
     
-    private bool _isReadOnly;
-    private BtMonoDebug _monoDebug;
+    [SerializeField] private bool _isReadOnly;
+    [SerializeField] private BtMonoDebug _monoDebug;
+    [SerializeField] private BtGraphAsset _currentAsset;
 
     [MenuItem("Tools/VadimBurym/BT Editor")]
     public static void Open()
@@ -143,6 +144,7 @@ internal sealed class BtEditorWindow : EditorWindow
         _graphAssetField.RegisterValueChangedCallback(eventData =>
         {
             var asset = eventData.newValue as BtGraphAsset;
+            _currentAsset = asset;
             _graphView.Bind(asset);
             ClearDetails();
             RefreshCounters();
@@ -190,6 +192,13 @@ internal sealed class BtEditorWindow : EditorWindow
     {
         Undo.undoRedoPerformed -= OnUndoRedo;
         Undo.undoRedoPerformed += OnUndoRedo;
+    }
+
+    public void CreateGUI()
+    {
+        if (_isReadOnly) EnableReadOnly();
+        else Enable();
+        if (_currentAsset != null) SetCurrentGraphAsset(_currentAsset);
     }
 
     private void OnUndoRedo()
@@ -784,6 +793,7 @@ internal sealed class BtEditorWindow : EditorWindow
     
     internal void SetCurrentGraphAsset(BtGraphAsset asset)
     {
+        _currentAsset = asset;
         if (_isReadOnly)
         {
             _graphView.Bind(asset);
@@ -833,7 +843,6 @@ internal sealed class BtEditorWindow : EditorWindow
         }
         Log($"Compilation {graphAsset.name} was successful!", LogLevel.Info, true);
         PingCompiledAsset(graphAsset.CompiledAsset);
-        graphAsset.SetupNewCompiledVersion();
     }
     
     private void PingCompiledAsset(BehaviourTreeAsset compiledAsset)

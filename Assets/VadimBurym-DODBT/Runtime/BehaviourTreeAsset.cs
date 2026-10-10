@@ -48,7 +48,6 @@ namespace VadimBurym.DodBehaviourTree
             Leafs = leafs;
             ChildBufferSize = childBufferSize;
             UnityEditor.EditorUtility.SetDirty(this);
-            UnityEditor.AssetDatabase.SaveAssets();
         }
 #endif
     }
