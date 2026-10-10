@@ -63,5 +63,6 @@ internal sealed class BtTypePicker : AdvancedDropdown
     protected override void ItemSelected(AdvancedDropdownItem item) =>
         _select(item.id == 0 ? null : _types[item.id]);
 
-    private static string DisplayName(Type type) => type.Name + " (" + type.Assembly.GetName().Name + ")";
+    private static string DisplayName(Type type) =>
+        type.Name + " (" + type.Assembly.GetName().Name + "; " + (type.Namespace ?? "global namespace") + ")";
 }
