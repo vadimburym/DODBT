@@ -1,6 +1,6 @@
 # Odin removal in the example project
 
-Work branch: `feature/odin-removal`, based on `example-project` at `56808ed`.
+Work branch: `example-project`. The migration history is retained from its original baseline at `56808ed`.
 Unity: `6000.0.51f1`. The embedded DODBT C# sources match main at `81019bf`.
 
 ## Working agreement
