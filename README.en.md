@@ -277,7 +277,7 @@ _btMonoDebug.Construct(btAsset, btState);
 
 ## Example Project
 
-The complete [DODBT 0.3.0 example project](https://github.com/vadimburym/DODBT/tree/feature/odin-removal) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
+The complete [DODBT 0.3.0 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
 
 ## Public Classes and Methods
 

@@ -270,7 +270,7 @@ _btMonoDebug.Construct(btAsset, btState);
 
 ## Проект для примера
 
-Полный [пример с DODBT 0.3.0](https://github.com/vadimburym/DODBT/tree/feature/odin-removal) основан на `LeoEcsLite`. Запустите игровую сцену, чтобы посмотреть Debug Mode, редактор графов, компиляцию и интеграцию дерева в runtime. Сторонние инструменты самого примера не входят в пакет DODBT.
+Полный [пример с DODBT 0.3.0](https://github.com/vadimburym/DODBT/tree/example-project) основан на `LeoEcsLite`. Запустите игровую сцену, чтобы посмотреть Debug Mode, редактор графов, компиляцию и интеграцию дерева в runtime. Сторонние инструменты самого примера не входят в пакет DODBT.
 
 ## Публичные классы и методы
 
