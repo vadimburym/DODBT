@@ -30,6 +30,10 @@ internal sealed class BtGraphAsset : ScriptableObject
     [HideInInspector] public List<BtSelectorNodeData> SelectorNodes = new();
     [HideInInspector] public List<BtMemorySelectorNodeData> MemorySelectorNodes = new();
     [HideInInspector] public List<BtParallelNodeData> ParallelNodes = new();
+    [HideInInspector] public List<BtDecoratorNodeData> DecoratorNodes = new();
+    [HideInInspector] public List<BtLinkedGroup> LinkedGroups = new();
+
+    internal BtDecoratorNodeData FindDecoratorData(string guid) => DecoratorNodes.Find(data => data.Guid == guid);
 
     internal void OpenAsset() => BtEditorWindow.OpenWithAsset(this);
     internal bool NotActualCompiled() => NotActualCompiledVersion;
@@ -97,6 +101,7 @@ internal sealed class BtGraphAsset : ScriptableObject
         SelectorNodes.RemoveAll(x => x.Guid == guid);
         MemorySelectorNodes.RemoveAll(x => x.Guid == guid);
         ParallelNodes.RemoveAll(x => x.Guid == guid);
+        DecoratorNodes.RemoveAll(x => x.Guid == guid);
         ReloadNodeCounts();
     }
 
@@ -104,6 +109,10 @@ internal sealed class BtGraphAsset : ScriptableObject
     {
         switch (kind)
         {
+            case BtNodeKind.Timeout:
+            case BtNodeKind.Cooldown:
+            case BtNodeKind.Inverter:
+                return FindDecoratorData(parentGuid)?.ChildrenGuids;
             case BtNodeKind.Sequence:
                 return FindSequenceData(parentGuid)?.ChildrenGuids;
             case BtNodeKind.MemorySequence:
@@ -130,7 +139,7 @@ internal sealed class BtGraphAsset : ScriptableObject
         CompiledVersion = LastModifiedDate;
         NotActualCompiledVersion = false;
         EditorUtility.SetDirty(this);
-        EditorUtility.SetDirty(CompiledAsset);
+        if (CompiledAsset != null) EditorUtility.SetDirty(CompiledAsset);
     }
     
     internal void MarkModified()
@@ -138,7 +147,7 @@ internal sealed class BtGraphAsset : ScriptableObject
         LastModifiedDate = System.DateTime.Now.ToString("G", System.Globalization.CultureInfo.CurrentCulture);
         NotActualCompiledVersion = true;
         EditorUtility.SetDirty(this);
-        EditorUtility.SetDirty(CompiledAsset);
+        if (CompiledAsset != null) EditorUtility.SetDirty(CompiledAsset);
     }
 }
 

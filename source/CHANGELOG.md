@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.4.0] - 2026-10-12
+
+### Added
+- Editor-only linked branch groups with Create Linked Group, Duplicate Group, and Unlink Group commands. Edits in any instance synchronize serialized node settings, leaf types and fields, structure, and relative layout while retaining independent managed data.
+- Group root icons, yellow highlighting of related nodes and internal edges, and a Groups tab with editable names and instance counts. Groups cannot overlap or nest; invalid connections report warnings in the graph editor's own console.
+- Group-aware deletion, disconnection, clipboard handling, and Undo/Redo. Group metadata persists in graph assets and is absent from compiled runtime assets.
+- `TickWithStatus` returns the root result while retaining the existing `Tick` API.
+- Optional Timeout, Cooldown, and Inverter nodes behind `DODBT_DECORATORS`, with one-child graph ports, inline/Details settings, and compiler validation.
+- Explicit timestamp overloads for timed trees, independent per-agent deadlines, deterministic deadline boundaries, and abort propagation. Cooldown starts after child completion and retains an existing deadline across aborts.
+- Runtime compatibility checks and build checks for scene, Resources, and preloaded-asset dependencies. Disabling decorators preserves their serialized descriptions and rejects unsupported execution.
+- Graph search by title, node kind, leaf class, and namespace, with result highlighting and navigation in editing and Debug Mode.
+- Copy/paste and duplicate for individual nodes and selected blocks. Copies retain internal connections, relative positions, managed-reference data, and Unity asset references; use new GUIDs; and support Undo/Redo. External connections are excluded.
+
+### Changed
+- Dragging a linked-group root previews its members' positions continuously. The graph asset and Undo are updated when the drag finishes, without cloning leaf data on pointer movement. Escape cancels the move; losing mouse capture finishes it and stops native edge panning.
+- Type pickers distinguish node leaf implementations (white leaf icons) from nested managed-reference values (neutral object icons). The field's role determines the icon, including nested collection elements.
+- Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, and a namespace tooltip. Root Leaf fields are always visible below a subtle divider, with no parameter foldout. Nested managed references retain their own foldouts.
+
+### Fixed
+- Replacing connections on occupied single-capacity ports reports warnings in the graph editor's own console, naming the removed and new connections and the one-parent/one-child restriction. Rejected cycles and linked-group conflicts use the same internal console, without writing to the Unity Console. Free ports and unchanged connections do not warn.
+- Clipboard insertion rejects cycles, duplicate/shared children, inconsistent parents, invalid decorator child counts, and non-finite positions before changing the destination graph. Incomplete and disconnected valid selections remain supported.
+- The edge drop handler ignores read-only graphs and incomplete endpoints before changing displayed connections.
+- Ordinary connections keep a stable width and color when the pointer passes over nodes or edges. Linked-group highlighting survives GraphView hit testing, layout updates, and selection changes.
+- Multi-selection deletion and disconnection across linked group instances now combine all changes before synchronization, preventing deleted nodes or connections from returning. Undo/Redo restores the entire operation together.
+- Deleting nodes schedules one graph rebuild and preserves the selection of surviving nodes.
+- The focused leaf selector now opens with Space as well as Enter and the down arrow.
+- Replacing a connection on a single-capacity port updates both graph data and displayed edges.
+- Editing a graph without a compiled asset no longer tries to mark a null object dirty.
+- Build compatibility inspection only loads behavior-tree asset paths, avoiding unrelated scene and assembly importers during player builds.
+- Changing a decorator in Details refreshes its inline node inspector.
+
+### Verification
+- Unity 6000.0.51f1: 150/150 EditMode tests with decorators enabled and 123/123 without them, each with default indices and `DODBT_SMALL_SIZE`; zero failures or skips.
+- Coverage includes runtime traversal, timers and aborts, serialization, compiler limits, independent agents, steady-state allocations, linked-group synchronization, native drag events, Undo/Redo, search, clipboard validation, and warnings delivered only to the graph console.
+- Windows x64 / Mono / High stripping and WebGL / IL2CPP / High stripping: successful builds with zero errors and two URP shader warnings each. The Windows verification player passed serialization, runtime, and decorator smoke checks with exit code 0. Its existing ComputeBuffer disposal warning remains at shutdown. WebGL browser execution and additional player platforms have not been verified.
+- The standalone package imports without Odin Inspector or Unity Test Framework installed. Editor interaction tests require a graphics device and are explicitly skipped with `-nographics`.
+- The example AI system supplies `Time.timeAsDouble` when decorators are enabled, so timers follow scaled game time.
+
 ## [0.3.1] - 2026-10-12
 
 ### Changed

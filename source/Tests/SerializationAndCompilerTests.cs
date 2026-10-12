@@ -302,6 +302,32 @@ namespace VadimBurym.DodBehaviourTree.Tests
             Assert.That(cursor.name, Is.EqualTo("_comparison"));
         }
 
+        [Test]
+        public void Inspector_LeafExpansionRequiresVisibleSerializedFields()
+        {
+            var graph = Graph();
+            using var serialized = new SerializedObject(graph);
+            var leaf = serialized.FindProperty("LeafNodes.Array.data[0].Leaf");
+            Assert.That(BtSerializedFields.HasVisibleFields(leaf), Is.True);
+            leaf.managedReferenceValue = new EmptyInspectorLeaf();
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            Assert.That(BtSerializedFields.HasVisibleFields(leaf), Is.False);
+            leaf.managedReferenceValue = null;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            Assert.That(BtSerializedFields.HasVisibleFields(leaf), Is.False);
+        }
+
+        [Serializable]
+        private sealed class EmptyInspectorLeaf : ILeaf<TestContext, TestLeafState>
+        {
+            [HideInInspector] public int Hidden;
+            [NonSerialized] public int RuntimeOnly;
+            public void OnEnter(TestContext context, ref TestLeafState state) { }
+            public NodeStatus OnTick(TestContext context, ref TestLeafState state) => NodeStatus.Success;
+            public void OnExit(TestContext context, ref TestLeafState state, NodeStatus status) { }
+            public void OnAbort(TestContext context, ref TestLeafState state) { }
+        }
+
     }
 
     public interface ISnapshotTestValue { }

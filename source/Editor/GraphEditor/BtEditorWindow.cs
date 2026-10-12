@@ -28,6 +28,8 @@ internal sealed class BtEditorWindow : EditorWindow
     private Label _descriptionTitleLabel;
     private Label _descriptionTextLabel;
     private IMGUIContainer _detailsContainer;
+    private ScrollView _groupsPanel;
+    [SerializeField] private bool _showGroups;
     private BtNodeInspector _selectedNodeTree;
     private string _selectedNodeTreeGuid;
     
@@ -37,6 +39,7 @@ internal sealed class BtEditorWindow : EditorWindow
     [SerializeField] private bool _isReadOnly;
     [SerializeField] private BtMonoDebug _monoDebug;
     [SerializeField] private BtGraphAsset _currentAsset;
+    [SerializeField] private string _searchText = "";
 
     [MenuItem("Tools/VadimBurym/BT Editor")]
     public static void Open()
@@ -95,8 +98,6 @@ internal sealed class BtEditorWindow : EditorWindow
         toolbar.Add(buttonCopy);
         toolbar.Add(buttonRename);
         toolbar.Add(new ToolbarSpacer());
-        //var searchField = new ToolbarSearchField();
-        //toolbar.Add(searchField);
         _graphAssetField = new ObjectField("Graph Asset") {
             objectType = typeof(BtGraphAsset),
             allowSceneObjects = false };
@@ -129,6 +130,7 @@ internal sealed class BtEditorWindow : EditorWindow
         root.Add(mainSplit);
 
         _graphView = new BtGraphView(false);
+        root.Insert(1, BuildSearchToolbar());
         _graphView.NodeSelected += OnNodeSelected;
         _graphView.LogRequested += Log;
         _graphView.GraphStructureChanged += RefreshCounters;
@@ -151,7 +153,7 @@ internal sealed class BtEditorWindow : EditorWindow
         });
         
         mainSplit.Add(_graphView);
-        mainSplit.Add(BuildDetailsPanel());
+        mainSplit.Add(BuildInspectorTabs());
         root.Add(BuildOutputPanel());
         Log("Editor started.");
         Log("To start choose or create new GraphAsset.");
@@ -171,10 +173,48 @@ internal sealed class BtEditorWindow : EditorWindow
             .Execute(LateDebugUpdate)
             .Every(16);
         _graphView = new BtGraphView(true);
+        root.Add(BuildSearchToolbar());
         _graphView.Add(BuildDebugModeBanner());
         root.Add(_graphView);
     }
     
+    private Toolbar BuildSearchToolbar()
+    {
+        var toolbar = new Toolbar();
+        var search = new ToolbarSearchField { value = _searchText, tooltip = "Search node names, leaf classes, namespaces, and node kinds" };
+        search.style.minWidth = 240;
+        search.style.flexGrow = 1;
+        var counter = new Label("0 / 0");
+        counter.style.minWidth = 58;
+        counter.style.unityTextAlign = TextAnchor.MiddleCenter;
+        _graphView.SearchResultsChanged += (current, total) => counter.text = current + " / " + total;
+        search.RegisterValueChangedCallback(evt =>
+        {
+            _searchText = evt.newValue;
+            _graphView.SetSearchQuery(_searchText);
+        });
+        search.RegisterCallback<KeyDownEvent>(evt =>
+        {
+            if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+            {
+                _graphView.NavigateSearch(evt.shiftKey ? -1 : 1);
+                evt.StopPropagation();
+                evt.PreventDefault();
+            }
+            else if (evt.keyCode == KeyCode.Escape)
+            {
+                search.value = "";
+                evt.StopPropagation();
+            }
+        }, TrickleDown.TrickleDown);
+        toolbar.Add(search);
+        toolbar.Add(counter);
+        toolbar.Add(new ToolbarButton(() => _graphView.NavigateSearch(-1)) { text = "Previous", tooltip = "Shift+Enter" });
+        toolbar.Add(new ToolbarButton(() => _graphView.NavigateSearch(1)) { text = "Next", tooltip = "Enter" });
+        _graphView.SetSearchQuery(_searchText);
+        return toolbar;
+    }
+
     private void OnDisable()
     {
         Undo.undoRedoPerformed -= OnUndoRedo;
@@ -292,6 +332,75 @@ internal sealed class BtEditorWindow : EditorWindow
         return overlay;
     }
     
+    private VisualElement BuildInspectorTabs()
+    {
+        var panel = new VisualElement();
+        panel.style.backgroundColor = new Color(.12f, .12f, .12f);
+        var tabs = new Toolbar();
+        var details = BuildDetailsPanel();
+        _groupsPanel = new ScrollView();
+        _groupsPanel.style.flexGrow = 1;
+        _groupsPanel.style.paddingLeft = _groupsPanel.style.paddingRight = 10;
+        var detailsTab = new ToolbarToggle { text = "Details" };
+        var groupsTab = new ToolbarToggle { text = "Groups" };
+        void SelectTab(bool groups)
+        {
+            _showGroups = groups;
+            details.style.display = groups ? DisplayStyle.None : DisplayStyle.Flex;
+            _groupsPanel.style.display = groups ? DisplayStyle.Flex : DisplayStyle.None;
+            detailsTab.SetValueWithoutNotify(!groups);
+            groupsTab.SetValueWithoutNotify(groups);
+        }
+        detailsTab.RegisterValueChangedCallback(_ => SelectTab(false));
+        groupsTab.RegisterValueChangedCallback(_ => SelectTab(true));
+        tabs.Add(detailsTab); tabs.Add(groupsTab);
+        panel.Add(tabs); panel.Add(details); panel.Add(_groupsPanel);
+        _graphView.GroupsChanged += RefreshGroupsPanel;
+        SelectTab(_showGroups);
+        RefreshGroupsPanel();
+        return panel;
+    }
+
+    private void RefreshGroupsPanel()
+    {
+        if (_groupsPanel == null) return;
+        _groupsPanel.Clear();
+        var graph = _graphView?.GraphAsset;
+        var hint = new Label("Linked groups share node settings, structure, and relative layout. Click a row to highlight all instances.");
+        hint.style.whiteSpace = WhiteSpace.Normal;
+        hint.style.marginTop = hint.style.marginBottom = 12;
+        _groupsPanel.Add(hint);
+        if (graph == null || graph.LinkedGroups.Count == 0)
+        {
+            _groupsPanel.Add(new Label("No linked groups. Right-click a branch root and choose Create Linked Group.") { style = { whiteSpace = WhiteSpace.Normal } });
+            return;
+        }
+        foreach (var family in graph.LinkedGroups)
+        {
+            var row = new VisualElement();
+            row.style.paddingTop = row.style.paddingBottom = 8;
+            row.style.borderBottomWidth = 1;
+            row.style.borderBottomColor = new Color(1, 1, 1, .12f);
+            var name = new TextField { value = family.Name, isDelayed = true, tooltip = "Group name (shared by all instances)" };
+            name.SetEnabled(!_isReadOnly);
+            name.RegisterValueChangedCallback(evt =>
+            {
+                Undo.RegisterCompleteObjectUndo(graph, "BT Rename Linked Group");
+                family.Name = string.IsNullOrWhiteSpace(evt.newValue) ? "Linked Group" : evt.newValue;
+                EditorUtility.SetDirty(graph);
+                _graphView.ReloadWithoutLog();
+            });
+            row.Add(name);
+            row.Add(new Button(() => _graphView.PingGroup(family.Id))
+            {
+                text = family.Instances.Count + " instances · " + Math.Max(0, family.Instances.Count - 1) + " duplicates",
+                tooltip = "Highlight all instances in yellow"
+            });
+            row.RegisterCallback<MouseDownEvent>(_ => _graphView.PingGroup(family.Id));
+            _groupsPanel.Add(row);
+        }
+    }
+
     private VisualElement BuildDetailsPanel()
     {
         var details = new VisualElement();
@@ -339,6 +448,8 @@ internal sealed class BtEditorWindow : EditorWindow
         details.Add(nodeSettingsHeader);
         
         _detailsContainer = new IMGUIContainer(DrawDetails);
+        _detailsContainer.RegisterCallback<MouseMoveEvent>(_ => _detailsContainer.MarkDirtyRepaint());
+        _detailsContainer.RegisterCallback<MouseLeaveEvent>(_ => _detailsContainer.MarkDirtyRepaint());
         _detailsContainer.style.marginTop = 2;
         details.Add(_detailsContainer);
         
@@ -440,6 +551,15 @@ internal sealed class BtEditorWindow : EditorWindow
         string description;
         switch (node.Kind)
         {
+            case BtNodeKind.Timeout:
+                description = "Runs one child with a time budget. At or after the deadline, aborts the active child and returns Failure before ticking it. External Abort resets the budget. Requires an explicit timestamp and DODBT_DECORATORS.";
+                break;
+            case BtNodeKind.Cooldown:
+                description = "Runs one child, then blocks new attempts after Success or Failure. Returns Failure while blocked. Abort stops the active child without starting a new cooldown; an existing cooldown is preserved. Requires an explicit timestamp and DODBT_DECORATORS.";
+                break;
+            case BtNodeKind.Inverter:
+                description = "Runs one child. Success becomes Failure; Failure becomes Success; Running is unchanged. Abort is forwarded to the active child. Requires DODBT_DECORATORS.";
+                break;
             case BtNodeKind.Root:
                 description =
                     "Root node of the Behaviour Tree.\nOnly one root is allowed. It defines the entry point of execution.";

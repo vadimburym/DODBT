@@ -71,6 +71,6 @@ GridBackground {
 }
 /*Линия соединения нод*/
 .bt-graph-view .edge {
-    --edge-width: 5;
+    --edge-width: 3;
     --selected-edge-color: rgb(255, 0, 0);
 }

@@ -11,6 +11,26 @@ namespace VadimBurym.DodBehaviourTree.Tests
 {
     public sealed class BehaviourTreeRuntimeTests
     {
+        [TestCase(NodeStatus.Success)]
+        [TestCase(NodeStatus.Failure)]
+        [TestCase(NodeStatus.Running)]
+        public void TickWithStatus_ReturnsCompositeResultWithoutTickingTwice(NodeStatus result)
+        {
+            var prefix = new RecordingLeaf("Prefix", NodeStatus.Success);
+            var action = new RecordingLeaf("Action", result);
+            var asset = TestTreeFactory.CreateSequenceAsset(prefix, action);
+            try
+            {
+                var tree = TestTreeFactory.CreateTree(asset);
+                var state = TestTreeFactory.CreateInitializedState(tree);
+                Assert.That(tree.TickWithStatus(new TestContext(), state), Is.EqualTo(result));
+                Assert.That(prefix.TickCount, Is.EqualTo(1));
+                Assert.That(action.TickCount, Is.EqualTo(1));
+                Assert.That(state.DebugStatus[0], Is.EqualTo(result));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(asset); }
+        }
+
         [Test]
         public void Construct_WhenLeafGenericTypeDoesNotMatch_ThrowsInvalidOperationException()
         {

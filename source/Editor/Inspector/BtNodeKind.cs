@@ -13,5 +13,13 @@ internal enum BtNodeKind
     Selector = 4,
     MemorySequence = 5,
     MemorySelector = 6,
-    Parallel = 7
+    Parallel = 7,
+    Timeout = 8,
+    Cooldown = 9,
+    Inverter = 10
+}
+
+internal static class BtNodeKinds
+{
+    internal static bool IsDecorator(BtNodeKind kind) => kind >= BtNodeKind.Timeout && kind <= BtNodeKind.Inverter;
 }

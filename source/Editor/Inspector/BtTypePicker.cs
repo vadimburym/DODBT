@@ -14,6 +14,8 @@ internal sealed class BtTypePicker : PopupWindowContent
     private readonly Type _baseType;
     private readonly Action<Type> _select;
     private readonly Type _currentType;
+    private readonly bool _leafSelection;
+    private static readonly Vector3[] ObjectOutline = new Vector3[7];
     private readonly List<Type> _visible = new();
     private readonly SearchField _searchField = new();
     private static readonly Dictionary<Type, Type[]> Cache = new();
@@ -24,13 +26,13 @@ internal sealed class BtTypePicker : PopupWindowContent
     private GUIStyle _nameStyle;
     private GUIStyle _namespaceStyle;
     private GUIStyle _hintStyle;
-    private readonly Vector3[] _leafShape = new Vector3[8];
 
-    internal BtTypePicker(Type baseType, Action<Type> select, Type currentType = null)
+    internal BtTypePicker(Type baseType, Action<Type> select, Type currentType = null, bool leafSelection = false)
     {
         _baseType = baseType;
         _select = select;
         _currentType = currentType;
+        _leafSelection = leafSelection;
         Filter();
         _selected = Math.Max(0, _visible.IndexOf(currentType));
     }
@@ -95,7 +97,7 @@ internal sealed class BtTypePicker : PopupWindowContent
         float listHeight = rect.height - HeaderHeight - FooterHeight;
         HandleKeys(evt, listHeight);
         EditorGUI.DrawRect(rect, EditorGUIUtility.isProSkin ? new Color(.16f, .16f, .16f) : new Color(.86f, .86f, .86f));
-        GUI.Label(new Rect(12, 7, rect.width - 90, 22), "Select " + (_baseType?.Name ?? "type"), EditorStyles.boldLabel);
+        GUI.Label(new Rect(12, 7, rect.width - 90, 22), "Select " + (_leafSelection ? "Leaf" : _baseType?.Name ?? "type"), EditorStyles.boldLabel);
         GUI.Label(new Rect(rect.width - 78, 8, 66, 20), _visible.Count + " results", _hintStyle);
         string query = _searchField.OnGUI(new Rect(12, 35, rect.width - 24, 20), _query);
         if (query != _query)
@@ -146,7 +148,7 @@ internal sealed class BtTypePicker : PopupWindowContent
             EditorGUI.DrawRect(row, EditorGUIUtility.isProSkin ? new Color(.23f, .31f, .40f) : new Color(.68f, .77f, .87f));
             EditorGUI.DrawRect(new Rect(row.x, row.y + 4, 2, row.height - 8), new Color(.40f, .68f, .95f));
         }
-        if (type != null) DrawLeaf(new Rect(row.x + 10, row.y + 5, 16, 16));
+        if (type != null) DrawTypeIcon(new Rect(row.x + 10, row.y + 5, 16, 16));
         else GUI.Label(new Rect(row.x + 11, row.y + 3, 16, 20), "—", _namespaceStyle);
         string name = type?.Name ?? "None";
         string tooltip = type?.FullName ?? "Clear the selected type";
@@ -164,25 +166,29 @@ internal sealed class BtTypePicker : PopupWindowContent
             GUI.Label(new Rect(row.xMax - 22, row.y + 4, 18, 20), new GUIContent("✓", "Current type"), _namespaceStyle);
     }
 
-    private void DrawLeaf(Rect rect)
+    private void DrawTypeIcon(Rect rect)
     {
         if (Event.current.type != EventType.Repaint) return;
-        var color = Handles.color;
-        if (!EditorGUIUtility.isProSkin) EditorGUI.DrawRect(rect, new Color(.38f, .42f, .45f));
-        _leafShape[0] = new Vector3(rect.x + 3, rect.y + 12);
-        _leafShape[1] = new Vector3(rect.x + 2, rect.y + 8);
-        _leafShape[2] = new Vector3(rect.x + 4, rect.y + 4);
-        _leafShape[3] = new Vector3(rect.x + 9, rect.y + 2);
-        _leafShape[4] = new Vector3(rect.x + 14, rect.y + 1);
-        _leafShape[5] = new Vector3(rect.x + 13, rect.y + 7);
-        _leafShape[6] = new Vector3(rect.x + 10, rect.y + 11);
-        _leafShape[7] = new Vector3(rect.x + 6, rect.y + 13);
-        Handles.color = Color.white;
-        Handles.DrawAAConvexPolygon(_leafShape);
-        Handles.DrawAAPolyLine(1.5f, new Vector3(rect.x + 1, rect.y + 15), new Vector3(rect.x + 6, rect.y + 10));
-        Handles.color = new Color(.35f, .39f, .42f);
-        Handles.DrawAAPolyLine(1, new Vector3(rect.x + 5, rect.y + 11), new Vector3(rect.x + 11, rect.y + 5));
-        Handles.color = color;
+        if (_leafSelection)
+        {
+            if (!EditorGUIUtility.isProSkin) EditorGUI.DrawRect(rect, new Color(.38f, .42f, .45f));
+            BtLeafSelector.DrawIcon(rect, Color.white);
+            return;
+        }
+        ObjectOutline[0] = new Vector3(rect.x + 8, rect.y + 1);
+        ObjectOutline[1] = new Vector3(rect.x + 14, rect.y + 4);
+        ObjectOutline[2] = new Vector3(rect.x + 14, rect.y + 11);
+        ObjectOutline[3] = new Vector3(rect.x + 8, rect.y + 15);
+        ObjectOutline[4] = new Vector3(rect.x + 2, rect.y + 11);
+        ObjectOutline[5] = new Vector3(rect.x + 2, rect.y + 4);
+        ObjectOutline[6] = ObjectOutline[0];
+        var center = new Vector3(rect.x + 8, rect.y + 8);
+        var saved = Handles.color;
+        Handles.color = EditorGUIUtility.isProSkin ? new Color(.73f, .77f, .80f) : new Color(.30f, .34f, .38f);
+        Handles.DrawAAPolyLine(1.5f, ObjectOutline);
+        Handles.DrawAAPolyLine(1.5f, ObjectOutline[5], center, ObjectOutline[1]);
+        Handles.DrawAAPolyLine(1.5f, center, ObjectOutline[3]);
+        Handles.color = saved;
     }
 
     private void HandleKeys(Event evt, float listHeight)

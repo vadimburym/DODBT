@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VadimBurym.DodBehaviourTree;
 
-internal sealed class BtGraphView : GraphView
+internal sealed partial class BtGraphView : GraphView
 {
     public BtGraphAsset GraphAsset { get; private set; }
     public event Action<BtNodeView> NodeSelected;
@@ -69,10 +69,11 @@ internal sealed class BtGraphView : GraphView
         minimap.style.overflow = Overflow.Hidden;
         Add(minimap);
 
+        ConfigureGroupDragging();
         this.AddManipulator(new ContentDragger());
         if (!isReadOnly)
         {
-            this.AddManipulator(new SelectionDragger());
+            this.AddManipulator(_selectionDragger);
             this.AddManipulator(new RectangleSelector());
             this.AddManipulator(new ContextualMenuManipulator(menuEvent =>
             {
@@ -84,10 +85,16 @@ internal sealed class BtGraphView : GraphView
                 menuEvent.menu.AppendAction("Add/Memory Sequence", _ => AddNode(BtNodeKind.MemorySequence, mousePosition));
                 menuEvent.menu.AppendAction("Add/Parallel", _ => AddNode(BtNodeKind.Parallel, mousePosition));
                 menuEvent.menu.AppendAction("Add/Leaf", _ => AddNode(BtNodeKind.Leaf, mousePosition));
+#if DODBT_DECORATORS
+                menuEvent.menu.AppendAction("Add/Decorators/Timeout", _ => AddNode(BtNodeKind.Timeout, mousePosition));
+                menuEvent.menu.AppendAction("Add/Decorators/Cooldown", _ => AddNode(BtNodeKind.Cooldown, mousePosition));
+                menuEvent.menu.AppendAction("Add/Decorators/Inverter", _ => AddNode(BtNodeKind.Inverter, mousePosition));
+#endif
             }));
         }
         
         graphViewChanged = OnGraphViewChanged;
+        ConfigureClipboard();
     }
     
     internal void SetDebugStatus(NodeStatus[] debugStatus)
@@ -124,8 +131,10 @@ internal sealed class BtGraphView : GraphView
             if (inPort == null || outPort == null)
                 continue;
             
-            ec.inputColor = inPort.portColor;
-            ec.outputColor = outPort.portColor;
+            if (edge is BtEdge btEdge)
+                btEdge.SetGroupHighlight(IsHighlightedGroupEdge(edge), GroupHighlight);
+            else
+                edge.UpdateEdgeControl();
             ec.MarkDirtyRepaint();
         }
         
@@ -167,6 +176,8 @@ internal sealed class BtGraphView : GraphView
     {
         var picked = selection?.OfType<BtNodeView>().FirstOrDefault();
         NodeSelected?.Invoke(picked);
+        _pinnedGroup = null;
+        RefreshGroupHighlights();
     }
 
     public void MarkEdgeColorsDirty()
@@ -176,6 +187,7 @@ internal sealed class BtGraphView : GraphView
     
     internal void DisposeInspectors()
     {
+        EndGroupDragPreview(restore: false);
         foreach (var view in _nodeViewsByGuid.Values) view.DisposeInspector();
     }
 
@@ -241,6 +253,8 @@ internal sealed class BtGraphView : GraphView
         finally
         {
             _isBinding = false;
+            RefreshSearch();
+            ConfigureGroupViews();
         }
     }
     
@@ -263,6 +277,7 @@ internal sealed class BtGraphView : GraphView
 
     public void NotifyNodeDataChanged(string guid)
     {
+        QueueGroupSynchronization(guid);
         if (GraphAsset != null)
         {
             GraphAsset.MarkModified();
@@ -275,10 +290,15 @@ internal sealed class BtGraphView : GraphView
         }
 
         NodeDataChanged?.Invoke(guid);
+        RefreshSearch();
     }
 
     public void AddNode(BtNodeKind kind, Vector2 graphPosition)
     {
+        if (IsReadOnly) return;
+#if !DODBT_DECORATORS
+        if (BtNodeKinds.IsDecorator(kind)) throw new InvalidOperationException("Enable DODBT_DECORATORS first.");
+#endif
         if (GraphAsset == null)
         {
             LogRequested?.Invoke($"GraphAsset is null. Open or create new!", LogLevel.Error, false);
@@ -310,13 +330,20 @@ internal sealed class BtGraphView : GraphView
 
         _nodeViewsByGuid[guid] = nodeView;
         nodeView.Bind(GraphAsset, NotifyNodeDataChanged, IsReadOnly, MarkEdgeColorsDirty);
+        ConfigureGroupView(guid, nodeView);
         GraphStructureChanged?.Invoke();
+        RefreshSearch();
     }
 
     private void AllocateTypedData(string guid, BtNodeKind kind)
     {
         switch (kind)
         {
+            case BtNodeKind.Timeout:
+            case BtNodeKind.Cooldown:
+            case BtNodeKind.Inverter:
+                GraphAsset.DecoratorNodes.Add(new BtDecoratorNodeData { Guid = guid });
+                break;
             case BtNodeKind.Leaf:
                 GraphAsset.LeafNodes.Add(new BtLeafNodeData { Guid = guid, Leaf = null });
                 break;
@@ -463,7 +490,7 @@ internal sealed class BtGraphView : GraphView
             int yCompare = left.Position.y.CompareTo(right.Position.y);
             if (yCompare != 0) return yCompare;
 
-            return string.CompareOrdinal(left.Guid, right.Guid);
+            return Array.IndexOf(before, left.Guid).CompareTo(Array.IndexOf(before, right.Guid));
         });
 
         bool changed = false;
@@ -520,7 +547,7 @@ internal sealed class BtGraphView : GraphView
             {
                 if (rootView.OutputPort != null && childView.InputPort != null)
                 {
-                    var edge = new Edge { output = rootView.OutputPort, input = childView.InputPort };
+                    var edge = new BtEdge { output = rootView.OutputPort, input = childView.InputPort };
                     edge.output.Connect(edge);
                     edge.input.Connect(edge);
                     AddElement(edge);
@@ -555,7 +582,7 @@ internal sealed class BtGraphView : GraphView
                 if (alreadyConnected)
                     continue;
 
-                var edge = new Edge
+                var edge = new BtEdge
                 {
                     output = parentView.OutputPort,
                     input = childView.InputPort
@@ -568,7 +595,7 @@ internal sealed class BtGraphView : GraphView
         }
     }
 
-    private GraphViewChange OnGraphViewChanged(GraphViewChange change)
+    private GraphViewChange OnGraphViewChangedCore(GraphViewChange change)
     {
         if (_isBinding)
             return change;
@@ -585,7 +612,6 @@ internal sealed class BtGraphView : GraphView
         Undo.RegisterCompleteObjectUndo(GraphAsset, "BT Edit Graph");
         bool nodeWasDeleted = false;
         bool isAssetDirty = false;
-        bool isAssetMovedDirty = false;
 
         if (change.elementsToRemove != null && GraphAsset.RootNode != null)
         {
@@ -653,8 +679,7 @@ internal sealed class BtGraphView : GraphView
         GraphStructureChanged?.Invoke();
         if (change.elementsToRemove != null)
         {
-            bool areNodesBeingDeleted = change.elementsToRemove.OfType<BtNodeView>().Any();
-            if (!areNodesBeingDeleted)
+            // Unrelated selected edges must also disconnect when nodes are deleted in the same operation.
             {
                 foreach (var element in change.elementsToRemove)
                 {
@@ -711,74 +736,11 @@ internal sealed class BtGraphView : GraphView
                 }
             }
         }
-        if (change.movedElements != null)
-        {
-            foreach (var element in change.movedElements)
-            {
-                if (element is not BtNodeView nodeView)
-                    continue;
-                
-                if (nodeView.Kind == BtNodeKind.Root)
-                {
-                    GraphAsset.RootNode.Position = nodeView.GetPosition().position;
-                    isAssetMovedDirty = true;
-                    continue;
-                }
-                
-                int headerIndex = GraphAsset.FindHeaderIndex(nodeView.Guid);
-                if (headerIndex < 0)
-                    continue;
-
-                BtNodeHeader header = GraphAsset.Nodes[headerIndex];
-
-                float oldX = header.Position.x;
-                Vector2 newPosition = nodeView.GetPosition().position;
-
-                if (header.Position != newPosition)
-                {
-                    header.Position = newPosition;
-                    GraphAsset.Nodes[headerIndex] = header;
-                    isAssetMovedDirty = true;
-                }
-
-                if (!Mathf.Approximately(oldX, newPosition.x) && !string.IsNullOrEmpty(header.ParentGuid))
-                {
-                    int parentIndex = GraphAsset.FindHeaderIndex(header.ParentGuid);
-                    if (parentIndex >= 0)
-                    {
-                        BtNodeHeader parentHeader = GraphAsset.Nodes[parentIndex];
-                        if (IsComposite(parentHeader.Kind))
-                        {
-                            List<string> children = GraphAsset.GetChildrenList(parentHeader.Guid, parentHeader.Kind);
-                            if (children != null)
-                            {
-                                bool orderChanged = SortChildrenByXAndLogIfChanged(parentHeader, children);
-                                if (orderChanged)
-                                {
-                                    isAssetDirty = true;
-                                    NotifyNodeDataChanged(parentHeader.Guid);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (isAssetMovedDirty && !isAssetDirty)
-            EditorUtility.SetDirty(GraphAsset);
-        
         if (isAssetDirty)
             GraphAsset.MarkModified();
             //EditorUtility.SetDirty(GraphAsset);
 
-        if (nodeWasDeleted)
-        {
-            schedule.Execute(() =>
-            {
-                ReloadWithoutLog();
-            });
-        }
+        if (nodeWasDeleted) ScheduleGroupReload();
         
         return change;
     }
@@ -794,10 +756,7 @@ internal sealed class BtGraphView : GraphView
         var hasPath = HasPath(childGuid, parentGuid, _visited);
         if (hasPath)
         {
-            LogRequested?.Invoke(
-                $"Connection blocked: would create cyclic dependency ({parentNode.title} → {childNode.title})",
-                LogLevel.Warning,
-                false);
+            WarnGraph($"Connection blocked: would create cyclic dependency ({parentNode.title} → {childNode.title})");
         }
         return hasPath;
     }

@@ -22,6 +22,14 @@ internal sealed class BtNodeView : Node
     public string Guid { get; }
     public string Title;
     public BtNodeKind Kind { get; }
+    internal event Action<BtNodeView, Vector2> PositionChanged;
+
+    public override void SetPosition(Rect newPos)
+    {
+        Vector2 previous = GetPosition().position;
+        base.SetPosition(newPos);
+        if (previous != newPos.position) PositionChanged?.Invoke(this, newPos.position);
+    }
 
     public Port InputPort { get; private set; }
     public Port OutputPort { get; private set; }
@@ -42,6 +50,8 @@ internal sealed class BtNodeView : Node
     private BtNodeInspector _leafInspector;
     
     private bool _isReadOnly;
+    private VisualElement _groupOutline;
+    private VisualElement _groupIcon;
     private Color _currentDebugColor = new Color(0.10f, 0.70f, 1.00f, 1f);
     
     internal BtNodeView(string guid, BtNodeKind kind, string title, IEdgeConnectorListener edgeConnectorListener)
@@ -110,7 +120,7 @@ internal sealed class BtNodeView : Node
         if (kind != BtNodeKind.Leaf)
         {
             OutputPort = CreateHiddenPort(Direction.Output,
-                kind == BtNodeKind.Root ? Port.Capacity.Single : Port.Capacity.Multi,
+                kind == BtNodeKind.Root || BtNodeKinds.IsDecorator(kind) ? Port.Capacity.Single : Port.Capacity.Multi,
                 edgeConnectorListener, false);
             _outputVisual = CreatePortVisual(isInput: false);
             OutputPort.RegisterCallback<MouseEnterEvent>(_ => _outputVisual.AddToClassList("is-hover"));
@@ -135,6 +145,57 @@ internal sealed class BtNodeView : Node
         RefreshPorts();
         RefreshExpandedState();
         RegisterCallback<DetachFromPanelEvent>(_ => DisposeNodeTrees());
+    }
+
+    internal void SetSearchMatch(bool match)
+    {
+        titleContainer.style.backgroundColor = match ? new Color(.38f, .30f, .08f) : new Color(.10f, .10f, .10f);
+    }
+
+    internal void SetGroupRoot(bool isRoot, string groupName)
+    {
+        if (_groupIcon == null)
+        {
+            _groupIcon = new VisualElement { name = "linked-group-icon", pickingMode = PickingMode.Ignore };
+            _groupIcon.style.position = Position.Absolute;
+            _groupIcon.style.right = 9; _groupIcon.style.top = 8;
+            _groupIcon.style.width = 20; _groupIcon.style.height = 20;
+            _groupIcon.generateVisualContent += context =>
+            {
+                var painter = context.painter2D;
+                painter.strokeColor = Color.white; painter.lineWidth = 1.5f;
+                for (int n = 0; n < 2; n++)
+                {
+                    float x = 3 + n * 5, y = 7 - n * 5;
+                    painter.BeginPath(); painter.MoveTo(new Vector2(x, y));
+                    painter.LineTo(new Vector2(x + 10, y)); painter.LineTo(new Vector2(x + 10, y + 10));
+                    painter.LineTo(new Vector2(x, y + 10)); painter.ClosePath(); painter.Stroke();
+                }
+            };
+            titleContainer.Add(_groupIcon);
+        }
+        _groupIcon.style.display = isRoot ? DisplayStyle.Flex : DisplayStyle.None;
+        titleContainer.tooltip = isRoot ? "Linked group: " + groupName + ". Changes sync to every instance." : null;
+    }
+
+    internal void SetGroupHighlight(bool highlighted)
+    {
+        if (_groupOutline == null)
+        {
+            _groupOutline = new VisualElement { name = "linked-group-outline", pickingMode = PickingMode.Ignore };
+            _groupOutline.style.position = Position.Absolute;
+            _groupOutline.style.left = -5; _groupOutline.style.right = -5;
+            _groupOutline.style.top = -5; _groupOutline.style.bottom = -5;
+            _groupOutline.style.borderTopLeftRadius = _groupOutline.style.borderTopRightRadius = 15;
+            _groupOutline.style.borderBottomLeftRadius = _groupOutline.style.borderBottomRightRadius = 15;
+            _groupOutline.style.borderTopWidth = _groupOutline.style.borderBottomWidth = 2;
+            _groupOutline.style.borderLeftWidth = _groupOutline.style.borderRightWidth = 2;
+            var color = new Color(1f, .8f, .15f);
+            _groupOutline.style.borderTopColor = _groupOutline.style.borderBottomColor = color;
+            _groupOutline.style.borderLeftColor = _groupOutline.style.borderRightColor = color;
+            Add(_groupOutline);
+        }
+        _groupOutline.style.display = highlighted ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
     public void SetDebugStatus(NodeStatus status)
@@ -256,7 +317,7 @@ internal sealed class BtNodeView : Node
                 _integerFieldTwo?.SetValueWithoutNotify(data.SuccessThreshold);
             }
         }
-        if (Kind == BtNodeKind.Leaf)
+        if (Kind == BtNodeKind.Leaf || BtNodeKinds.IsDecorator(Kind))
         {
             _leafContainer?.MarkDirtyRepaint();
         }
@@ -386,9 +447,11 @@ internal sealed class BtNodeView : Node
             RefreshPorts();
             return;
         }
-        if (Kind == BtNodeKind.Leaf)
+        if (Kind == BtNodeKind.Leaf || BtNodeKinds.IsDecorator(Kind))
         {
             _leafContainer = new IMGUIContainer(DrawLeafInNode);
+            _leafContainer.RegisterCallback<MouseMoveEvent>(_ => _leafContainer.MarkDirtyRepaint());
+            _leafContainer.RegisterCallback<MouseLeaveEvent>(_ => _leafContainer.MarkDirtyRepaint());
             _leafContainer.style.marginTop = 2;
             _leafContainer.SetEnabled(allowEdit);
             extensionContainer.Add(_leafContainer);
@@ -410,7 +473,7 @@ internal sealed class BtNodeView : Node
     
     private void DrawLeafInNode()
     {
-        if (Kind != BtNodeKind.Leaf || _graphAsset == null) return;
+        if (Kind != BtNodeKind.Leaf && !BtNodeKinds.IsDecorator(Kind) || _graphAsset == null) return;
         _leafInspector ??= new BtNodeInspector(_graphAsset, Guid, Kind, typeChanged =>
         {
             if (typeChanged) TryAutoRenameLeafNodeTitle(_graphAsset);

@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace VadimBurym.DodBehaviourTree
 {
-    public sealed class BehaviourTree<TContext, TLeafState>
+    public sealed partial class BehaviourTree<TContext, TLeafState>
         where TContext : class where TLeafState : struct
     {
         private const byte Unknown = 0;
@@ -27,7 +27,18 @@ namespace VadimBurym.DodBehaviourTree
 
         public void Construct(BehaviourTreeAsset asset)
         {
+            if (asset == null) throw new ArgumentNullException(nameof(asset));
+#if DODBT_DECORATORS
+            const bool decoratorsEnabled = true;
+#else
+            const bool decoratorsEnabled = false;
+#endif
+            string compatibility = asset.CompatibilityError(decoratorsEnabled);
+            if (!string.IsNullOrEmpty(compatibility)) throw new InvalidOperationException(compatibility);
             _asset = asset;
+#if DODBT_DECORATORS
+            InitializeDecorators();
+#endif
             _leafs = new ILeaf<TContext, TLeafState>[asset.Leafs.Length];
             for (int i = 0; i < _leafs.Length; i++)
             {
@@ -64,6 +75,13 @@ namespace VadimBurym.DodBehaviourTree
         
         public void FillInitialState(BtState<TLeafState> btState)
         {
+#if DODBT_DECORATORS
+            if (btState.DecoratorStates.Length < _asset.DecoratorNodes.Length)
+                btState.DecoratorStates = new DecoratorState[Mathf.NextPowerOfTwo(_asset.DecoratorNodes.Length)];
+            else Array.Clear(btState.DecoratorStates, 0, btState.DecoratorStates.Length);
+            btState.TickTime = 0;
+            btState.HasTickTime = false;
+#endif
             var nodes = _asset.Nodes;
             if (btState.NodeStates.Length < nodes.Length)
                 btState.NodeStates = new NodeState[Mathf.NextPowerOfTwo(nodes.Length)];
@@ -89,22 +107,33 @@ namespace VadimBurym.DodBehaviourTree
 #endif
         }
         
-        public void Tick(TContext context, BtState<TLeafState> state)
+        public void Tick(TContext context, BtState<TLeafState> state) => TickWithStatus(context, state);
+
+        public NodeStatus TickWithStatus(TContext context, BtState<TLeafState> state)
+        {
+#if DODBT_DECORATORS
+            if (_requiresTime) throw new InvalidOperationException("This tree contains timed decorators. Use Tick or TickWithStatus with an explicit timestamp.");
+#endif
+            return TickCore(context, state);
+        }
+
+        private NodeStatus TickCore(TContext context, BtState<TLeafState> state)
         {
 #if UNITY_EDITOR
             state.DebugRunningLeafs.Clear();
             state.DebugRunningLeafIndices.Clear();
             for (int i = 0; i < state.DebugStatus.Length; i++)
                 state.DebugStatus[i] = NodeStatus.None;
+#endif
             var status = TickNode(context, state, _asset.RootIndex);
+#if UNITY_EDITOR
             state.DebugStatus[_asset.RootIndex] = status;
             // A parent may abort leaves that returned Running earlier in this tick.
             foreach (int index in state.DebugRunningLeafIndices)
                 if (state.NodeStates[index].IsEntered)
                     state.DebugRunningLeafs.Add(DebugUtils.GetLeafName(_leafs[_asset.Nodes[index].DataIndex]));
-#else
-            TickNode(context, state, _asset.RootIndex);
 #endif
+            return status;
         }
 
         public void Abort(TContext context, BtState<TLeafState> state)
@@ -123,6 +152,12 @@ namespace VadimBurym.DodBehaviourTree
             ref var nodeState = ref state.NodeStates[index];
             switch (node.Id)
             {
+#if DODBT_DECORATORS
+                case NodeId.Timeout:
+                case NodeId.Cooldown:
+                case NodeId.Inverter:
+                    return TickDecorator(context, state, node);
+#endif
                 case NodeId.Selector:
                     ref var selectorNode = ref _asset.SelectorNodes[node.DataIndex];
                     for (int i = 0; i < selectorNode.ChildCount; i++)
@@ -278,7 +313,7 @@ namespace VadimBurym.DodBehaviourTree
                     return NodeStatus.Running;
 
                 default:
-                    return NodeStatus.Failure;
+                    throw new InvalidOperationException("Unsupported compiled node type: " + node.Id);
             }
         }
 
@@ -291,6 +326,13 @@ namespace VadimBurym.DodBehaviourTree
             ref var nodeState = ref state.NodeStates[index];
             switch (node.Id)
             {
+#if DODBT_DECORATORS
+                case NodeId.Timeout:
+                case NodeId.Cooldown:
+                case NodeId.Inverter:
+                    AbortDecorator(context, state, node);
+                    return;
+#endif
                 case NodeId.Selector:
                     ref var selectorNode = ref _asset.SelectorNodes[node.DataIndex];
                     if (nodeState.Cursor == None) return;

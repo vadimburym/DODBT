@@ -37,9 +37,9 @@ Works great with ECS architecture.
 ⭐ **Production-grade**  
 Tests coverage. Game designers can configure BTs without touching code.
 
-**DODBT 0.3.1**: fixes nested MemorySelector traversal, Parallel abort bookkeeping, and Debug Mode state; refreshes the type picker layout. Graph editing, inspectors, compilation, and debugging use Unity APIs. Odin Inspector is not required.
+**DODBT 0.4.0**: linked branch groups, graph search and node copying, `TickWithStatus`, optional Timeout/Cooldown/Inverter, and a refreshed Leaf inspector. Editing, compilation, and debugging use Unity APIs; Odin Inspector is not required.
 
-Validated with **Unity 6000.0.51f1**. See the [0.3.1 release notes](docs~/releases/v0.3.1.md) for test results, verified builds, and validation scope.
+Validated with **Unity 6000.0.51f1**. See the [0.4.0 release notes](docs~/releases/v0.4.0.md) for test results, verified builds, and validation scope.
 
 > ⚠ **IMPORTANT!** A dedicated `DOTS` [version of this plugin](https://github.com/vadimburym/DOTS-Battle-Simulator-Prototype) with `BlobAsset` and `Burst` support is currently in development.
 This version can still be used if you're comfortable running the Behaviour Tree and states as a main-thread managed decision layer, ticking it once every N seconds.
@@ -66,15 +66,24 @@ https://github.com/vadimburym/DODBT.git?path=/source
 ```
 - **Stable version** `RECOMMENDED`:
 ```
-https://github.com/vadimburym/DODBT.git?path=/source#v0.3.1
+https://github.com/vadimburym/DODBT.git?path=/source#v0.4.0
 ```
 - **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
 
-### Upgrading to 0.3.1
+### Upgrading to 0.4.0
 
-Update the package URL to the `v0.3.1` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
+Update the package URL to the `v0.4.0` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
 
 See the [CHANGELOG](source/CHANGELOG.md) for release changes. Remove Odin from the consuming project only if no other plugins or game code depend on it.
+
+### Features in 0.4.0
+
+- `TickWithStatus(context, state)` performs one traversal and returns the root result; the existing `Tick` API is retained.
+- `DODBT_DECORATORS` enables Timeout, Cooldown, and Inverter for the selected target. Supply monotonic time for Timeout/Cooldown: `TickWithStatus(context, state, now)`.
+- Graph search, individual/block copying, and linked groups that synchronize data, structure, and relative positions. Groups are editor-only; execution still follows left-to-right order.
+- Root Leaf parameters stay expanded. Nested SerializeReference fields keep their foldouts. Connection warnings appear in the graph editor's own console.
+
+See the [0.4.0 guide](source/Documentation~/0.4.0.md) for usage, limitations, and Abort semantics.
 
 ## Getting Started
 
@@ -276,7 +285,7 @@ _btMonoDebug.Construct(btAsset, btState);
 
 ## Example Project
 
-The complete [DODBT 0.3.1 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
+The complete [DODBT 0.4.0 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
 
 ## Public Classes and Methods
 

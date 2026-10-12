@@ -56,6 +56,9 @@ namespace VadimBurym.DodBehaviourTree.Tests
                 string error = BtCompiler.TryCompileAsset(graph, graph.CompiledAsset);
                 if (!string.IsNullOrEmpty(error)) throw new BuildFailedException(error);
                 CreateRuntimeAuditAssets(folder);
+#if DODBT_DECORATORS
+                CreateDecoratorAssets(folder);
+#endif
                 PlayerSettings.SetManagedStrippingLevel(namedTarget, ManagedStrippingLevel.High);
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
@@ -68,7 +71,8 @@ namespace VadimBurym.DodBehaviourTree.Tests
                 Directory.CreateDirectory("Logs");
                 File.WriteAllText("Logs/BuildVerification-" + target + ".txt",
                     $"Result: {report.summary.result}\nErrors: {report.summary.totalErrors}\nWarnings: {report.summary.totalWarnings}\nBytes: {report.summary.totalSize}\nStripping: High\n");
-                if (report.summary.result != BuildResult.Succeeded) throw new BuildFailedException(report.summary.result.ToString());
+                if (report.summary.result != BuildResult.Succeeded || report.summary.totalErrors > 0)
+                    throw new BuildFailedException(report.summary.result + ": " + report.summary.totalErrors + " errors");
             }
             finally
             {
@@ -120,5 +124,27 @@ namespace VadimBurym.DodBehaviourTree.Tests
             graph.Nodes.Add(new BtNodeHeader { Guid = guid, Kind = BtNodeKind.Leaf, Title = guid });
             graph.LeafNodes.Add(new BtLeafNodeData { Guid = guid, Leaf = new SmokeTraversalLeaf { Slot = slot, First = first, Second = second, Later = later } });
         }
+
+#if DODBT_DECORATORS
+        private static void CreateDecoratorAssets(string folder)
+        {
+            foreach (var kind in new[] { BtNodeKind.Timeout, BtNodeKind.Cooldown, BtNodeKind.Inverter })
+            {
+                var graph = ScriptableObject.CreateInstance<BtGraphAsset>();
+                try
+                {
+                    graph.CompiledAsset = ScriptableObject.CreateInstance<BehaviourTreeAsset>();
+                    AssetDatabase.CreateAsset(graph.CompiledAsset, folder + "/Resources/DODBT_" + kind + "Smoke.asset");
+                    graph.RootNode = new BtRootNodeData { ChildrenGuid = "decorator" };
+                    graph.Nodes.Add(new BtNodeHeader { Guid = "decorator", Kind = kind });
+                    graph.DecoratorNodes.Add(new BtDecoratorNodeData { Guid = "decorator", Duration = 2, ChildrenGuids = new() { "leaf0" } });
+                    AddLeaf(graph, 0, NodeStatus.Running, NodeStatus.Success, NodeStatus.Running);
+                    string error = BtCompiler.TryCompileAsset(graph, graph.CompiledAsset);
+                    if (!string.IsNullOrEmpty(error)) throw new BuildFailedException(error);
+                }
+                finally { Object.DestroyImmediate(graph); }
+            }
+        }
+#endif
     }
 }

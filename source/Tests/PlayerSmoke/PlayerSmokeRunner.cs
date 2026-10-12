@@ -75,7 +75,14 @@ namespace VadimBurym.DodBehaviourTree.PlayerSmoke
 
         private IEnumerator Start()
         {
-            try { VerifyTree(); VerifyTraversal(); }
+            try
+            {
+                VerifyTree();
+                VerifyTraversal();
+#if DODBT_DECORATORS
+                VerifyDecorators();
+#endif
+            }
             catch (Exception error) { Debug.LogException(error); _failed = true; }
             // Also let the unchanged example bootstrap and game systems execute.
             yield return new WaitForSecondsRealtime(10);
@@ -104,7 +111,8 @@ namespace VadimBurym.DodBehaviourTree.PlayerSmoke
             var context = new SmokeContext();
             var state = new BtState<SmokeState>();
             tree.FillInitialState(state);
-            for (int i = 0; i < 100; i++) tree.Tick(context, state);
+            for (int i = 0; i < 100; i++)
+                Require(tree.TickWithStatus(context, state) == NodeStatus.Success, "TickWithStatus did not return the root result.");
             Require(context.Ticks == 100 && state.LeafStates[0].Entries == 100, "Compiled tree did not execute correctly.");
             tree.Abort(context, state);
             Debug.Log("DODBT_SERIALIZATION_AND_RUNTIME_PASSED");
@@ -159,6 +167,37 @@ namespace VadimBurym.DodBehaviourTree.PlayerSmoke
             }
             finally { UnityEngine.Random.state = savedRandom; }
         }
+#if DODBT_DECORATORS
+        private static void VerifyDecorators()
+        {
+            foreach (string kind in new[] { "Timeout", "Cooldown", "Inverter" })
+            {
+                var asset = Resources.Load<BehaviourTreeAsset>("DODBT_" + kind + "Smoke");
+                Require(asset != null, "Decorator verification asset is missing: " + kind);
+                var tree = new BehaviourTree<SmokeContext, SmokeState>();
+                tree.Construct(asset);
+                var state = new BtState<SmokeState>();
+                tree.FillInitialState(state);
+                var context = new SmokeContext();
+                Require(tree.TickWithStatus(context, state, 0) == NodeStatus.Running, "Decorator did not start its child.");
+                if (kind == "Timeout")
+                {
+                    Require(tree.TickWithStatus(context, state, 5) == NodeStatus.Failure, "Timeout did not expire on a sparse tick.");
+                    Require(state.LeafStates[0].Ticks == 1 && state.LeafStates[0].Aborts == 1, "Timeout did not abort before ticking.");
+                }
+                else if (kind == "Cooldown")
+                {
+                    Require(tree.TickWithStatus(context, state, 1) == NodeStatus.Success, "Cooldown changed a completed result.");
+                    tree.Abort(context, state);
+                    Require(tree.TickWithStatus(context, state, 2) == NodeStatus.Failure && state.LeafStates[0].Ticks == 2, "Cooldown lost its deadline.");
+                    Require(tree.TickWithStatus(context, state, 3) == NodeStatus.Running, "Cooldown did not allow its exact deadline.");
+                }
+                else Require(tree.TickWithStatus(context, state, 1) == NodeStatus.Failure, "Inverter did not invert success.");
+                tree.Abort(context, state);
+            }
+            Debug.Log("DODBT_DECORATORS_PASSED");
+        }
+#endif
 #endif
     }
 }

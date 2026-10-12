@@ -24,35 +24,48 @@ internal sealed class BtEdgeConnectorListener : IEdgeConnectorListener
 
     public void OnDrop(GraphView unityGraphView, Edge edge)
     {
-        var parentNode = edge.output.node as BtNodeView;
-        var childNode = edge.input.node as BtNodeView;
+        if (_graphView.IsReadOnly || _graphView.GraphAsset == null) return;
+        var parentNode = edge.output?.node as BtNodeView;
+        var childNode = edge.input?.node as BtNodeView;
         if (parentNode == null || childNode == null)
             return;
-        bool createsCycle = _graphView.WouldCreateCycle(parentNode, childNode);
+        bool createsCycle = _graphView.WouldCreateCycle(parentNode, childNode) || !_graphView.CanConnectGroups(parentNode.Guid, childNode.Guid);
         if (createsCycle)
         {
             _graphView.schedule.Execute(() => _graphView.ReloadWithoutLog());
             return;
         }
-        var newEdge = new Edge {
-            input = edge.input,
-            output = edge.output };
-        edge.input?.Disconnect(edge);
-        edge.output?.Disconnect(edge);
-        unityGraphView.RemoveElement(edge);
-        if (newEdge.input != null && newEdge.input.capacity == Port.Capacity.Single)
+        _graphView.BeginGroupEdit();
+        try
         {
-            var oldEdges = newEdge.input.connections.ToList();
-            foreach (var oldEdge in oldEdges)
-            {
-                oldEdge.input?.Disconnect(oldEdge);
-                oldEdge.output?.Disconnect(oldEdge);
-                unityGraphView.RemoveElement(oldEdge);
-            }
+            var newEdge = new BtEdge {
+                input = edge.input,
+                output = edge.output };
+            edge.input?.Disconnect(edge);
+            edge.output?.Disconnect(edge);
+            unityGraphView.RemoveElement(edge);
+            ReplaceConnections(unityGraphView, newEdge.input, newEdge);
+            ReplaceConnections(unityGraphView, newEdge.output, newEdge);
+            newEdge.input.Connect(newEdge);
+            newEdge.output.Connect(newEdge);
+            unityGraphView.AddElement(newEdge);
+            _graphView.OnEdgeCreated(newEdge);
         }
-        newEdge.input.Connect(newEdge);
-        newEdge.output.Connect(newEdge);
-        unityGraphView.AddElement(newEdge);
-        _graphView.OnEdgeCreated(newEdge);
+        finally { _graphView.EndGroupEdit(); }
+    }
+
+    private void ReplaceConnections(GraphView view, Port port, Edge replacement)
+    {
+        if (port.capacity != Port.Capacity.Single) return;
+        var previous = port.connections.ToList();
+        foreach (var edge in previous)
+        {
+            if (edge.input == replacement.input && edge.output == replacement.output) continue;
+            string limit = port.direction == Direction.Input ? "parent" : "child";
+            _graphView.WarnGraph($"Connection replaced: '{port.node.title}' accepts only one {limit}. " +
+                $"Removed '{edge.output?.node.title}' -> '{edge.input?.node.title}' " +
+                $"to connect '{replacement.output.node.title}' -> '{replacement.input.node.title}'.");
+        }
+        if (previous.Count > 0) view.DeleteElements(previous);
     }
 }
