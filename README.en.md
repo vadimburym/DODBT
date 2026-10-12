@@ -57,7 +57,6 @@ This version can still be used if you're comfortable running the Behaviour Tree 
 - [Debug Mode](#debug-mode)
 - [Example Project](#example-project)
 - [Public Classes and Methods](#public-classes-and-methods)
-- [Roadmap](#roadmap)
 
 ## Installation
 - **As a Unity module**: Window → Package Manager → Install package from git URL:
@@ -300,20 +299,3 @@ The complete [DODBT 0.3.1 example project](https://github.com/vadimburym/DODBT/t
 | interface `ILeaf` |  | Marker interface used internally to detect all leaves |
 | interface `IBtDebugState` |  | Interface representing debug state. Implemented by BtState. Editor-only |
 | enum `NodeStatus` |  | Node execution status |
-
-## Roadmap
-
-**0.4.0** is planned to include optional `Timeout`, `Cooldown`, and `Inverter` nodes behind `DODBT_DECORATORS`, graph search, and copying individual nodes or selected blocks. Visual left-to-right execution order is preserved. Execution history is deferred. Linked subtrees are under evaluation and are not part of the committed release scope.
-
-See the [detailed 0.4.0 plan (Russian)](docs~/roadmap-0.4.0.md) for timer, abort, sparse-tick, and linked-subtree semantics.
-
-- DOTS-compatible version:
-    - ~~Burst compatibility~~ ✅
-    - ~~BlobAsset compatibility~~ ✅
-    - ~~Jobs compatibility~~ ✅
-    - ~~Quality of Life extension~~ ✅
-    - Code generation
-    - Debug mode compatibility
-- More examples
-- Documentation improvements
-- Polishing
