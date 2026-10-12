@@ -2,7 +2,9 @@
 
 Это тестовый проект и пример базового использования плагина **DODBT** в Unity.
 
-Версия плагина: **0.3.1**. [Заметки к релизу](https://github.com/vadimburym/DODBT/releases/tag/v0.3.1) описывают исправления вложенных MemorySelector, Parallel и Debug Mode, обновленный выбор типов и результаты проверок. Код плагина находится в `Assets/VadimBurym-DODBT` и совпадает с пакетом `source/` в ветке `main`.
+Версия плагина в этой ветке: **0.4.0-preview.1**. Экспериментальная ветка `feature/0.4.0` содержит `TickWithStatus`, опциональные Timeout/Cooldown/Inverter, поиск по графу и копирование нод. Стабильный [релиз 0.3.1](https://github.com/vadimburym/DODBT/releases/tag/v0.3.1) остается в `main` и `example-project`.
+
+Описание реализованных функций и правила времени/Abort: [документация preview](Assets/VadimBurym-DODBT/Documentation~/0.4.0-preview.md). В этом Unity-проекте `DODBT_DECORATORS` включен для Standalone и WebGL. В остальных проектах расширение включается через Scripting Define Symbols нужной платформы. Для деревьев с таймерами используйте `Tick(context, state, now)` или `TickWithStatus(context, state, now)` с монотонным временем в секундах.
 
 Проект создан для демонстрации того, как можно использовать **DODBT** для управления поведением игровых объектов через **Behavior Tree**, а также для отладки состояния дерева во время выполнения.
 

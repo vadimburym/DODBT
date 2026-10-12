@@ -138,7 +138,7 @@ internal sealed class BtGraphAsset : ScriptableObject
         CompiledVersion = LastModifiedDate;
         NotActualCompiledVersion = false;
         EditorUtility.SetDirty(this);
-        EditorUtility.SetDirty(CompiledAsset);
+        if (CompiledAsset != null) EditorUtility.SetDirty(CompiledAsset);
     }
     
     internal void MarkModified()
@@ -146,7 +146,7 @@ internal sealed class BtGraphAsset : ScriptableObject
         LastModifiedDate = System.DateTime.Now.ToString("G", System.Globalization.CultureInfo.CurrentCulture);
         NotActualCompiledVersion = true;
         EditorUtility.SetDirty(this);
-        EditorUtility.SetDirty(CompiledAsset);
+        if (CompiledAsset != null) EditorUtility.SetDirty(CompiledAsset);
     }
 }
 

@@ -583,7 +583,8 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    Standalone: 
+    Standalone: DODBT_DECORATORS
+    WebGL: DODBT_DECORATORS
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

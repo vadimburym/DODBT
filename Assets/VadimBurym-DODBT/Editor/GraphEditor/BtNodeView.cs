@@ -137,6 +137,11 @@ internal sealed class BtNodeView : Node
         RegisterCallback<DetachFromPanelEvent>(_ => DisposeNodeTrees());
     }
 
+    internal void SetSearchMatch(bool match)
+    {
+        titleContainer.style.backgroundColor = match ? new Color(.38f, .30f, .08f) : new Color(.10f, .10f, .10f);
+    }
+
     public void SetDebugStatus(NodeStatus status)
     {
         switch (status)

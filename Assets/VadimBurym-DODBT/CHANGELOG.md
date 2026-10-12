@@ -7,9 +7,12 @@
 - Optional Timeout, Cooldown, and Inverter nodes behind `DODBT_DECORATORS`, with one-child graph ports, inline/Details settings, and compiler validation.
 - Explicit timestamp overloads for timed trees, independent per-agent deadlines, deterministic deadline boundaries, and abort propagation. Cooldown starts after child completion and retains an existing deadline across aborts.
 - Runtime compatibility checks and build checks for scene, Resources, and preloaded-asset dependencies. Disabling decorators preserves their serialized descriptions and rejects unsupported execution.
+- Graph search by title, node kind, leaf class, and namespace, with result highlighting and navigation in editing and Debug Mode.
+- Copy/paste and duplicate for individual nodes and selected blocks. Copies retain internal connections, relative positions, managed-reference data, and Unity asset references; use new GUIDs; and support Undo/Redo. External connections are excluded.
 
 ### Fixed
 - Replacing a connection on a single-capacity port updates both graph data and displayed edges.
+- Editing a graph without a compiled asset no longer tries to mark a null object dirty.
 
 ## [0.3.1] - 2026-10-12
 

@@ -37,6 +37,7 @@ internal sealed class BtEditorWindow : EditorWindow
     [SerializeField] private bool _isReadOnly;
     [SerializeField] private BtMonoDebug _monoDebug;
     [SerializeField] private BtGraphAsset _currentAsset;
+    [SerializeField] private string _searchText = "";
 
     [MenuItem("Tools/VadimBurym/BT Editor")]
     public static void Open()
@@ -95,8 +96,6 @@ internal sealed class BtEditorWindow : EditorWindow
         toolbar.Add(buttonCopy);
         toolbar.Add(buttonRename);
         toolbar.Add(new ToolbarSpacer());
-        //var searchField = new ToolbarSearchField();
-        //toolbar.Add(searchField);
         _graphAssetField = new ObjectField("Graph Asset") {
             objectType = typeof(BtGraphAsset),
             allowSceneObjects = false };
@@ -129,6 +128,7 @@ internal sealed class BtEditorWindow : EditorWindow
         root.Add(mainSplit);
 
         _graphView = new BtGraphView(false);
+        root.Insert(1, BuildSearchToolbar());
         _graphView.NodeSelected += OnNodeSelected;
         _graphView.LogRequested += Log;
         _graphView.GraphStructureChanged += RefreshCounters;
@@ -171,10 +171,48 @@ internal sealed class BtEditorWindow : EditorWindow
             .Execute(LateDebugUpdate)
             .Every(16);
         _graphView = new BtGraphView(true);
+        root.Add(BuildSearchToolbar());
         _graphView.Add(BuildDebugModeBanner());
         root.Add(_graphView);
     }
     
+    private Toolbar BuildSearchToolbar()
+    {
+        var toolbar = new Toolbar();
+        var search = new ToolbarSearchField { value = _searchText, tooltip = "Search node names, leaf classes, namespaces, and node kinds" };
+        search.style.minWidth = 240;
+        search.style.flexGrow = 1;
+        var counter = new Label("0 / 0");
+        counter.style.minWidth = 58;
+        counter.style.unityTextAlign = TextAnchor.MiddleCenter;
+        _graphView.SearchResultsChanged += (current, total) => counter.text = current + " / " + total;
+        search.RegisterValueChangedCallback(evt =>
+        {
+            _searchText = evt.newValue;
+            _graphView.SetSearchQuery(_searchText);
+        });
+        search.RegisterCallback<KeyDownEvent>(evt =>
+        {
+            if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+            {
+                _graphView.NavigateSearch(evt.shiftKey ? -1 : 1);
+                evt.StopPropagation();
+                evt.PreventDefault();
+            }
+            else if (evt.keyCode == KeyCode.Escape)
+            {
+                search.value = "";
+                evt.StopPropagation();
+            }
+        }, TrickleDown.TrickleDown);
+        toolbar.Add(search);
+        toolbar.Add(counter);
+        toolbar.Add(new ToolbarButton(() => _graphView.NavigateSearch(-1)) { text = "Previous", tooltip = "Shift+Enter" });
+        toolbar.Add(new ToolbarButton(() => _graphView.NavigateSearch(1)) { text = "Next", tooltip = "Enter" });
+        _graphView.SetSearchQuery(_searchText);
+        return toolbar;
+    }
+
     private void OnDisable()
     {
         Undo.undoRedoPerformed -= OnUndoRedo;

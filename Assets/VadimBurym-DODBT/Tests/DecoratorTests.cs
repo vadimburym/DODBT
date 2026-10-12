@@ -77,6 +77,49 @@ namespace VadimBurym.DodBehaviourTree.Tests
 
 #if DODBT_DECORATORS
         [Test]
+        public void HigherPrioritySequenceConditionAbortsTimeoutAndNextActivationGetsNewBudget()
+        {
+            var condition = new RecordingLeaf("Condition", NodeStatus.Success, NodeStatus.Failure, NodeStatus.Success);
+            var action = new RecordingLeaf("Action", NodeStatus.Running);
+            var asset = TestTreeFactory.CreateSequenceAsset(condition, action);
+            _objects.Add(asset);
+            asset.Nodes = new[] {
+                new Node { Id = NodeId.Sequence }, new Node { Id = NodeId.Leaf },
+                new Node { Id = NodeId.Timeout }, new Node { Id = NodeId.Leaf, DataIndex = 1 } };
+            asset.DecoratorNodes = new[] { new DecoratorNode { Child = 3, Duration = 2 } };
+            var tree = TestTreeFactory.CreateTree(asset);
+            var state = TestTreeFactory.CreateInitializedState(tree);
+            var context = new TestContext();
+            Assert.That(tree.TickWithStatus(context, state, 0), Is.EqualTo(NodeStatus.Running));
+            Assert.That(tree.TickWithStatus(context, state, 1), Is.EqualTo(NodeStatus.Failure));
+            Assert.That(action.AbortCount, Is.EqualTo(1));
+            Assert.That(tree.TickWithStatus(context, state, 10), Is.EqualTo(NodeStatus.Running));
+            Assert.That(action.EnterCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ParallelCompletionAbortsRunningDecoratorExactlyOnce()
+        {
+            var action = new RecordingLeaf("Action", NodeStatus.Running);
+            var finish = new RecordingLeaf("Finish", NodeStatus.Success);
+            var asset = TestTreeFactory.CreateParallelAsset(1, 2, false, action, finish);
+            _objects.Add(asset);
+            asset.Nodes = new[] {
+                new Node { Id = NodeId.Parallel }, new Node { Id = NodeId.Timeout },
+                new Node { Id = NodeId.Leaf, DataIndex = 1 }, new Node { Id = NodeId.Leaf } };
+            asset.DecoratorNodes = new[] { new DecoratorNode { Child = 3, Duration = 2 } };
+            var tree = TestTreeFactory.CreateTree(asset);
+            var state = TestTreeFactory.CreateInitializedState(tree);
+            var context = new TestContext();
+            Assert.That(tree.TickWithStatus(context, state, 0), Is.EqualTo(NodeStatus.Success));
+            tree.Abort(context, state);
+            Assert.That(action.AbortCount, Is.EqualTo(1));
+            Assert.That(action.ExitCount, Is.Zero);
+            Assert.That(finish.AbortCount, Is.Zero);
+            Assert.That(state.DebugRunningLeafs, Is.Empty);
+        }
+
+        [Test]
         public void Timeout_SparseTickAbortsBeforeChildCanReturnSuccess()
         {
             var leaf = new RecordingLeaf("Action", NodeStatus.Running, NodeStatus.Success);

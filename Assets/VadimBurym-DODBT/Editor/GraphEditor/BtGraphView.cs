@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VadimBurym.DodBehaviourTree;
 
-internal sealed class BtGraphView : GraphView
+internal sealed partial class BtGraphView : GraphView
 {
     public BtGraphAsset GraphAsset { get; private set; }
     public event Action<BtNodeView> NodeSelected;
@@ -93,6 +93,7 @@ internal sealed class BtGraphView : GraphView
         }
         
         graphViewChanged = OnGraphViewChanged;
+        ConfigureClipboard();
     }
     
     internal void SetDebugStatus(NodeStatus[] debugStatus)
@@ -246,6 +247,7 @@ internal sealed class BtGraphView : GraphView
         finally
         {
             _isBinding = false;
+            RefreshSearch();
         }
     }
     
@@ -280,6 +282,7 @@ internal sealed class BtGraphView : GraphView
         }
 
         NodeDataChanged?.Invoke(guid);
+        RefreshSearch();
     }
 
     public void AddNode(BtNodeKind kind, Vector2 graphPosition)
@@ -320,6 +323,7 @@ internal sealed class BtGraphView : GraphView
         _nodeViewsByGuid[guid] = nodeView;
         nodeView.Bind(GraphAsset, NotifyNodeDataChanged, IsReadOnly, MarkEdgeColorsDirty);
         GraphStructureChanged?.Invoke();
+        RefreshSearch();
     }
 
     private void AllocateTypedData(string guid, BtNodeKind kind)
