@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2026-10-12
 
 ### Added
 - Editor-only linked branch groups with Create Linked Group, Duplicate Group, and Unlink Group commands. Edits in any instance synchronize serialized node settings, leaf types and fields, structure, and relative layout while retaining independent managed data.
@@ -32,15 +32,10 @@
 - Changing a decorator in Details refreshes its inline node inspector.
 
 ### Verification
-- Graph-console routing: 150/150 EditMode tests with decorators enabled and 123/123 without them, with default indices and zero skips. Connection tests verify delivery to the graph's warning channel and no warnings in the Unity Console, including cycle and linked-group rejection.
-- Release audit on Unity 6000.0.51f1: 149/149 EditMode tests with decorators enabled and 122/122 without them, each with default indices and `DODBT_SMALL_SIZE`; zero failures or skips. New coverage checks warning delivery, both occupied ports, Undo/Redo, cycle rejection, read-only drops, and malformed clipboard data. The malformed-data tests reproduced five failures before the clipboard fix.
-- After live linked-group dragging, 135/135 EditMode tests passed with decorators enabled and 111/111 without them, using default indices. Native mouse-event coverage verifies movement before release, unchanged serialized data during preview, multiple selected members and instances at zoom, Escape, capture loss during edge panning, and Undo/Redo.
-- After the edge appearance fix, 133/133 EditMode tests passed with decorators enabled, including pointer events, edge hit testing, retained group highlighting, and explicit edge selection.
-- Unity 6000.0.51f1: 132/132 EditMode tests with decorators enabled and 108/108 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
-- Editor interaction tests exercise full-row leaf selection, keyboard activation, disabled input, always-visible root fields, collapsible nested references, cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`.
-- Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.
-- Release-audit WebGL / IL2CPP / High stripping: build succeeded with zero errors and two URP shader warnings. Browser execution has not been verified.
-- The standalone preview package imports without Odin Inspector or Unity Test Framework installed.
+- Unity 6000.0.51f1: 150/150 EditMode tests with decorators enabled and 123/123 without them, each with default indices and `DODBT_SMALL_SIZE`; zero failures or skips.
+- Coverage includes runtime traversal, timers and aborts, serialization, compiler limits, independent agents, steady-state allocations, linked-group synchronization, native drag events, Undo/Redo, search, clipboard validation, and warnings delivered only to the graph console.
+- Windows x64 / Mono / High stripping and WebGL / IL2CPP / High stripping: successful builds with zero errors and two URP shader warnings each. The Windows verification player passed serialization, runtime, and decorator smoke checks with exit code 0. Its existing ComputeBuffer disposal warning remains at shutdown. WebGL browser execution and additional player platforms have not been verified.
+- The standalone package imports without Odin Inspector or Unity Test Framework installed. Editor interaction tests require a graphics device and are explicitly skipped with `-nographics`.
 - The example AI system supplies `Time.timeAsDouble` when decorators are enabled, so timers follow scaled game time.
 
 ## [0.3.1] - 2026-10-12

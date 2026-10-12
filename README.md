@@ -2,9 +2,9 @@
 
 Это тестовый проект и пример базового использования плагина **DODBT** в Unity.
 
-Версия плагина в этой ветке: **0.4.0-preview.2**. Экспериментальная ветка `feature/0.4.0` содержит `TickWithStatus`, опциональные Timeout/Cooldown/Inverter, поиск по графу, копирование нод и связанные группы веток. Стабильный [релиз 0.3.1](https://github.com/vadimburym/DODBT/releases/tag/v0.3.1) остается в `main` и `example-project`.
+Версия плагина в этой ветке: **0.4.0**. Пакет идентичен версии в `main`. [Релиз 0.4.0](https://github.com/vadimburym/DODBT/releases/tag/v0.4.0) содержит `TickWithStatus`, опциональные Timeout/Cooldown/Inverter, поиск по графу, копирование нод и связанные группы веток. Odin Inspector для плагина не требуется.
 
-Описание реализованных функций и правила времени/Abort: [документация preview](Assets/VadimBurym-DODBT/Documentation~/0.4.0-preview.md). В этом Unity-проекте `DODBT_DECORATORS` включен для Standalone и WebGL. В остальных проектах расширение включается через Scripting Define Symbols нужной платформы. Для деревьев с таймерами используйте `Tick(context, state, now)` или `TickWithStatus(context, state, now)` с монотонным временем в секундах.
+Описание реализованных функций и правила времени/Abort: [документация 0.4.0](Assets/VadimBurym-DODBT/Documentation~/0.4.0.md). В этом Unity-проекте `DODBT_DECORATORS` включен для Standalone и WebGL. В остальных проектах расширение включается через Scripting Define Symbols нужной платформы. Для деревьев с таймерами используйте `Tick(context, state, now)` или `TickWithStatus(context, state, now)` с монотонным временем в секундах.
 
 В примере система AI передает `Time.timeAsDouble`, когда расширение включено: пауза и масштаб игрового времени влияют на таймеры. При выключенном символе остается прежний вызов `Tick`.
 
