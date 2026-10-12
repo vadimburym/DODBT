@@ -55,50 +55,44 @@ namespace VadimBurym.DodBehaviourTree.Tests
         }
 
         [Test]
-        public void LeafSelector_DisclosureAndTypeSelectionHaveSeparateClickTargets()
+        public void LeafSelector_UsesWholeRowForTypeSelection()
         {
-            bool expanded = false;
             int opened = 0, draws = 0;
             _window.Draw = () =>
             {
                 draws++;
-                if (BtLeafSelector.Draw(new Rect(10, 10, 320, 26), typeof(SnapshotTestLeaf), true, ref expanded, "selector")) opened++;
+                if (BtLeafSelector.Draw(new Rect(10, 10, 320, 26), typeof(SnapshotTestLeaf), "selector")) opened++;
             };
             Click(20);
             Assert.That(draws, Is.GreaterThan(0));
-            Assert.That(expanded, Is.True);
-            Assert.That(opened, Is.Zero);
+            Assert.That(opened, Is.EqualTo(1));
             Click(100);
-            Assert.That(expanded, Is.True);
-            Assert.That(opened, Is.EqualTo(1));
+            Assert.That(opened, Is.EqualTo(2));
             Click(20);
-            Assert.That(expanded, Is.False);
-            Assert.That(opened, Is.EqualTo(1));
+            Assert.That(opened, Is.EqualTo(3));
         }
 
         [Test]
         public void LeafSelector_EmptyValueUsesTheWholeRowForSelection()
         {
-            bool expanded = false;
             int opened = 0;
             _window.Draw = () =>
             {
-                if (BtLeafSelector.Draw(new Rect(10, 10, 320, 26), null, false, ref expanded, "selector")) opened++;
+                if (BtLeafSelector.Draw(new Rect(10, 10, 320, 26), null, "selector")) opened++;
             };
             Click(20);
             Assert.That(opened, Is.EqualTo(1));
-            Assert.That(expanded, Is.False);
         }
 
         [Test]
         public void LeafSelector_KeyboardOpensOnce_AndDisabledControlIgnoresInput()
         {
-            bool expanded = false, enabled = true;
+            bool enabled = true;
             int opened = 0;
             _window.Draw = () =>
             {
                 using (new EditorGUI.DisabledScope(!enabled))
-                    if (BtLeafSelector.Draw(new Rect(10, 10, 320, 26), typeof(SnapshotTestLeaf), true, ref expanded, "selector")) opened++;
+                    if (BtLeafSelector.Draw(new Rect(10, 10, 320, 26), typeof(SnapshotTestLeaf), "selector")) opened++;
                 GUI.FocusControl("selector");
             };
             Send(EventType.Layout);
@@ -115,7 +109,6 @@ namespace VadimBurym.DodBehaviourTree.Tests
             Click(100);
             Send(EventType.KeyDown, key: KeyCode.Return);
             Assert.That(opened, Is.EqualTo(previous));
-            Assert.That(expanded, Is.False);
         }
 
         [Test]
@@ -135,10 +128,12 @@ namespace VadimBurym.DodBehaviourTree.Tests
             foreach (string suffix in new[] { "", ".Value", ".Value.Next", ".Alias", ".Values", ".Values.Array.data[0]" })
                 serialized.FindProperty(path + suffix).isExpanded = true;
             int draws = 0;
+            float drawnHeight = 0;
             _window.Draw = () =>
             {
                 serialized.Update();
                 fields.DrawLeafLayout(serialized.FindProperty(path));
+                if (Event.current.type == EventType.Repaint) drawnHeight = GUILayoutUtility.GetLastRect().height;
                 serialized.ApplyModifiedProperties();
                 draws++;
             };
@@ -146,13 +141,22 @@ namespace VadimBurym.DodBehaviourTree.Tests
             Send(EventType.Repaint);
             Assert.That(serialized.FindProperty(path + "._privateNumber").intValue, Is.EqualTo(11));
             Assert.That(draws, Is.GreaterThanOrEqualTo(2));
+            float expandedHeight = drawnHeight;
+            Assert.That(expandedHeight, Is.GreaterThan(BtLeafSelector.Height));
             serialized.FindProperty(path).isExpanded = false;
             Send(EventType.Layout);
             Send(EventType.Repaint);
+            Assert.That(drawnHeight, Is.EqualTo(expandedHeight), "Root foldout state must not hide Leaf fields.");
+            serialized.FindProperty(path + ".Value").isExpanded = false;
+            Send(EventType.Layout);
+            Send(EventType.Repaint);
+            Assert.That(serialized.FindProperty(path + ".Value").isExpanded, Is.False);
+            Assert.That(drawnHeight, Is.LessThan(expandedHeight), "Nested managed references must still collapse.");
             serialized.FindProperty(path).managedReferenceValue = null;
             serialized.ApplyModifiedProperties();
             Send(EventType.Layout);
             Send(EventType.Repaint);
+            Assert.That(drawnHeight, Is.EqualTo(BtLeafSelector.Height));
             LogAssert.NoUnexpectedReceived();
         }
 

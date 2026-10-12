@@ -49,11 +49,10 @@ internal sealed class BtSerializedFields : IDisposable
     {
         if (property == null) return;
         bool hasFields = HasVisibleFields(property);
-        bool expanded = hasFields && property.isExpanded;
         var children = new List<SerializedProperty>();
         try
         {
-            if (expanded)
+            if (hasFields)
             {
                 using var child = property.Copy();
                 using var end = child.GetEndProperty();
@@ -68,15 +67,12 @@ internal sealed class BtSerializedFields : IDisposable
             _measuring.Add(property.managedReferenceId);
             float height = BtLeafSelector.Height;
             foreach (var child in children) height += Gap + Height(child, new GUIContent(child.displayName));
-            if (expanded) height += 9;
+            if (hasFields) height += 9;
             var rect = EditorGUILayout.GetControlRect(false, height);
             var header = new Rect(rect.x, rect.y, rect.width, BtLeafSelector.Height);
-            bool nextExpanded = expanded;
-            if (BtLeafSelector.Draw(header, BtTypePicker.Resolve(property.managedReferenceFullTypename), hasFields, ref nextExpanded, _leafControlName))
+            if (BtLeafSelector.Draw(header, BtTypePicker.Resolve(property.managedReferenceFullTypename), _leafControlName))
                 OpenPicker(header, property, leafSelection: true);
-            if (expanded != nextExpanded) property.isExpanded = nextExpanded;
-            // Use the measured expansion for this event; the next layout applies the foldout change.
-            if (!expanded) return;
+            if (!hasFields) return;
             EditorGUI.DrawRect(new Rect(rect.x + 8, header.yMax + 4, rect.width - 16, 1), new Color(1, 1, 1, .08f));
             float y = header.yMax + 9;
             _drawing.Clear();

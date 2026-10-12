@@ -16,7 +16,7 @@
 ### Changed
 - Dragging a linked-group root previews its members' positions continuously. The graph asset and Undo are updated when the drag finishes, without cloning leaf data on pointer movement. Escape cancels the move; losing mouse capture finishes it and stops native edge panning.
 - Type pickers distinguish node leaf implementations (white leaf icons) from nested managed-reference values (neutral object icons). The field's role determines the icon, including nested collection elements.
-- Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, a separate parameter foldout, and a namespace tooltip. Leaves without visible serialized fields have no foldout; expanded fields sit below a subtle divider.
+- Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, and a namespace tooltip. Root Leaf fields are always visible below a subtle divider, with no parameter foldout. Nested managed references retain their own foldouts.
 
 ### Fixed
 - Ordinary connections keep a stable width and color when the pointer passes over nodes or edges. Linked-group highlighting survives GraphView hit testing, layout updates, and selection changes.
@@ -32,7 +32,7 @@
 - After live linked-group dragging, 135/135 EditMode tests passed with decorators enabled and 111/111 without them, using default indices. Native mouse-event coverage verifies movement before release, unchanged serialized data during preview, multiple selected members and instances at zoom, Escape, capture loss during edge panning, and Undo/Redo.
 - After the edge appearance fix, 133/133 EditMode tests passed with decorators enabled, including pointer events, edge hit testing, retained group highlighting, and explicit edge selection.
 - Unity 6000.0.51f1: 132/132 EditMode tests with decorators enabled and 108/108 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
-- Editor interaction tests exercise separate leaf picker/foldout click targets, keyboard activation, disabled input, expanded cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`; all four verification runs used graphics and skipped no tests.
+- Editor interaction tests exercise full-row leaf selection, keyboard activation, disabled input, always-visible root fields, collapsible nested references, cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`.
 - Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.
 - WebGL / IL2CPP / High stripping: build succeeded with zero errors and 11 NavMeshPlus/URP warnings. Browser execution has not been verified.
 - The standalone preview package imports without Odin Inspector or Unity Test Framework installed.

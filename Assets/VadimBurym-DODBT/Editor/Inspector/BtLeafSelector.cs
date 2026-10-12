@@ -9,7 +9,7 @@ internal static class BtLeafSelector
     private static readonly Vector3[] Chevron = new Vector3[3];
     private static GUIStyle _label;
 
-    internal static bool Draw(Rect rect, Type type, bool hasFields, ref bool expanded, string controlName)
+    internal static bool Draw(Rect rect, Type type, string controlName)
     {
         _label ??= new GUIStyle(EditorStyles.label)
         {
@@ -18,8 +18,7 @@ internal static class BtLeafSelector
             padding = new RectOffset(30, 25, 0, 0),
             fontSize = 12
         };
-        var foldout = new Rect(rect.x, rect.y, hasFields ? 21 : 0, rect.height);
-        var button = new Rect(foldout.xMax, rect.y, rect.width - foldout.width, rect.height);
+        var button = rect;
         bool hover = GUI.enabled && button.Contains(Event.current.mousePosition);
         bool focused = GUI.enabled && GUI.GetNameOfFocusedControl() == controlName;
         if (Event.current.type == EventType.Repaint)
@@ -41,12 +40,6 @@ internal static class BtLeafSelector
         {
             open = true;
             Event.current.Use();
-        }
-        if (hasFields)
-        {
-            if (GUI.Button(foldout, new GUIContent("", expanded ? "Свернуть параметры" : "Развернуть параметры"), GUIStyle.none))
-                expanded = !expanded;
-            DrawChevron(new Rect(foldout.x + 6, foldout.y + 10, 7, 6), expanded, new Color(.64f, .66f, .68f));
         }
         DrawIcon(new Rect(button.x + 8, button.y + 5, 16, 16), type == null ? text : Color.white);
         DrawChevron(new Rect(button.xMax - 16, button.y + 11, 7, 4), true, new Color(.64f, .66f, .68f));
