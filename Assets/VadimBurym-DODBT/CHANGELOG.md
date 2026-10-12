@@ -4,7 +4,7 @@
 
 ### Added
 - Editor-only linked branch groups with Create Linked Group, Duplicate Group, and Unlink Group commands. Edits in any instance synchronize serialized node settings, leaf types and fields, structure, and relative layout while retaining independent managed data.
-- Group root icons, yellow highlighting of related nodes and internal edges, and a Groups tab with editable names and instance counts. Groups cannot overlap or nest; invalid connections report Console warnings.
+- Group root icons, yellow highlighting of related nodes and internal edges, and a Groups tab with editable names and instance counts. Groups cannot overlap or nest; invalid connections report warnings in the graph editor's own console.
 - Group-aware deletion, disconnection, clipboard handling, and Undo/Redo. Group metadata persists in graph assets and is absent from compiled runtime assets.
 - `TickWithStatus` returns the root result while retaining the existing `Tick` API.
 - Optional Timeout, Cooldown, and Inverter nodes behind `DODBT_DECORATORS`, with one-child graph ports, inline/Details settings, and compiler validation.
@@ -19,7 +19,7 @@
 - Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, and a namespace tooltip. Root Leaf fields are always visible below a subtle divider, with no parameter foldout. Nested managed references retain their own foldouts.
 
 ### Fixed
-- Replacing connections on occupied single-capacity ports now reports Console warnings naming the removed and new connections and the one-parent/one-child restriction. Rejected cycles also report Console warnings. Free ports and unchanged connections do not warn.
+- Replacing connections on occupied single-capacity ports reports warnings in the graph editor's own console, naming the removed and new connections and the one-parent/one-child restriction. Rejected cycles and linked-group conflicts use the same internal console, without writing to the Unity Console. Free ports and unchanged connections do not warn.
 - Clipboard insertion rejects cycles, duplicate/shared children, inconsistent parents, invalid decorator child counts, and non-finite positions before changing the destination graph. Incomplete and disconnected valid selections remain supported.
 - The edge drop handler ignores read-only graphs and incomplete endpoints before changing displayed connections.
 - Ordinary connections keep a stable width and color when the pointer passes over nodes or edges. Linked-group highlighting survives GraphView hit testing, layout updates, and selection changes.
@@ -32,6 +32,7 @@
 - Changing a decorator in Details refreshes its inline node inspector.
 
 ### Verification
+- Graph-console routing: 150/150 EditMode tests with decorators enabled and 123/123 without them, with default indices and zero skips. Connection tests verify delivery to the graph's warning channel and no warnings in the Unity Console, including cycle and linked-group rejection.
 - Release audit on Unity 6000.0.51f1: 149/149 EditMode tests with decorators enabled and 122/122 without them, each with default indices and `DODBT_SMALL_SIZE`; zero failures or skips. New coverage checks warning delivery, both occupied ports, Undo/Redo, cycle rejection, read-only drops, and malformed clipboard data. The malformed-data tests reproduced five failures before the clipboard fix.
 - After live linked-group dragging, 135/135 EditMode tests passed with decorators enabled and 111/111 without them, using default indices. Native mouse-event coverage verifies movement before release, unchanged serialized data during preview, multiple selected members and instances at zoom, Escape, capture loss during edge panning, and Undo/Redo.
 - After the edge appearance fix, 133/133 EditMode tests passed with decorators enabled, including pointer events, edge hit testing, retained group highlighting, and explicit edge selection.

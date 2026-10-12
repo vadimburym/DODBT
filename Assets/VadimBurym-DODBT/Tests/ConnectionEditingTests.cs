@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -13,10 +14,17 @@ namespace VadimBurym.DodBehaviourTree.Tests
     {
         private BtGraphAsset _graph;
         private BtGraphView _view;
+        private readonly List<Regex> _expectedWarnings = new();
+        private readonly List<string> _graphWarnings = new();
+        private readonly List<string> _unityWarnings = new();
 
         [SetUp]
         public void Setup()
         {
+            _expectedWarnings.Clear();
+            _graphWarnings.Clear();
+            _unityWarnings.Clear();
+            Application.logMessageReceived += CaptureUnityWarning;
             _graph = ScriptableObject.CreateInstance<BtGraphAsset>();
             _graph.RootNode = new BtRootNodeData { Guid = "root", ChildrenGuid = "first" };
             Add("first", BtNodeKind.Sequence);
@@ -39,6 +47,10 @@ namespace VadimBurym.DodBehaviourTree.Tests
         {
             _view = new BtGraphView(readOnly);
             _view.Bind(_graph);
+            _view.LogRequested += (message, level, _) =>
+            {
+                if (level == LogLevel.Warning) _graphWarnings.Add(message);
+            };
             Undo.IncrementCurrentGroup();
         }
 
@@ -51,15 +63,25 @@ namespace VadimBurym.DodBehaviourTree.Tests
             });
         }
 
-        private static void ExpectLimit(string limit) =>
-            LogAssert.Expect(LogType.Warning, new Regex("Connection replaced: .* accepts only one " + limit + "\\."));
+        private void ExpectLimit(string limit) =>
+            _expectedWarnings.Add(new Regex("Connection replaced: .* accepts only one " + limit + "\\."));
+
+        private void CaptureUnityWarning(string message, string stack, LogType type)
+        {
+            if (type == LogType.Warning) _unityWarnings.Add(message);
+        }
 
         [TearDown]
         public void Cleanup()
         {
+            Application.logMessageReceived -= CaptureUnityWarning;
             _view?.DisposeInspectors();
             Undo.ClearUndo(_graph);
             Object.DestroyImmediate(_graph);
+            Assert.That(_unityWarnings, Is.Empty, "Graph warnings must not reach the Unity Console.");
+            Assert.That(_graphWarnings.Count, Is.EqualTo(_expectedWarnings.Count));
+            for (int i = 0; i < _expectedWarnings.Count; i++)
+                Assert.That(_expectedWarnings[i].IsMatch(_graphWarnings[i]), Is.True, _graphWarnings[i]);
         }
 
         [Test]
@@ -141,16 +163,29 @@ namespace VadimBurym.DodBehaviourTree.Tests
         }
 
         [Test]
-        public void CycleIsRejectedWithConsoleWarning_BeforeRemovingConnections()
+        public void CycleIsRejectedWithGraphWarning_BeforeRemovingConnections()
         {
             _graph.FindSequenceData("first").ChildrenGuids.Add("second");
             _graph.FindHeader("second").ParentGuid = "first";
             Bind();
             string before = EditorJsonUtility.ToJson(_graph);
-            LogAssert.Expect(LogType.Warning, new Regex("Connection blocked: would create cyclic dependency"));
+            _expectedWarnings.Add(new Regex("Connection blocked: would create cyclic dependency"));
             Connect("second", "first");
             Assert.That(EditorJsonUtility.ToJson(_graph), Is.EqualTo(before));
             Assert.That(_view.edges.Count(), Is.EqualTo(3));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void LinkedGroupConflict_WarnsOnlyInGraphConsole()
+        {
+            BtLinkedGroups.Create(_graph, "first");
+            Bind();
+            string before = EditorJsonUtility.ToJson(_graph);
+            _expectedWarnings.Add(new Regex("Connection blocked: linked groups cannot overlap"));
+            Connect("second", "leaf");
+            Assert.That(EditorJsonUtility.ToJson(_graph), Is.EqualTo(before));
+            Assert.That(_view.edges.Count(), Is.EqualTo(2));
             LogAssert.NoUnexpectedReceived();
         }
 

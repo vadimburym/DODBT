@@ -29,7 +29,6 @@ internal sealed partial class BtGraphView
 
     internal void WarnGraph(string message)
     {
-        Debug.LogWarning(message, GraphAsset);
         LogRequested?.Invoke(message, LogLevel.Warning, false);
     }
 
