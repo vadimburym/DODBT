@@ -1,49 +1,34 @@
+[English](README.md) | [Русский](README.ru.md)
+
 # DODBT Example Project
 
-Это тестовый проект и пример базового использования плагина **DODBT** в Unity.
+This Unity project demonstrates basic integration and runtime debugging of **DODBT** with a player and an AI-controlled enemy. It is a focused example, not a complete game.
 
-Версия плагина в этой ветке: **0.4.0**. Пакет идентичен версии в `main`. [Релиз 0.4.0](https://github.com/vadimburym/DODBT/releases/tag/v0.4.0) содержит `TickWithStatus`, опциональные Timeout/Cooldown/Inverter, поиск по графу, копирование нод и связанные группы веток. Odin Inspector для плагина не требуется.
+The plugin version is **0.4.0**, identical to the package in `main`. The [0.4.0 release](https://github.com/vadimburym/DODBT/releases/tag/v0.4.0) includes `TickWithStatus`, optional Timeout/Cooldown/Inverter nodes, graph search, node copying, and linked branch groups. DODBT does not require Odin Inspector.
 
-Описание реализованных функций и правила времени/Abort: [документация 0.4.0](Assets/VadimBurym-DODBT/Documentation~/0.4.0.md). В этом Unity-проекте `DODBT_DECORATORS` включен для Standalone и WebGL. В остальных проектах расширение включается через Scripting Define Symbols нужной платформы. Для деревьев с таймерами используйте `Tick(context, state, now)` или `TickWithStatus(context, state, now)` с монотонным временем в секундах.
+See the [0.4.0 guide](Assets/VadimBurym-DODBT/Documentation~/0.4.0.md) for the implemented features, timing rules, and Abort behavior.
 
-В примере система AI передает `Time.timeAsDouble`, когда расширение включено: пауза и масштаб игрового времени влияют на таймеры. При выключенном символе остается прежний вызов `Tick`.
+## Running and debugging
 
-Связанная группа создается через ПКМ на корне ветки → `Create Linked Group`. `Duplicate Group` создает синхронизированный экземпляр, а `Unlink Group` оставляет ноды независимыми. Изменения полей, типов листьев, структуры и относительных позиций применяются ко всем экземплярам. Корень переносит отдельный экземпляр целиком. Вкладка `Groups` показывает семейства и количество экземпляров. Группы работают только в редакторе; runtime исполняет обычные скомпилированные ноды.
+Run the gameplay scene to inspect the example behavior tree. The enemy appears at `World -> Enemy(Clone)` and has a `BtMonoDebug` component for inspecting the tree while the game is running.
 
-Проект создан для демонстрации того, как можно использовать **DODBT** для управления поведением игровых объектов через **Behavior Tree**, а также для отладки состояния дерева во время выполнения.
+The project demonstrates runtime integration, graph editing and compilation, and debugging node states through `BtMonoDebug`.
 
-## Что есть в проекте
+## Controls
 
-В проекте показан простой пример сцены с персонажем и врагом, управляемым через **DODBT**.
+- `W` — move forward.
+- `A` — move left.
+- `S` — move backward.
+- `D` — move right.
 
-На сцене есть объект:
+## Optional decorators
 
-- `World -> Enemy(Clone)`
+`DODBT_DECORATORS` is enabled for Standalone and WebGL in this project. In other projects, enable it through Scripting Define Symbols for the intended target. Trees containing Timeout or Cooldown require `Tick(context, state, now)` or `TickWithStatus(context, state, now)` with monotonic time in seconds.
 
-На объекте врага добавлен компонент:
+The example AI system supplies `Time.timeAsDouble` when the extension is enabled, so pauses and game-time scaling affect timers. Without the symbol, it retains the original `Tick` call.
 
-- `BtMonoDebug`
+## Linked groups
 
-Он используется для отладки текущего состояния Behavior Tree во время игры.
+Right-click a branch root and choose `Create Linked Group`. `Duplicate Group` creates a synchronized instance; `Unlink Group` leaves its nodes independent. Fields, leaf types, structure, and relative positions synchronize between instances. Dragging a root moves that instance's complete branch. The `Groups` tab lists families and instance counts.
 
-## Управление
-
-Управление персонажем:
-
-- `W` — движение вперед
-- `A` — движение влево
-- `S` — движение назад
-- `D` — движение вправо
-
-## Назначение проекта
-
-Этот example-проект нужен для того, чтобы:
-
-- быстро посмотреть базовую интеграцию **DODBT**
-- понять общий сценарий использования плагина
-- проверить поведение дерева в runtime
-- отлаживать состояния узлов через `BtMonoDebug`
-
-## Примечание
-
-Этот проект не является полноценной игрой или прототипом и предназначен только как демонстрационный пример использования **DODBT**.
+Groups exist only in the editor. Runtime execution uses ordinary compiled nodes and retains left-to-right order.
