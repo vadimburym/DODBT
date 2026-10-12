@@ -38,7 +38,7 @@
 - Unity 6000.0.51f1: 132/132 EditMode tests with decorators enabled and 108/108 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
 - Editor interaction tests exercise full-row leaf selection, keyboard activation, disabled input, always-visible root fields, collapsible nested references, cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`.
 - Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.
-- WebGL / IL2CPP / High stripping: build succeeded with zero errors and 11 NavMeshPlus/URP warnings. Browser execution has not been verified.
+- Release-audit WebGL / IL2CPP / High stripping: build succeeded with zero errors and two URP shader warnings. Browser execution has not been verified.
 - The standalone preview package imports without Odin Inspector or Unity Test Framework installed.
 - The example AI system supplies `Time.timeAsDouble` when decorators are enabled, so timers follow scaled game time.
 
