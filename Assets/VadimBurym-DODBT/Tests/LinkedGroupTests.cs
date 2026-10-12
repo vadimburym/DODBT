@@ -252,6 +252,38 @@ namespace VadimBurym.DodBehaviourTree.Tests
             finally { view.DisposeInspectors(); }
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void GraphView_DeletingDifferentMembersAcrossInstances_CombinesChangesInOneUndo(bool disconnectOnly)
+        {
+            _graph.Nodes.Add(new BtNodeHeader { Guid = "other", Kind = BtNodeKind.Leaf, ParentGuid = "branch" });
+            _graph.LeafNodes.Add(new BtLeafNodeData { Guid = "other", Leaf = new SnapshotTestLeaf() });
+            _graph.FindSequenceData("branch").ChildrenGuids.Add("other");
+            var group = BtLinkedGroups.Create(_graph, "branch");
+            var copy = BtLinkedGroups.Duplicate(_graph, group.Instances[0], Vector2.right * 400);
+            string otherCopy = Corresponding(copy, "other");
+            var view = new BtGraphView(false);
+            try
+            {
+                view.Bind(_graph);
+                Undo.IncrementCurrentGroup();
+                if (disconnectOnly)
+                    view.DeleteElements(view.edges.Where(e => e.input.node is BtNodeView n && (n.Guid == "leaf" || n.Guid == otherCopy)).ToArray());
+                else
+                    view.DeleteElements(view.nodes.OfType<BtNodeView>().Where(n => n.Guid == "leaf" || n.Guid == otherCopy).ToArray());
+                Assert.That(_graph.LeafNodes.Count, Is.EqualTo(disconnectOnly ? 4 : 0));
+                Assert.That(_graph.LinkedGroups.Single().Instances.All(i => i.Members.Count == 1), Is.True);
+                Assert.That(_graph.SequenceNodes.All(n => n.ChildrenGuids.Count == 0), Is.True);
+                Undo.PerformUndo();
+                Assert.That(_graph.LeafNodes.Count, Is.EqualTo(4));
+                Assert.That(_graph.SequenceNodes.All(n => n.ChildrenGuids.Count == 2), Is.True);
+                Undo.PerformRedo();
+                Assert.That(_graph.LeafNodes.Count, Is.EqualTo(disconnectOnly ? 4 : 0));
+                Assert.That(_graph.SequenceNodes.All(n => n.ChildrenGuids.Count == 0), Is.True);
+            }
+            finally { view.DisposeInspectors(); }
+        }
+
         [Test]
         public void SerializedFieldEdit_AndSynchronizedCopies_UndoRedoTogether()
         {

@@ -738,13 +738,7 @@ internal sealed partial class BtGraphView : GraphView
             GraphAsset.MarkModified();
             //EditorUtility.SetDirty(GraphAsset);
 
-        if (nodeWasDeleted)
-        {
-            schedule.Execute(() =>
-            {
-                ReloadWithoutLog();
-            });
-        }
+        if (nodeWasDeleted) ScheduleGroupReload();
         
         return change;
     }

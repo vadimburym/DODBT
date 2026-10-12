@@ -17,14 +17,17 @@
 - Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, a separate parameter foldout, and a namespace tooltip. Leaves without visible serialized fields have no foldout; expanded fields sit below a subtle divider.
 
 ### Fixed
+- Multi-selection deletion and disconnection across linked group instances now combine all changes before synchronization, preventing deleted nodes or connections from returning. Undo/Redo restores the entire operation together.
+- Deleting nodes schedules one graph rebuild and preserves the selection of surviving nodes.
+- The focused leaf selector now opens with Space as well as Enter and the down arrow.
 - Replacing a connection on a single-capacity port updates both graph data and displayed edges.
 - Editing a graph without a compiled asset no longer tries to mark a null object dirty.
 - Build compatibility inspection only loads behavior-tree asset paths, avoiding unrelated scene and assembly importers during player builds.
 - Changing a decorator in Details refreshes its inline node inspector.
 
 ### Verification
-- After the leaf selector update, all 125 EditMode tests passed with decorators enabled, including visible-field detection for empty and hidden-only leaves.
-- Unity 6000.0.51f1: 124/124 EditMode tests with decorators enabled and 100/100 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
+- Unity 6000.0.51f1: 132/132 EditMode tests with decorators enabled and 108/108 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
+- Editor interaction tests exercise separate leaf picker/foldout click targets, keyboard activation, disabled input, expanded cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`; all four verification runs used graphics and skipped no tests.
 - Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.
 - WebGL / IL2CPP / High stripping: build succeeded with zero errors and 11 NavMeshPlus/URP warnings. Browser execution has not been verified.
 - The standalone preview package imports without Odin Inspector or Unity Test Framework installed.

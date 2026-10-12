@@ -68,9 +68,41 @@ internal sealed partial class BtGraphView
             if (change.elementsToRemove != null)
             {
                 var ids = change.elementsToRemove.OfType<BtNodeView>().Select(n => n.Guid).ToHashSet();
+                // Combine member deletions from different instances before synchronizing any of them.
+                // Otherwise the first instance's snapshot can resurrect a node deleted in another.
+                var selectedIds = ids.ToHashSet();
+                foreach (var group in GraphAsset.LinkedGroups)
+                {
+                    var deletedKeys = group.Instances.Where(i => !selectedIds.Contains(i.RootGuid))
+                        .SelectMany(i => i.Members).Where(m => selectedIds.Contains(m.Guid)).Select(m => m.Key).ToHashSet();
+                    foreach (var instance in group.Instances)
+                        ids.UnionWith(instance.Members.Where(m => deletedKeys.Contains(m.Key)).Select(m => m.Guid));
+                }
                 foreach (var group in GraphAsset.LinkedGroups)
                 foreach (var instance in group.Instances)
                     if (ids.Contains(instance.RootGuid)) ids.UnionWith(instance.Members.Select(m => m.Guid));
+                // Direct multi-edge removal combines edits across instances as well. A reconnect
+                // has an outer transaction and must finish attaching its new edge before syncing.
+                if (_groupEditDepth == 1)
+                {
+                    var edgeMap = edges.ToList().Where(e => e.output?.node is BtNodeView && e.input?.node is BtNodeView)
+                        .ToLookup(e => (((BtNodeView)e.output.node).Guid, ((BtNodeView)e.input.node).Guid));
+                    foreach (var edge in change.elementsToRemove.OfType<Edge>().ToArray())
+                    {
+                        if (edge.output?.node is not BtNodeView parent || edge.input?.node is not BtNodeView child) continue;
+                        var source = BtLinkedGroups.Find(GraphAsset, parent.Guid);
+                        if (source == null || ids.Contains(source.RootGuid) || BtLinkedGroups.Find(GraphAsset, child.Guid) != source) continue;
+                        string parentKey = source.Members.Single(m => m.Guid == parent.Guid).Key;
+                        string childKey = source.Members.Single(m => m.Guid == child.Guid).Key;
+                        foreach (var target in BtLinkedGroups.Family(GraphAsset, source).Instances)
+                        {
+                            string parentId = target.Members.Single(m => m.Key == parentKey).Guid;
+                            string childId = target.Members.Single(m => m.Key == childKey).Guid;
+                            foreach (var peer in edgeMap[(parentId, childId)])
+                                if (!change.elementsToRemove.Contains(peer)) change.elementsToRemove.Add(peer);
+                        }
+                    }
+                }
                 foreach (string id in ids)
                     if (_nodeViewsByGuid.TryGetValue(id, out var view) && !change.elementsToRemove.Contains(view)) change.elementsToRemove.Add(view);
                 foreach (var edge in edges.ToList())

@@ -36,7 +36,8 @@ internal static class BtLeafSelector
         bool open = EditorGUI.DropdownButton(button, new GUIContent(type?.Name ?? "Выбрать Leaf…",
             type?.FullName ?? "Выбрать реализацию Leaf"), FocusType.Keyboard, _label);
         if (GUI.enabled && GUI.GetNameOfFocusedControl() == controlName && Event.current.type == EventType.KeyDown &&
-            (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.DownArrow))
+            (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter ||
+             Event.current.keyCode == KeyCode.DownArrow || Event.current.keyCode == KeyCode.Space))
         {
             open = true;
             Event.current.Use();
