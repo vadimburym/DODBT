@@ -84,6 +84,11 @@ internal sealed class BtGraphView : GraphView
                 menuEvent.menu.AppendAction("Add/Memory Sequence", _ => AddNode(BtNodeKind.MemorySequence, mousePosition));
                 menuEvent.menu.AppendAction("Add/Parallel", _ => AddNode(BtNodeKind.Parallel, mousePosition));
                 menuEvent.menu.AppendAction("Add/Leaf", _ => AddNode(BtNodeKind.Leaf, mousePosition));
+#if DODBT_DECORATORS
+                menuEvent.menu.AppendAction("Add/Decorators/Timeout", _ => AddNode(BtNodeKind.Timeout, mousePosition));
+                menuEvent.menu.AppendAction("Add/Decorators/Cooldown", _ => AddNode(BtNodeKind.Cooldown, mousePosition));
+                menuEvent.menu.AppendAction("Add/Decorators/Inverter", _ => AddNode(BtNodeKind.Inverter, mousePosition));
+#endif
             }));
         }
         
@@ -279,6 +284,10 @@ internal sealed class BtGraphView : GraphView
 
     public void AddNode(BtNodeKind kind, Vector2 graphPosition)
     {
+        if (IsReadOnly) return;
+#if !DODBT_DECORATORS
+        if (BtNodeKinds.IsDecorator(kind)) throw new InvalidOperationException("Enable DODBT_DECORATORS first.");
+#endif
         if (GraphAsset == null)
         {
             LogRequested?.Invoke($"GraphAsset is null. Open or create new!", LogLevel.Error, false);
@@ -317,6 +326,11 @@ internal sealed class BtGraphView : GraphView
     {
         switch (kind)
         {
+            case BtNodeKind.Timeout:
+            case BtNodeKind.Cooldown:
+            case BtNodeKind.Inverter:
+                GraphAsset.DecoratorNodes.Add(new BtDecoratorNodeData { Guid = guid });
+                break;
             case BtNodeKind.Leaf:
                 GraphAsset.LeafNodes.Add(new BtLeafNodeData { Guid = guid, Leaf = null });
                 break;

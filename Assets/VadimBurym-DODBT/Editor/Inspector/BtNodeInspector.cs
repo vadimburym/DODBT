@@ -32,6 +32,7 @@ internal sealed class BtNodeInspector : IDisposable
             BtNodeKind.MemorySequence => "MemorySequenceNodes",
             BtNodeKind.MemorySelector => "MemorySelectorNodes",
             BtNodeKind.Parallel => "ParallelNodes",
+            BtNodeKind.Timeout or BtNodeKind.Cooldown or BtNodeKind.Inverter => "DecoratorNodes",
             _ => null
         };
         if (list == null || _asset == null) return null;
@@ -60,6 +61,16 @@ internal sealed class BtNodeInspector : IDisposable
         {
             switch (_kind)
             {
+                case BtNodeKind.Timeout:
+                case BtNodeKind.Cooldown:
+                case BtNodeKind.Inverter:
+#if DODBT_DECORATORS
+                    if (_kind != BtNodeKind.Inverter) DrawField(root, "Duration");
+                    else EditorGUILayout.LabelField("Success ↔ Failure; Running unchanged", EditorStyles.miniLabel);
+#else
+                    EditorGUILayout.HelpBox("Enable DODBT_DECORATORS to use this node. Saved data is preserved.", MessageType.Warning);
+#endif
+                    break;
                 case BtNodeKind.Leaf:
                     _fields.DrawLayout(_serialized.FindProperty(root + ".Leaf"), GUIContent.none);
                     break;

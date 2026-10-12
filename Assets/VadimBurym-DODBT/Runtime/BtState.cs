@@ -19,6 +19,11 @@ namespace VadimBurym.DodBehaviourTree
     {
         [SerializeField] internal NodeState[] NodeStates = Array.Empty<NodeState>();
         public TLeafState[] LeafStates = Array.Empty<TLeafState>();
+#if DODBT_DECORATORS
+        internal DecoratorState[] DecoratorStates = Array.Empty<DecoratorState>();
+        internal double TickTime;
+        internal bool HasTickTime;
+#endif
 #if UNITY_EDITOR
         NodeStatus[] IBtDebugState.DebugStatus => DebugStatus;
         List<string> IBtDebugState.DebugRunningLeafs => DebugRunningLeafs;

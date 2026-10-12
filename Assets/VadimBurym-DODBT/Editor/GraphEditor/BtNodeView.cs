@@ -110,7 +110,7 @@ internal sealed class BtNodeView : Node
         if (kind != BtNodeKind.Leaf)
         {
             OutputPort = CreateHiddenPort(Direction.Output,
-                kind == BtNodeKind.Root ? Port.Capacity.Single : Port.Capacity.Multi,
+                kind == BtNodeKind.Root || BtNodeKinds.IsDecorator(kind) ? Port.Capacity.Single : Port.Capacity.Multi,
                 edgeConnectorListener, false);
             _outputVisual = CreatePortVisual(isInput: false);
             OutputPort.RegisterCallback<MouseEnterEvent>(_ => _outputVisual.AddToClassList("is-hover"));
@@ -386,7 +386,7 @@ internal sealed class BtNodeView : Node
             RefreshPorts();
             return;
         }
-        if (Kind == BtNodeKind.Leaf)
+        if (Kind == BtNodeKind.Leaf || BtNodeKinds.IsDecorator(Kind))
         {
             _leafContainer = new IMGUIContainer(DrawLeafInNode);
             _leafContainer.style.marginTop = 2;
@@ -410,7 +410,7 @@ internal sealed class BtNodeView : Node
     
     private void DrawLeafInNode()
     {
-        if (Kind != BtNodeKind.Leaf || _graphAsset == null) return;
+        if (Kind != BtNodeKind.Leaf && !BtNodeKinds.IsDecorator(Kind) || _graphAsset == null) return;
         _leafInspector ??= new BtNodeInspector(_graphAsset, Guid, Kind, typeChanged =>
         {
             if (typeChanged) TryAutoRenameLeafNodeTitle(_graphAsset);

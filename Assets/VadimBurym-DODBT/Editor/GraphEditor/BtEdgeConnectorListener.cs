@@ -43,13 +43,10 @@ internal sealed class BtEdgeConnectorListener : IEdgeConnectorListener
         if (newEdge.input != null && newEdge.input.capacity == Port.Capacity.Single)
         {
             var oldEdges = newEdge.input.connections.ToList();
-            foreach (var oldEdge in oldEdges)
-            {
-                oldEdge.input?.Disconnect(oldEdge);
-                oldEdge.output?.Disconnect(oldEdge);
-                unityGraphView.RemoveElement(oldEdge);
-            }
+            unityGraphView.DeleteElements(oldEdges);
         }
+        if (newEdge.output != null && newEdge.output.capacity == Port.Capacity.Single)
+            unityGraphView.DeleteElements(newEdge.output.connections.ToList());
         newEdge.input.Connect(newEdge);
         newEdge.output.Connect(newEdge);
         unityGraphView.AddElement(newEdge);

@@ -16,6 +16,9 @@ namespace VadimBurym.DodBehaviourTree
         Sequence = 2,
         MemorySelector = 3,
         MemorySequence = 4,
-        Parallel = 5
+        Parallel = 5,
+        Timeout = 6,
+        Cooldown = 7,
+        Inverter = 8
     }
 }

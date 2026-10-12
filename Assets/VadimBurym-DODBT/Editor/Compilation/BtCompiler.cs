@@ -17,6 +17,7 @@ internal static class BtCompiler
     private static readonly List<MemorySelectorNode> _memorySelectorNodes = new();
     private static readonly List<MemorySequenceNode> _memorySequenceNodes = new();
     private static readonly List<ParallelNode> _parallelNodes = new();
+    private static readonly List<DecoratorNode> _decoratorNodes = new();
     private static readonly List<ILeaf>  _leafs= new();
     private static readonly List<string> _guidsByCompiled = new();
     private static int _bufferSize;
@@ -51,7 +52,8 @@ internal static class BtCompiler
             _memorySequenceNodes.ToArray(),
             _parallelNodes.ToArray(),
             _leafs.ToArray(),
-            Mathf.NextPowerOfTwo(_bufferSize));
+            Mathf.NextPowerOfTwo(_bufferSize),
+            _decoratorNodes.ToArray());
         if (string.IsNullOrEmpty(compiled.InternalGUID))
         {
             var assetPath = UnityEditor.AssetDatabase.GetAssetPath(asset);
@@ -69,6 +71,19 @@ internal static class BtCompiler
     {
         switch (nodeData.Kind)
         {
+#if DODBT_DECORATORS
+            case BtNodeKind.Timeout:
+            case BtNodeKind.Cooldown:
+            case BtNodeKind.Inverter:
+                var decoratorData = asset.FindDecoratorData(nodeData.Guid);
+                var decoratorId = nodeData.Kind == BtNodeKind.Timeout ? NodeId.Timeout :
+                    nodeData.Kind == BtNodeKind.Cooldown ? NodeId.Cooldown : NodeId.Inverter;
+                _nodes.Add(new Node { Id = decoratorId, DataIndex = Convert(_decoratorNodes.Count) });
+                _decoratorNodes.Add(new DecoratorNode {
+                    Child = Convert(_nodes.Count + _nodesQueue.Count), Duration = decoratorData.Duration });
+                _nodesQueue.Enqueue(asset.FindHeader(decoratorData.ChildrenGuids[0]));
+                return string.Empty;
+#endif
             case BtNodeKind.Selector:
                 var selectorData = asset.FindSelectorData(nodeData.Guid);
                 var selectorChildren = selectorData.ChildrenGuids;
@@ -163,6 +178,7 @@ internal static class BtCompiler
         _sequenceNodes.Clear();
         _selectorNodes.Clear();
         _parallelNodes.Clear();
+        _decoratorNodes.Clear();
         _nodesQueue.Clear();
         _nodes.Clear();
         _bufferSize = 0;

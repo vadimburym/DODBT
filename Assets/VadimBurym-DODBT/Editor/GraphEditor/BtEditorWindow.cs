@@ -440,6 +440,15 @@ internal sealed class BtEditorWindow : EditorWindow
         string description;
         switch (node.Kind)
         {
+            case BtNodeKind.Timeout:
+                description = "Runs one child with a time budget. At or after the deadline, aborts the active child and returns Failure before ticking it. External Abort resets the budget. Requires an explicit timestamp and DODBT_DECORATORS.";
+                break;
+            case BtNodeKind.Cooldown:
+                description = "Runs one child, then blocks new attempts after Success or Failure. Returns Failure while blocked. Abort stops the active child without starting a new cooldown; an existing cooldown is preserved. Requires an explicit timestamp and DODBT_DECORATORS.";
+                break;
+            case BtNodeKind.Inverter:
+                description = "Runs one child. Success becomes Failure; Failure becomes Success; Running is unchanged. Abort is forwarded to the active child. Requires DODBT_DECORATORS.";
+                break;
             case BtNodeKind.Root:
                 description =
                     "Root node of the Behaviour Tree.\nOnly one root is allowed. It defines the entry point of execution.";

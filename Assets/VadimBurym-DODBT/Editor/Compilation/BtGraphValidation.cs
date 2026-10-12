@@ -16,6 +16,9 @@ internal static class BtGraphValidation
         foreach (var header in graph.Nodes)
         {
             if (header == null || string.IsNullOrEmpty(header.Guid)) return "A graph node has no GUID.";
+#if !DODBT_DECORATORS
+            if (BtNodeKinds.IsDecorator(header.Kind)) return "This graph requires DODBT_DECORATORS. Enable the extension to compile it; saved node data is preserved.";
+#endif
             if (!headers.TryAdd(header.Guid, header)) return "Duplicate node GUID: " + header.Guid;
         }
         var pending = new Stack<string>();
@@ -44,6 +47,13 @@ internal static class BtGraphValidation
             }
             var children = graph.GetChildrenList(guid, header.Kind);
             if (children == null) return "Missing or unsupported node data: " + header.Title;
+            if (BtNodeKinds.IsDecorator(header.Kind))
+            {
+                if (children.Count != 1) return "Decorator '" + header.Title + "' must have exactly one child.";
+                double duration = graph.FindDecoratorData(guid).Duration;
+                if (header.Kind != BtNodeKind.Inverter && (double.IsNaN(duration) || double.IsInfinity(duration) || duration < 0))
+                    return "Decorator duration must be finite and nonnegative.";
+            }
             if (children.Count == 0 || children.Count > byte.MaxValue) return "Node '" + header.Title + "' must have between 1 and 255 children.";
             if (header.Kind == BtNodeKind.Parallel)
             {
