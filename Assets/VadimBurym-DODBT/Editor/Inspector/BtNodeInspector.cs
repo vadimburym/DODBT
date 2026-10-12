@@ -72,7 +72,7 @@ internal sealed class BtNodeInspector : IDisposable
 #endif
                     break;
                 case BtNodeKind.Leaf:
-                    _fields.DrawLayout(_serialized.FindProperty(root + ".Leaf"), GUIContent.none);
+                    _fields.DrawLeafLayout(_serialized.FindProperty(root + ".Leaf"));
                     break;
                 case BtNodeKind.MemorySequence:
                     DrawField(root, "ResetOnFailure");

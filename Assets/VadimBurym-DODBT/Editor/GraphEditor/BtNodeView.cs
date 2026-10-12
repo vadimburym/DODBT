@@ -442,6 +442,8 @@ internal sealed class BtNodeView : Node
         if (Kind == BtNodeKind.Leaf || BtNodeKinds.IsDecorator(Kind))
         {
             _leafContainer = new IMGUIContainer(DrawLeafInNode);
+            _leafContainer.RegisterCallback<MouseMoveEvent>(_ => _leafContainer.MarkDirtyRepaint());
+            _leafContainer.RegisterCallback<MouseLeaveEvent>(_ => _leafContainer.MarkDirtyRepaint());
             _leafContainer.style.marginTop = 2;
             _leafContainer.SetEnabled(allowEdit);
             extensionContainer.Add(_leafContainer);

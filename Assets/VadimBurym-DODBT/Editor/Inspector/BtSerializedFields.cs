@@ -18,6 +18,7 @@ internal sealed class BtSerializedFields : IDisposable
     private readonly HashSet<long> _measuring = new();
     private BtTypePicker _picker;
     private bool _disposed;
+    private readonly string _leafControlName = "DODBT.LeafSelector." + Guid.NewGuid().ToString("N");
 
     internal BtSerializedFields(UnityEngine.Object owner, Func<string, string> resolvePath, Action changed)
     {
@@ -34,6 +35,71 @@ internal sealed class BtSerializedFields : IDisposable
         var rect = EditorGUILayout.GetControlRect(true, height);
         _drawing.Clear();
         Draw(rect, property, label);
+    }
+
+    internal static bool HasVisibleFields(SerializedProperty property)
+    {
+        if (property == null || property.managedReferenceValue == null) return false;
+        using var child = property.Copy();
+        using var end = child.GetEndProperty();
+        return child.NextVisible(true) && !SerializedProperty.EqualContents(child, end) && child.depth > property.depth;
+    }
+
+    internal void DrawLeafLayout(SerializedProperty property)
+    {
+        if (property == null) return;
+        bool hasFields = HasVisibleFields(property);
+        bool expanded = hasFields && property.isExpanded;
+        var children = new List<SerializedProperty>();
+        try
+        {
+            if (expanded)
+            {
+                using var child = property.Copy();
+                using var end = child.GetEndProperty();
+                if (child.NextVisible(true))
+                    do
+                    {
+                        if (SerializedProperty.EqualContents(child, end)) break;
+                        children.Add(child.Copy());
+                    } while (child.NextVisible(false));
+            }
+            _measuring.Clear();
+            _measuring.Add(property.managedReferenceId);
+            float height = BtLeafSelector.Height;
+            foreach (var child in children) height += Gap + Height(child, new GUIContent(child.displayName));
+            if (expanded) height += 9;
+            var rect = EditorGUILayout.GetControlRect(false, height);
+            var header = new Rect(rect.x, rect.y, rect.width, BtLeafSelector.Height);
+            bool nextExpanded = expanded;
+            if (BtLeafSelector.Draw(header, BtTypePicker.Resolve(property.managedReferenceFullTypename), hasFields, ref nextExpanded, _leafControlName))
+                OpenPicker(header, property);
+            if (expanded != nextExpanded) property.isExpanded = nextExpanded;
+            // Use the measured expansion for this event; the next layout applies the foldout change.
+            if (!expanded) return;
+            EditorGUI.DrawRect(new Rect(rect.x + 8, header.yMax + 4, rect.width - 16, 1), new Color(1, 1, 1, .08f));
+            float y = header.yMax + 9;
+            _drawing.Clear();
+            _drawing.Add(property.managedReferenceId);
+            foreach (var child in children)
+            {
+                var label = new GUIContent(child.displayName, child.tooltip);
+                _measuring.Clear();
+                _measuring.Add(property.managedReferenceId);
+                float childHeight = Height(child, label);
+                Draw(new Rect(rect.x + 8, y, rect.width - 16, childHeight), child, label);
+                y += childHeight + Gap;
+            }
+        }
+        finally { foreach (var child in children) child.Dispose(); }
+    }
+
+    private void OpenPicker(Rect rect, SerializedProperty property)
+    {
+        string path = property.propertyPath;
+        var baseType = BtTypePicker.Resolve(property.managedReferenceFieldTypename);
+        _picker = new BtTypePicker(baseType, selected => Assign(path, selected), BtTypePicker.Resolve(property.managedReferenceFullTypename));
+        _picker.Show(rect);
     }
 
     private static bool NeedsManagedEditor(SerializedProperty property)
@@ -93,10 +159,7 @@ internal sealed class BtSerializedFields : IDisposable
             var type = BtTypePicker.Resolve(property.managedReferenceFullTypename);
             if (EditorGUI.DropdownButton(button, new GUIContent(type?.Name ?? "None", type?.FullName), FocusType.Keyboard))
             {
-                string path = property.propertyPath;
-                var baseType = BtTypePicker.Resolve(property.managedReferenceFieldTypename);
-                _picker = new BtTypePicker(baseType, selected => Assign(path, selected), type);
-                _picker.Show(button);
+                OpenPicker(button, property);
             }
         }
         else property.isExpanded = EditorGUI.Foldout(header, property.isExpanded, label, true);

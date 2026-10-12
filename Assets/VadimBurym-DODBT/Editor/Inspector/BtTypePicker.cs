@@ -24,7 +24,6 @@ internal sealed class BtTypePicker : PopupWindowContent
     private GUIStyle _nameStyle;
     private GUIStyle _namespaceStyle;
     private GUIStyle _hintStyle;
-    private readonly Vector3[] _leafShape = new Vector3[8];
 
     internal BtTypePicker(Type baseType, Action<Type> select, Type currentType = null)
     {
@@ -164,25 +163,11 @@ internal sealed class BtTypePicker : PopupWindowContent
             GUI.Label(new Rect(row.xMax - 22, row.y + 4, 18, 20), new GUIContent("✓", "Current type"), _namespaceStyle);
     }
 
-    private void DrawLeaf(Rect rect)
+    private static void DrawLeaf(Rect rect)
     {
         if (Event.current.type != EventType.Repaint) return;
-        var color = Handles.color;
         if (!EditorGUIUtility.isProSkin) EditorGUI.DrawRect(rect, new Color(.38f, .42f, .45f));
-        _leafShape[0] = new Vector3(rect.x + 3, rect.y + 12);
-        _leafShape[1] = new Vector3(rect.x + 2, rect.y + 8);
-        _leafShape[2] = new Vector3(rect.x + 4, rect.y + 4);
-        _leafShape[3] = new Vector3(rect.x + 9, rect.y + 2);
-        _leafShape[4] = new Vector3(rect.x + 14, rect.y + 1);
-        _leafShape[5] = new Vector3(rect.x + 13, rect.y + 7);
-        _leafShape[6] = new Vector3(rect.x + 10, rect.y + 11);
-        _leafShape[7] = new Vector3(rect.x + 6, rect.y + 13);
-        Handles.color = Color.white;
-        Handles.DrawAAConvexPolygon(_leafShape);
-        Handles.DrawAAPolyLine(1.5f, new Vector3(rect.x + 1, rect.y + 15), new Vector3(rect.x + 6, rect.y + 10));
-        Handles.color = new Color(.35f, .39f, .42f);
-        Handles.DrawAAPolyLine(1, new Vector3(rect.x + 5, rect.y + 11), new Vector3(rect.x + 11, rect.y + 5));
-        Handles.color = color;
+        BtLeafSelector.DrawIcon(rect, Color.white);
     }
 
     private void HandleKeys(Event evt, float listHeight)

@@ -448,6 +448,8 @@ internal sealed class BtEditorWindow : EditorWindow
         details.Add(nodeSettingsHeader);
         
         _detailsContainer = new IMGUIContainer(DrawDetails);
+        _detailsContainer.RegisterCallback<MouseMoveEvent>(_ => _detailsContainer.MarkDirtyRepaint());
+        _detailsContainer.RegisterCallback<MouseLeaveEvent>(_ => _detailsContainer.MarkDirtyRepaint());
         _detailsContainer.style.marginTop = 2;
         details.Add(_detailsContainer);
         
