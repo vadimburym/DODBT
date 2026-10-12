@@ -756,10 +756,7 @@ internal sealed partial class BtGraphView : GraphView
         var hasPath = HasPath(childGuid, parentGuid, _visited);
         if (hasPath)
         {
-            LogRequested?.Invoke(
-                $"Connection blocked: would create cyclic dependency ({parentNode.title} → {childNode.title})",
-                LogLevel.Warning,
-                false);
+            WarnGraph($"Connection blocked: would create cyclic dependency ({parentNode.title} → {childNode.title})");
         }
         return hasPath;
     }

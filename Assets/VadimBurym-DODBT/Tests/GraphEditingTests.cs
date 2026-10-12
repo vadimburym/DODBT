@@ -110,6 +110,30 @@ namespace VadimBurym.DodBehaviourTree.Tests
             Assert.That(source.Nodes.Count, Is.EqualTo(3));
         }
 
+        [TestCase("cycle")]
+        [TestCase("duplicate-child")]
+        [TestCase("shared-child")]
+        [TestCase("parent-mismatch")]
+        [TestCase("nonfinite-position")]
+        public void Clipboard_InvalidTopologyIsRejectedBeforeChangingDestination(string fault)
+        {
+            var source = Graph();
+            var destination = Graph();
+            if (fault == "cycle") source.FindSequenceData("sequence").ChildrenGuids.Add("sequence");
+            if (fault == "duplicate-child") source.FindSequenceData("sequence").ChildrenGuids.Add("left");
+            if (fault == "parent-mismatch") source.FindHeader("left").ParentGuid = "right";
+            if (fault == "nonfinite-position") source.FindHeader("left").Position = new Vector2(float.PositiveInfinity, 0);
+            if (fault == "shared-child")
+            {
+                source.Nodes.Add(new BtNodeHeader { Guid = "other", Kind = BtNodeKind.Sequence });
+                source.SequenceNodes.Add(new BtSequenceNodeData { Guid = "other", ChildrenGuids = new() { "left" } });
+            }
+            string text = BtGraphClipboard.Copy(source, source.Nodes.Select(n => n.Guid));
+            string before = EditorJsonUtility.ToJson(destination);
+            Assert.Throws<InvalidOperationException>(() => BtGraphClipboard.Paste(destination, text, Vector2.zero));
+            Assert.That(EditorJsonUtility.ToJson(destination), Is.EqualTo(before));
+        }
+
         [Test]
         public void Clipboard_PersistentAssetReferenceSurvivesRoundTrip()
         {

@@ -23,11 +23,11 @@ internal sealed partial class BtGraphView
         try { error = BtLinkedGroups.ConnectionError(GraphAsset, parent, child); }
         catch (InvalidOperationException exception) { error = exception.Message; }
         if (error == null) return true;
-        WarnGroup(error);
+        WarnGraph(error);
         return false;
     }
 
-    private void WarnGroup(string message)
+    internal void WarnGraph(string message)
     {
         Debug.LogWarning(message, GraphAsset);
         LogRequested?.Invoke(message, LogLevel.Warning, false);
@@ -184,7 +184,7 @@ internal sealed partial class BtGraphView
             ClearSelection();
             if (_nodeViewsByGuid.TryGetValue(guid, out var root)) AddToSelection(root);
         }
-        catch (InvalidOperationException exception) { WarnGroup(exception.Message); }
+        catch (InvalidOperationException exception) { WarnGraph(exception.Message); }
     }
 
     private void ConfigureGroupViews()

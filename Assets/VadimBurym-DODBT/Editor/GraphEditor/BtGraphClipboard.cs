@@ -87,7 +87,7 @@ internal static class BtGraphClipboard
         try
         {
             var payload = JsonUtility.FromJson<Payload>(text.Substring(Prefix.Length));
-            if (payload == null || payload.Project != Application.dataPath || string.IsNullOrEmpty(payload.Graph))
+            if (payload == null || payload.Project != Application.dataPath || string.IsNullOrEmpty(payload.Graph) || payload.References == null)
                 throw new InvalidOperationException("The clipboard belongs to another project or has an invalid format.");
             EditorJsonUtility.FromJsonOverwrite(payload.Graph, snapshot);
             if (SerializationUtility.HasManagedReferencesWithMissingTypes(snapshot))
@@ -96,6 +96,8 @@ internal static class BtGraphClipboard
             {
                 foreach (var reference in payload.References)
                 {
+                    if (reference == null || string.IsNullOrEmpty(reference.Path))
+                        throw new InvalidOperationException("The clipboard contains an invalid object reference.");
                     Object value = null;
                     if (reference.Persistent && GlobalObjectId.TryParse(reference.GlobalId, out var globalId))
                         value = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalId);
@@ -123,6 +125,7 @@ internal static class BtGraphClipboard
                 if (!hasData) throw new InvalidOperationException("The clipboard is missing node settings.");
             }
             KeepSelectedData(snapshot, remap.Keys.ToHashSet());
+            ValidateTopology(snapshot, offset);
             // Remap the whole snapshot before mutating the destination or recording Undo.
             foreach (var node in snapshot.Nodes)
             {
@@ -164,6 +167,44 @@ internal static class BtGraphClipboard
             return snapshot.Nodes.Select(node => node.Guid).ToList();
         }
         finally { Object.DestroyImmediate(snapshot); }
+    }
+
+    private static void ValidateTopology(BtGraphAsset graph, Vector2 offset)
+    {
+        var headers = graph.Nodes.ToDictionary(n => n.Guid);
+        var parents = new Dictionary<string, string>();
+        foreach (var node in graph.Nodes)
+        {
+            var position = node.Position + offset;
+            if (float.IsNaN(position.x) || float.IsInfinity(position.x) || float.IsNaN(position.y) || float.IsInfinity(position.y))
+                throw new InvalidOperationException("The clipboard contains an invalid node position.");
+            var children = graph.GetChildrenList(node.Guid, node.Kind);
+            if (children == null) continue;
+            if (BtNodeKinds.IsDecorator(node.Kind) && children.Count > 1)
+                throw new InvalidOperationException("A copied decorator cannot have more than one child.");
+            foreach (string child in children)
+            {
+                if (string.IsNullOrEmpty(child) || !headers.ContainsKey(child) || !parents.TryAdd(child, node.Guid))
+                    throw new InvalidOperationException("The clipboard contains a missing child, duplicate connection, or multiple parents.");
+            }
+        }
+        foreach (var node in graph.Nodes)
+        {
+            parents.TryGetValue(node.Guid, out string parent);
+            if ((node.ParentGuid ?? "") != (parent ?? ""))
+                throw new InvalidOperationException("The clipboard contains inconsistent parent connections.");
+        }
+        var pending = new Queue<string>(headers.Keys.Where(id => !parents.ContainsKey(id)));
+        int visited = 0;
+        while (pending.Count > 0)
+        {
+            string id = pending.Dequeue();
+            visited++;
+            var children = graph.GetChildrenList(id, headers[id].Kind);
+            if (children != null)
+                foreach (string child in children) pending.Enqueue(child);
+        }
+        if (visited != headers.Count) throw new InvalidOperationException("The clipboard contains a cycle.");
     }
 
     private static void KeepSelectedData(BtGraphAsset graph, HashSet<string> ids)
