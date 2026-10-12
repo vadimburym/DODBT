@@ -23,6 +23,7 @@ namespace VadimBurym.DodBehaviourTree
         private BehaviourTreeAsset _asset;
         private ILeaf<TContext, TLeafState>[] _leafs;
         private int[] _buffer;
+        private int[] _randomOrderOffsets;
 
         public void Construct(BehaviourTreeAsset asset)
         {
@@ -48,7 +49,17 @@ namespace VadimBurym.DodBehaviourTree
                 _leafs[i] = (ILeaf<TContext, TLeafState>)asset.Leafs[i];
 #endif
             }
-            _buffer = new int[asset.ChildBufferSize];
+            // Nested random selectors must not overwrite the order of their parents.
+            // These buffers belong to the shared tree, not to individual agents.
+            _randomOrderOffsets = new int[asset.MemorySelectorNodes.Length];
+            int bufferSize = 0;
+            for (int i = 0; i < asset.MemorySelectorNodes.Length; i++)
+            {
+                _randomOrderOffsets[i] = bufferSize;
+                if (asset.MemorySelectorNodes[i].PickRandom)
+                    bufferSize += asset.MemorySelectorNodes[i].ChildCount;
+            }
+            _buffer = bufferSize == 0 ? Array.Empty<int>() : new int[bufferSize];
         }
         
         public void FillInitialState(BtState<TLeafState> btState)
@@ -68,6 +79,8 @@ namespace VadimBurym.DodBehaviourTree
                     nodeState.LeafStateIndex = node.DataIndex;
             }
 #if UNITY_EDITOR
+            btState.DebugRunningLeafs.Clear();
+            btState.DebugRunningLeafIndices.Clear();
             if (btState.DebugStatus.Length < nodes.Length)
                 btState.DebugStatus = new NodeStatus[Mathf.NextPowerOfTwo(nodes.Length)];
             var debugStatus = btState.DebugStatus;
@@ -80,10 +93,15 @@ namespace VadimBurym.DodBehaviourTree
         {
 #if UNITY_EDITOR
             state.DebugRunningLeafs.Clear();
+            state.DebugRunningLeafIndices.Clear();
             for (int i = 0; i < state.DebugStatus.Length; i++)
                 state.DebugStatus[i] = NodeStatus.None;
             var status = TickNode(context, state, _asset.RootIndex);
             state.DebugStatus[_asset.RootIndex] = status;
+            // A parent may abort leaves that returned Running earlier in this tick.
+            foreach (int index in state.DebugRunningLeafIndices)
+                if (state.NodeStates[index].IsEntered)
+                    state.DebugRunningLeafs.Add(DebugUtils.GetLeafName(_leafs[_asset.Nodes[index].DataIndex]));
 #else
             TickNode(context, state, _asset.RootIndex);
 #endif
@@ -92,6 +110,11 @@ namespace VadimBurym.DodBehaviourTree
         public void Abort(TContext context, BtState<TLeafState> state)
         {
             AbortNode(context, state, _asset.RootIndex);
+#if UNITY_EDITOR
+            state.DebugRunningLeafs.Clear();
+            state.DebugRunningLeafIndices.Clear();
+            Array.Clear(state.DebugStatus, 0, state.DebugStatus.Length);
+#endif
         }
         
         private NodeStatus TickNode(TContext context, BtState<TLeafState> state, int index)
@@ -165,10 +188,11 @@ namespace VadimBurym.DodBehaviourTree
                             return status;
                         }
                     }
-                    WarmUpBuffer(memorySelectorNode.PickRandom, memorySelectorNode.ChildCount);
+                    int orderOffset = _randomOrderOffsets[node.DataIndex];
+                    if (memorySelectorNode.PickRandom) WarmUpBuffer(orderOffset, memorySelectorNode.ChildCount);
                     for (int i = 0; i < memorySelectorNode.ChildCount; i++)
                     {
-                        var bufferCursor = _buffer[i];
+                        var bufferCursor = memorySelectorNode.PickRandom ? _buffer[orderOffset + i] : i;
                         var status = TickNode(context, state, memorySelectorNode.FirstChild + bufferCursor);
 #if UNITY_EDITOR
                         state.DebugStatus[memorySelectorNode.FirstChild + bufferCursor] = status;
@@ -191,8 +215,7 @@ namespace VadimBurym.DodBehaviourTree
                     var leafStatus = leaf.OnTick(context, ref leafState);
 #if UNITY_EDITOR
                     state.DebugStatus[index] = leafStatus;
-                    if (leafStatus == NodeStatus.Running)
-                        state.DebugRunningLeafs.Add(DebugUtils.GetLeafName(leaf));
+                    if (leafStatus == NodeStatus.Running) state.DebugRunningLeafIndices.Add(index);
 #endif
                     if (leafStatus != NodeStatus.Running)
                     {
@@ -207,8 +230,22 @@ namespace VadimBurym.DodBehaviourTree
                     for (int i = 0; i < parallelNode.ChildCount; i++)
                     {
                         ref var childState = ref state.NodeStates[parallelNode.FirstChild + i];
-                        if (childState.CachedStatus == Failure) {fails++; continue;}
-                        if (childState.CachedStatus == Success) {success++; continue;}
+                        if (childState.CachedStatus == Failure)
+                        {
+                            fails++;
+#if UNITY_EDITOR
+                            state.DebugStatus[parallelNode.FirstChild + i] = NodeStatus.Failure;
+#endif
+                            continue;
+                        }
+                        if (childState.CachedStatus == Success)
+                        {
+                            success++;
+#if UNITY_EDITOR
+                            state.DebugStatus[parallelNode.FirstChild + i] = NodeStatus.Success;
+#endif
+                            continue;
+                        }
                         var status = TickNode(context, state, parallelNode.FirstChild + i);
 #if UNITY_EDITOR
                         state.DebugStatus[parallelNode.FirstChild + i] = status;
@@ -216,12 +253,12 @@ namespace VadimBurym.DodBehaviourTree
                         if (status == NodeStatus.Failure)
                         {
                             fails++;
-                            if (parallelNode.CacheChildStatus) childState.CachedStatus = Failure;
+                            childState.CachedStatus = parallelNode.CacheChildStatus ? Failure : Unknown;
                         }
                         else if (status == NodeStatus.Success)
                         {
                             success++;
-                            if (parallelNode.CacheChildStatus) childState.CachedStatus = Success;
+                            childState.CachedStatus = parallelNode.CacheChildStatus ? Success : Unknown;
                         }
                         else
                         {
@@ -247,6 +284,9 @@ namespace VadimBurym.DodBehaviourTree
 
         private void AbortNode(TContext context, BtState<TLeafState> state, int index)
         {
+#if UNITY_EDITOR
+            state.DebugStatus[index] = NodeStatus.None;
+#endif
             ref var node = ref _asset.Nodes[index];
             ref var nodeState = ref state.NodeStates[index];
             switch (node.Id)
@@ -302,15 +342,14 @@ namespace VadimBurym.DodBehaviourTree
             }
         }
 
-        private void WarmUpBuffer(bool isRandom, int count)
+        private void WarmUpBuffer(int offset, int count)
         {
             for (int i = 0; i < count; i++) 
-                _buffer[i] = i;
-            if (!isRandom) return;
+                _buffer[offset + i] = i;
             for (int i = count - 1; i > 0; i--)
             {
                 int j = Random.Range(0, i + 1);
-                (_buffer[i], _buffer[j]) = (_buffer[j], _buffer[i]);
+                (_buffer[offset + i], _buffer[offset + j]) = (_buffer[offset + j], _buffer[offset + i]);
             }
         }
     }

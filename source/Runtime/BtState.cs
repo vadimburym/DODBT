@@ -24,6 +24,7 @@ namespace VadimBurym.DodBehaviourTree
         List<string> IBtDebugState.DebugRunningLeafs => DebugRunningLeafs;
         internal NodeStatus[] DebugStatus = Array.Empty<NodeStatus>();
         internal List<string> DebugRunningLeafs = new();
+        internal List<int> DebugRunningLeafIndices = new();
 #endif
     }
 }

@@ -55,6 +55,7 @@ namespace VadimBurym.DodBehaviourTree.Tests
                 graph.LeafNodes.Add(new BtLeafNodeData { Guid = "leaf", Leaf = leaf });
                 string error = BtCompiler.TryCompileAsset(graph, graph.CompiledAsset);
                 if (!string.IsNullOrEmpty(error)) throw new BuildFailedException(error);
+                CreateRuntimeAuditAssets(folder);
                 PlayerSettings.SetManagedStrippingLevel(namedTarget, ManagedStrippingLevel.High);
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
@@ -75,6 +76,49 @@ namespace VadimBurym.DodBehaviourTree.Tests
                 Object.DestroyImmediate(graph);
                 AssetDatabase.DeleteAsset(folder);
             }
+        }
+
+        private static void CreateRuntimeAuditAssets(string folder)
+        {
+            for (int mode = 0; mode < 5; mode++)
+            {
+                var graph = ScriptableObject.CreateInstance<BtGraphAsset>();
+                try
+                {
+                    graph.CompiledAsset = ScriptableObject.CreateInstance<BehaviourTreeAsset>();
+                    string name = mode < 4 ? "DODBT_SelectorSmoke_" + mode : "DODBT_ParallelSmoke";
+                    AssetDatabase.CreateAsset(graph.CompiledAsset, folder + "/Resources/" + name + ".asset");
+                    graph.RootNode = new BtRootNodeData { Guid = "root", ChildrenGuid = "outer" };
+                    if (mode < 4)
+                    {
+                        graph.Nodes.Add(new BtNodeHeader { Guid = "outer", Kind = BtNodeKind.MemorySelector });
+                        graph.Nodes.Add(new BtNodeHeader { Guid = "inner", Kind = BtNodeKind.MemorySelector });
+                        graph.MemorySelectorNodes.Add(new BtMemorySelectorNodeData { Guid = "outer", PickRandom = (mode & 1) != 0, ChildrenGuids = new() { "inner", "leaf0", "leaf1" } });
+                        graph.MemorySelectorNodes.Add(new BtMemorySelectorNodeData { Guid = "inner", PickRandom = (mode & 2) != 0, ChildrenGuids = new() { "leaf2", "leaf3", "leaf4" } });
+                        for (int i = 0; i < 5; i++) AddLeaf(graph, i, NodeStatus.Failure, NodeStatus.Failure, NodeStatus.Failure);
+                    }
+                    else
+                    {
+                        graph.Nodes.Add(new BtNodeHeader { Guid = "outer", Kind = BtNodeKind.Parallel });
+                        graph.Nodes.Add(new BtNodeHeader { Guid = "inner", Kind = BtNodeKind.MemorySequence });
+                        graph.ParallelNodes.Add(new BtParallelNodeData { Guid = "outer", CacheChildStatus = false, SuccessThreshold = 2, FailureThreshold = 2, ChildrenGuids = new() { "inner", "leaf2" } });
+                        graph.MemorySequenceNodes.Add(new BtMemorySequenceNodeData { Guid = "inner", ResetOnFailure = false, ResetOnAbort = true, ChildrenGuids = new() { "leaf0", "leaf1" } });
+                        AddLeaf(graph, 0, NodeStatus.Success, NodeStatus.Success, NodeStatus.Success);
+                        AddLeaf(graph, 1, NodeStatus.Running, NodeStatus.Failure, NodeStatus.Success);
+                        AddLeaf(graph, 2, NodeStatus.Running, NodeStatus.Running, NodeStatus.Running);
+                    }
+                    string error = BtCompiler.TryCompileAsset(graph, graph.CompiledAsset);
+                    if (!string.IsNullOrEmpty(error)) throw new BuildFailedException(error);
+                }
+                finally { Object.DestroyImmediate(graph); }
+            }
+        }
+
+        private static void AddLeaf(BtGraphAsset graph, int slot, NodeStatus first, NodeStatus second, NodeStatus later)
+        {
+            string guid = "leaf" + slot;
+            graph.Nodes.Add(new BtNodeHeader { Guid = guid, Kind = BtNodeKind.Leaf, Title = guid });
+            graph.LeafNodes.Add(new BtLeafNodeData { Guid = guid, Leaf = new SmokeTraversalLeaf { Slot = slot, First = first, Second = second, Later = later } });
         }
     }
 }

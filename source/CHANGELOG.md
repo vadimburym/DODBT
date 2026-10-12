@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.1] - 2026-10-12
+
+### Changed
+- Restyled the type picker with white leaf icons, emphasized class names, muted namespace labels, roomier rows, a current-type marker, and keyboard hints. Search matches class names and namespaces; long names expose their full qualified name in a tooltip. Assembly names remain hidden.
+
+### Fixed
+- Isolated the shuffle storage of nested `MemorySelector` nodes. Random traversal no longer overwrites a parent's order, skips siblings, or visits the same child twice in a fresh traversal. Ordered selectors continue to execute left to right.
+- Cleared stale running status when a non-caching `Parallel` child completes. Aborting another active child no longer resets a completed `MemorySequence` with retained failure memory.
+- Corrected debug running-leaf lists after internal aborts, explicit aborts, and state initialization. Cached `Parallel` child results remain visible on subsequent ticks.
+
+### Verification
+- Added regression coverage for nested ordered/random selector combinations, independent agent states on a shared tree, steady-state managed allocations, parallel completion, and debug state cleanup.
+- Extended opt-in player smoke checks with compiled nested-selector and parallel graphs.
+- Existing `MemorySelector` behavior after a remembered child fails is retained: retry children from the beginning, including that child. `ResetOnAbort`, `ResetOnFailure`, and leaf callback ordering are unchanged.
+- Shuffle storage is allocated once during tree construction, with a separate segment per random selector; no per-agent shuffle arrays or per-tick allocations are introduced. Existing compiled assets require no format migration.
+- Unity 6000.0.51f1: 66/66 EditMode tests passed with default settings and with `DODBT_SMALL_SIZE`. Nested shared-tree traversal and active-leaf debug tracking allocated zero managed bytes in the measured steady-state tests.
+- Windows x64 / Mono / High stripping: build succeeded; the verification player passed serialization, runtime audit, and example smoke checks with exit code 0. The build reported 9 NavMeshPlus/URP warnings; the existing ComputeBuffer disposal warning remains at player shutdown.
+
 ## [0.3.0] - 2026-10-10
 
 ### Changed

@@ -37,9 +37,9 @@ Works great with ECS architecture.
 ⭐ **Production-grade**  
 Tests coverage. Game designers can configure BTs without touching code.
 
-**DODBT 0.3.0**: graph editing, inspectors, compilation, and debugging use Unity APIs. Odin Inspector is not required.
+**DODBT 0.3.1**: fixes nested MemorySelector traversal, Parallel abort bookkeeping, and Debug Mode state; refreshes the type picker layout. Graph editing, inspectors, compilation, and debugging use Unity APIs. Odin Inspector is not required.
 
-Validated with **Unity 6000.0.51f1**. See the [0.3.0 release notes](docs~/releases/v0.3.0.md) for test results, verified builds, and validation scope.
+Validated with **Unity 6000.0.51f1**. See the [0.3.1 release notes](docs~/releases/v0.3.1.md) for test results, verified builds, and validation scope.
 
 > ⚠ **IMPORTANT!** A dedicated `DOTS` [version of this plugin](https://github.com/vadimburym/DOTS-Battle-Simulator-Prototype) with `BlobAsset` and `Burst` support is currently in development.
 This version can still be used if you're comfortable running the Behaviour Tree and states as a main-thread managed decision layer, ticking it once every N seconds.
@@ -67,13 +67,13 @@ https://github.com/vadimburym/DODBT.git?path=/source
 ```
 - **Stable version** `RECOMMENDED`:
 ```
-https://github.com/vadimburym/DODBT.git?path=/source#v0.3.0
+https://github.com/vadimburym/DODBT.git?path=/source#v0.3.1
 ```
 - **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
 
-### Upgrading to 0.3.0
+### Upgrading to 0.3.1
 
-Update the package URL to the `v0.3.0` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
+Update the package URL to the `v0.3.1` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
 
 See the [CHANGELOG](source/CHANGELOG.md) for release changes. Remove Odin from the consuming project only if no other plugins or game code depend on it.
 
@@ -277,7 +277,7 @@ _btMonoDebug.Construct(btAsset, btState);
 
 ## Example Project
 
-The complete [DODBT 0.3.0 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
+The complete [DODBT 0.3.1 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
 
 ## Public Classes and Methods
 
@@ -303,6 +303,10 @@ The complete [DODBT 0.3.0 example project](https://github.com/vadimburym/DODBT/t
 
 ## Roadmap
 
+**0.4.0** is planned to include optional `Timeout`, `Cooldown`, and `Inverter` nodes behind `DODBT_DECORATORS`, graph search, and copying individual nodes or selected blocks. Visual left-to-right execution order is preserved. Execution history is deferred. Linked subtrees are under evaluation and are not part of the committed release scope.
+
+See the [detailed 0.4.0 plan (Russian)](docs~/roadmap-0.4.0.md) for timer, abort, sparse-tick, and linked-subtree semantics.
+
 - DOTS-compatible version:
     - ~~Burst compatibility~~ ✅
     - ~~BlobAsset compatibility~~ ✅
@@ -310,7 +314,6 @@ The complete [DODBT 0.3.0 example project](https://github.com/vadimburym/DODBT/t
     - ~~Quality of Life extension~~ ✅
     - Code generation
     - Debug mode compatibility
-- Decorators
 - More examples
 - Documentation improvements
 - Polishing
