@@ -14,6 +14,7 @@
 - Copy/paste and duplicate for individual nodes and selected blocks. Copies retain internal connections, relative positions, managed-reference data, and Unity asset references; use new GUIDs; and support Undo/Redo. External connections are excluded.
 
 ### Changed
+- Dragging a linked-group root previews its members' positions continuously. The graph asset and Undo are updated when the drag finishes, without cloning leaf data on pointer movement. Escape cancels the move; losing mouse capture finishes it and stops native edge panning.
 - Type pickers distinguish node leaf implementations (white leaf icons) from nested managed-reference values (neutral object icons). The field's role determines the icon, including nested collection elements.
 - Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, a separate parameter foldout, and a namespace tooltip. Leaves without visible serialized fields have no foldout; expanded fields sit below a subtle divider.
 
@@ -28,6 +29,7 @@
 - Changing a decorator in Details refreshes its inline node inspector.
 
 ### Verification
+- After live linked-group dragging, 135/135 EditMode tests passed with decorators enabled and 111/111 without them, using default indices. Native mouse-event coverage verifies movement before release, unchanged serialized data during preview, multiple selected members and instances at zoom, Escape, capture loss during edge panning, and Undo/Redo.
 - After the edge appearance fix, 133/133 EditMode tests passed with decorators enabled, including pointer events, edge hit testing, retained group highlighting, and explicit edge selection.
 - Unity 6000.0.51f1: 132/132 EditMode tests with decorators enabled and 108/108 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
 - Editor interaction tests exercise separate leaf picker/foldout click targets, keyboard activation, disabled input, expanded cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`; all four verification runs used graphics and skipped no tests.

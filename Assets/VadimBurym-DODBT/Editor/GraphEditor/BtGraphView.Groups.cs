@@ -63,6 +63,11 @@ internal sealed partial class BtGraphView
         if (_isBinding || IsReadOnly || GraphAsset == null) return OnGraphViewChangedCore(change);
         BeginGroupEdit();
         var moved = change.movedElements;
+        if (moved != null)
+        {
+            EndGroupDragPreview(restore: false);
+            _applyingGroupPositions = true;
+        }
         try
         {
             if (change.elementsToRemove != null)
@@ -132,7 +137,12 @@ internal sealed partial class BtGraphView
                 GraphStructureChanged?.Invoke();
             }
         }
-        finally { change.movedElements = moved; EndGroupEdit(); }
+        finally
+        {
+            if (moved != null) _applyingGroupPositions = false;
+            change.movedElements = moved;
+            EndGroupEdit();
+        }
         return change;
     }
 
@@ -194,6 +204,7 @@ internal sealed partial class BtGraphView
         var instance = BtLinkedGroups.Find(GraphAsset, id);
         var family = instance == null ? null : BtLinkedGroups.Family(GraphAsset, instance);
         view.SetGroupRoot(instance?.RootGuid == id, family?.Name);
+        if (instance?.RootGuid == id) view.PositionChanged += PreviewGroupRootPosition;
         view.RegisterCallback<MouseEnterEvent>(_ => { _hoverGroup = family?.Id; RefreshGroupHighlights(); });
         view.RegisterCallback<MouseLeaveEvent>(_ => { _hoverGroup = null; RefreshGroupHighlights(); });
         if (!IsReadOnly && view.Kind != BtNodeKind.Root)

@@ -69,10 +69,11 @@ internal sealed partial class BtGraphView : GraphView
         minimap.style.overflow = Overflow.Hidden;
         Add(minimap);
 
+        ConfigureGroupDragging();
         this.AddManipulator(new ContentDragger());
         if (!isReadOnly)
         {
-            this.AddManipulator(new SelectionDragger());
+            this.AddManipulator(_selectionDragger);
             this.AddManipulator(new RectangleSelector());
             this.AddManipulator(new ContextualMenuManipulator(menuEvent =>
             {
@@ -186,6 +187,7 @@ internal sealed partial class BtGraphView : GraphView
     
     internal void DisposeInspectors()
     {
+        EndGroupDragPreview(restore: false);
         foreach (var view in _nodeViewsByGuid.Values) view.DisposeInspector();
     }
 

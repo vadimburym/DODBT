@@ -219,6 +219,133 @@ namespace VadimBurym.DodBehaviourTree.Tests
             finally { view.DisposeInspectors(); view.RemoveFromHierarchy(); }
         }
 
+        private BtGraphView CreateDragGraph(out string copyRoot)
+        {
+            _graph = ScriptableObject.CreateInstance<BtGraphAsset>();
+            _graph.RootNode = new BtRootNodeData { Guid = "root", ChildrenGuid = "branch" };
+            _graph.Nodes.Add(new BtNodeHeader { Guid = "branch", Kind = BtNodeKind.Sequence, Position = new Vector2(60, 60) });
+            _graph.SequenceNodes.Add(new BtSequenceNodeData { Guid = "branch", ChildrenGuids = new() { "leaf" } });
+            _graph.Nodes.Add(new BtNodeHeader { Guid = "leaf", Kind = BtNodeKind.Leaf, ParentGuid = "branch", Position = new Vector2(80, 180) });
+            _graph.LeafNodes.Add(new BtLeafNodeData { Guid = "leaf", Leaf = new SnapshotTestLeaf() });
+            var family = BtLinkedGroups.Create(_graph, "branch");
+            copyRoot = BtLinkedGroups.Duplicate(_graph, family.Instances[0], Vector2.right * 400).RootGuid;
+            var view = new BtGraphView(false);
+            _window.rootVisualElement.Add(view);
+            view.Bind(_graph);
+            return view;
+        }
+
+        private static void GraphMouse(VisualElement target, EventType type, Vector2 point)
+        {
+            var systemEvent = new Event { type = type, button = 0, mousePosition = point };
+            if (type == EventType.MouseDown)
+            {
+                using var evt = MouseDownEvent.GetPooled(systemEvent);
+                evt.target = target; target.SendEvent(evt);
+            }
+            else if (type == EventType.MouseUp)
+            {
+                using var evt = MouseUpEvent.GetPooled(systemEvent);
+                evt.target = target; target.SendEvent(evt);
+            }
+            else
+            {
+                using var evt = MouseMoveEvent.GetPooled(systemEvent);
+                evt.target = target; target.SendEvent(evt);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator LinkedRootDrag_PreviewsBeforeRelease_CommitsOnceAndSupportsUndo()
+        {
+            var view = CreateDragGraph(out string copyRoot);
+            try
+            {
+                yield return FlushPanel(view);
+                var root = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == "branch");
+                var leaf = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == "leaf");
+                var peer = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == copyRoot);
+                Vector2 rootOrigin = root.GetPosition().position, leafOrigin = leaf.GetPosition().position;
+                Vector2 peerOrigin = peer.GetPosition().position;
+                object leafData = _graph.FindLeafData("leaf").Leaf;
+                view.AddToSelection(root);
+                Undo.IncrementCurrentGroup();
+                Vector2 pointer = root.titleContainer.LocalToWorld(new Vector2(160, 25));
+                GraphMouse(root.titleContainer, EventType.MouseDown, pointer);
+                Assert.That(view.HasMouseCapture(), Is.True);
+                foreach (float distance in new[] { 25f, 50f, 75f })
+                {
+                    GraphMouse(view, EventType.MouseDrag, pointer + new Vector2(distance, 20));
+                    Vector2 delta = root.GetPosition().position - rootOrigin;
+                    Assert.That(delta.sqrMagnitude, Is.GreaterThan(0));
+                    Assert.That(leaf.GetPosition().position, Is.EqualTo(leafOrigin + delta));
+                    Assert.That(peer.GetPosition().position, Is.EqualTo(peerOrigin));
+                    Assert.That(_graph.FindHeader("leaf").Position, Is.EqualTo(leafOrigin));
+                    Assert.That(_graph.FindHeader("branch").Position, Is.EqualTo(rootOrigin));
+                    Assert.That(_graph.FindLeafData("leaf").Leaf, Is.SameAs(leafData));
+                }
+                Vector2 finalLeaf = leaf.GetPosition().position;
+                GraphMouse(view, EventType.MouseUp, pointer + new Vector2(75, 20));
+                Assert.That(_graph.FindHeader("leaf").Position, Is.EqualTo(finalLeaf));
+                Assert.That(leaf.GetPosition().position, Is.EqualTo(finalLeaf));
+                Undo.PerformUndo();
+                Assert.That(_graph.FindHeader("leaf").Position, Is.EqualTo(leafOrigin));
+                Assert.That(_graph.FindHeader("branch").Position, Is.EqualTo(rootOrigin));
+                Undo.PerformRedo();
+                Assert.That(_graph.FindHeader("leaf").Position, Is.EqualTo(finalLeaf));
+            }
+            finally { view.ReleaseMouse(); view.DisposeInspectors(); view.RemoveFromHierarchy(); }
+        }
+
+        [UnityTest]
+        public IEnumerator LinkedRootDrag_MultipleSelectionAtZoom_CancelsOnEscapeAndFinishesOnCaptureLoss()
+        {
+            var view = CreateDragGraph(out string copyRoot);
+            try
+            {
+                view.UpdateViewTransform(Vector3.zero, Vector3.one * .75f);
+                yield return FlushPanel(view);
+                var root = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == "branch");
+                var leaf = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == "leaf");
+                Vector2 rootOrigin = root.GetPosition().position, leafOrigin = leaf.GetPosition().position;
+                view.AddToSelection(root);
+                view.AddToSelection(leaf);
+                Vector2 pointer = root.titleContainer.LocalToWorld(new Vector2(160, 25));
+                GraphMouse(root.titleContainer, EventType.MouseDown, pointer);
+                GraphMouse(view, EventType.MouseDrag, pointer + new Vector2(50, 20));
+                Vector2 delta = root.GetPosition().position - rootOrigin;
+                Assert.That(delta.sqrMagnitude, Is.GreaterThan(0));
+                Assert.That(leaf.GetPosition().position, Is.EqualTo(leafOrigin + delta));
+                using (var escape = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = KeyCode.Escape }))
+                { escape.target = view; view.SendEvent(escape); }
+                yield return FlushPanel(view);
+                Assert.That(root.GetPosition().position, Is.EqualTo(rootOrigin));
+                Assert.That(leaf.GetPosition().position, Is.EqualTo(leafOrigin));
+                Assert.That(_graph.FindHeader("leaf").Position, Is.EqualTo(leafOrigin));
+
+                var peer = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == copyRoot);
+                string peerLeafId = _graph.FindSequenceData(copyRoot).ChildrenGuids.Single();
+                var peerLeaf = view.nodes.OfType<BtNodeView>().Single(n => n.Guid == peerLeafId);
+                Vector2 peerLeafOrigin = peerLeaf.GetPosition().position;
+                view.AddToSelection(peer);
+                GraphMouse(root.titleContainer, EventType.MouseDown, pointer);
+                GraphMouse(view, EventType.MouseDrag, pointer + new Vector2(50, 20));
+                Assert.That(leaf.GetPosition().position, Is.Not.EqualTo(leafOrigin));
+                Vector2 finalRoot = root.GetPosition().position, finalLeaf = leaf.GetPosition().position;
+                Assert.That(finalLeaf, Is.EqualTo(leafOrigin + finalRoot - rootOrigin));
+                Vector2 finalPeerLeaf = peerLeafOrigin + finalRoot - rootOrigin;
+                Assert.That(peerLeaf.GetPosition().position, Is.EqualTo(finalPeerLeaf));
+                view.ReleaseMouse();
+                yield return FlushPanel(view);
+                Assert.That(root.GetPosition().position, Is.EqualTo(finalRoot));
+                Assert.That(leaf.GetPosition().position, Is.EqualTo(finalLeaf));
+                Assert.That(_graph.FindHeader("branch").Position, Is.EqualTo(finalRoot));
+                Assert.That(_graph.FindHeader("leaf").Position, Is.EqualTo(finalLeaf));
+                Assert.That(_graph.FindHeader(peerLeafId).Position, Is.EqualTo(finalPeerLeaf));
+            }
+            finally { view.ReleaseMouse(); view.DisposeInspectors(); view.RemoveFromHierarchy(); }
+        }
+
         [UnityTest]
         public IEnumerator GraphDeletion_PreservesSurvivingSelectionAfterScheduledReload()
         {

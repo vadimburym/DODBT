@@ -22,6 +22,14 @@ internal sealed class BtNodeView : Node
     public string Guid { get; }
     public string Title;
     public BtNodeKind Kind { get; }
+    internal event Action<BtNodeView, Vector2> PositionChanged;
+
+    public override void SetPosition(Rect newPos)
+    {
+        Vector2 previous = GetPosition().position;
+        base.SetPosition(newPos);
+        if (previous != newPos.position) PositionChanged?.Invoke(this, newPos.position);
+    }
 
     public Port InputPort { get; private set; }
     public Port OutputPort { get; private set; }
