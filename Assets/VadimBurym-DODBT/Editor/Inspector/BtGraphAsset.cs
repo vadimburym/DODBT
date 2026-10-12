@@ -31,6 +31,7 @@ internal sealed class BtGraphAsset : ScriptableObject
     [HideInInspector] public List<BtMemorySelectorNodeData> MemorySelectorNodes = new();
     [HideInInspector] public List<BtParallelNodeData> ParallelNodes = new();
     [HideInInspector] public List<BtDecoratorNodeData> DecoratorNodes = new();
+    [HideInInspector] public List<BtLinkedGroup> LinkedGroups = new();
 
     internal BtDecoratorNodeData FindDecoratorData(string guid) => DecoratorNodes.Find(data => data.Guid == guid);
 

@@ -55,6 +55,7 @@ internal static class BtGraphClipboard
                 snapshot.GetChildrenList(node.Guid, node.Kind)?.RemoveAll(id => !ids.Contains(id));
             }
             snapshot.RootNode = null;
+            snapshot.LinkedGroups.Clear();
             snapshot.CompiledAsset = null;
             snapshot.GuidsByCompiledId = Array.Empty<string>();
             var payload = new Payload { Project = Application.dataPath, Session = SessionId(), Graph = EditorJsonUtility.ToJson(snapshot) };
