@@ -130,8 +130,10 @@ internal sealed partial class BtGraphView : GraphView
             if (inPort == null || outPort == null)
                 continue;
             
-            ec.inputColor = inPort.portColor;
-            ec.outputColor = outPort.portColor;
+            bool groupHighlight = IsHighlightedGroupEdge(edge);
+            ec.inputColor = groupHighlight ? GroupHighlight : inPort.portColor;
+            ec.outputColor = groupHighlight ? GroupHighlight : outPort.portColor;
+            ec.edgeWidth = groupHighlight ? 5 : 3;
             ec.MarkDirtyRepaint();
         }
         
@@ -173,6 +175,8 @@ internal sealed partial class BtGraphView : GraphView
     {
         var picked = selection?.OfType<BtNodeView>().FirstOrDefault();
         NodeSelected?.Invoke(picked);
+        _pinnedGroup = null;
+        RefreshGroupHighlights();
     }
 
     public void MarkEdgeColorsDirty()
@@ -248,6 +252,7 @@ internal sealed partial class BtGraphView : GraphView
         {
             _isBinding = false;
             RefreshSearch();
+            ConfigureGroupViews();
         }
     }
     
@@ -270,6 +275,7 @@ internal sealed partial class BtGraphView : GraphView
 
     public void NotifyNodeDataChanged(string guid)
     {
+        QueueGroupSynchronization(guid);
         if (GraphAsset != null)
         {
             GraphAsset.MarkModified();
@@ -322,6 +328,7 @@ internal sealed partial class BtGraphView : GraphView
 
         _nodeViewsByGuid[guid] = nodeView;
         nodeView.Bind(GraphAsset, NotifyNodeDataChanged, IsReadOnly, MarkEdgeColorsDirty);
+        ConfigureGroupView(guid, nodeView);
         GraphStructureChanged?.Invoke();
         RefreshSearch();
     }
@@ -481,7 +488,7 @@ internal sealed partial class BtGraphView : GraphView
             int yCompare = left.Position.y.CompareTo(right.Position.y);
             if (yCompare != 0) return yCompare;
 
-            return string.CompareOrdinal(left.Guid, right.Guid);
+            return Array.IndexOf(before, left.Guid).CompareTo(Array.IndexOf(before, right.Guid));
         });
 
         bool changed = false;
@@ -586,7 +593,7 @@ internal sealed partial class BtGraphView : GraphView
         }
     }
 
-    private GraphViewChange OnGraphViewChanged(GraphViewChange change)
+    private GraphViewChange OnGraphViewChangedCore(GraphViewChange change)
     {
         if (_isBinding)
             return change;
@@ -603,7 +610,6 @@ internal sealed partial class BtGraphView : GraphView
         Undo.RegisterCompleteObjectUndo(GraphAsset, "BT Edit Graph");
         bool nodeWasDeleted = false;
         bool isAssetDirty = false;
-        bool isAssetMovedDirty = false;
 
         if (change.elementsToRemove != null && GraphAsset.RootNode != null)
         {
@@ -671,8 +677,7 @@ internal sealed partial class BtGraphView : GraphView
         GraphStructureChanged?.Invoke();
         if (change.elementsToRemove != null)
         {
-            bool areNodesBeingDeleted = change.elementsToRemove.OfType<BtNodeView>().Any();
-            if (!areNodesBeingDeleted)
+            // Unrelated selected edges must also disconnect when nodes are deleted in the same operation.
             {
                 foreach (var element in change.elementsToRemove)
                 {
@@ -729,63 +734,6 @@ internal sealed partial class BtGraphView : GraphView
                 }
             }
         }
-        if (change.movedElements != null)
-        {
-            foreach (var element in change.movedElements)
-            {
-                if (element is not BtNodeView nodeView)
-                    continue;
-                
-                if (nodeView.Kind == BtNodeKind.Root)
-                {
-                    GraphAsset.RootNode.Position = nodeView.GetPosition().position;
-                    isAssetMovedDirty = true;
-                    continue;
-                }
-                
-                int headerIndex = GraphAsset.FindHeaderIndex(nodeView.Guid);
-                if (headerIndex < 0)
-                    continue;
-
-                BtNodeHeader header = GraphAsset.Nodes[headerIndex];
-
-                float oldX = header.Position.x;
-                Vector2 newPosition = nodeView.GetPosition().position;
-
-                if (header.Position != newPosition)
-                {
-                    header.Position = newPosition;
-                    GraphAsset.Nodes[headerIndex] = header;
-                    isAssetMovedDirty = true;
-                }
-
-                if (!Mathf.Approximately(oldX, newPosition.x) && !string.IsNullOrEmpty(header.ParentGuid))
-                {
-                    int parentIndex = GraphAsset.FindHeaderIndex(header.ParentGuid);
-                    if (parentIndex >= 0)
-                    {
-                        BtNodeHeader parentHeader = GraphAsset.Nodes[parentIndex];
-                        if (IsComposite(parentHeader.Kind))
-                        {
-                            List<string> children = GraphAsset.GetChildrenList(parentHeader.Guid, parentHeader.Kind);
-                            if (children != null)
-                            {
-                                bool orderChanged = SortChildrenByXAndLogIfChanged(parentHeader, children);
-                                if (orderChanged)
-                                {
-                                    isAssetDirty = true;
-                                    NotifyNodeDataChanged(parentHeader.Guid);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (isAssetMovedDirty && !isAssetDirty)
-            EditorUtility.SetDirty(GraphAsset);
-        
         if (isAssetDirty)
             GraphAsset.MarkModified();
             //EditorUtility.SetDirty(GraphAsset);

@@ -49,8 +49,17 @@ internal sealed partial class BtGraphView
 
     private void ConfigureClipboard()
     {
-        serializeGraphElements = elements => BtGraphClipboard.Copy(GraphAsset, elements.OfType<BtNodeView>()
-            .Where(node => node.Kind != BtNodeKind.Root).Select(node => node.Guid));
+        serializeGraphElements = elements =>
+        {
+            var ids = elements.OfType<BtNodeView>().Where(node => node.Kind != BtNodeKind.Root).Select(node => node.Guid).ToHashSet();
+            // Cutting a group root deletes the whole instance, so its clipboard must contain every member.
+            foreach (string id in ids.ToArray())
+            {
+                var instance = BtLinkedGroups.Find(GraphAsset, id);
+                if (instance?.RootGuid == id) ids.UnionWith(instance.Members.Select(m => m.Guid));
+            }
+            return BtGraphClipboard.Copy(GraphAsset, ids);
+        };
         canPasteSerializedData = text => !IsReadOnly && GraphAsset != null && BtGraphClipboard.CanPaste(text);
         unserializeAndPaste = (_, text) => PasteNodes(text);
     }

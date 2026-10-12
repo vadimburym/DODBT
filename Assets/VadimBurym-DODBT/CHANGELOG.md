@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Editor-only linked branch groups with Create Linked Group, Duplicate Group, and Unlink Group commands. Edits in any instance synchronize serialized node settings, leaf types and fields, structure, and relative layout while retaining independent managed data.
+- Group root icons, yellow highlighting of related nodes and internal edges, and a Groups tab with editable names and instance counts. Groups cannot overlap or nest; invalid connections report Console warnings.
+- Group-aware deletion, disconnection, clipboard handling, and Undo/Redo. Group metadata persists in graph assets and is absent from compiled runtime assets.
 - `TickWithStatus` returns the root result while retaining the existing `Tick` API.
 - Optional Timeout, Cooldown, and Inverter nodes behind `DODBT_DECORATORS`, with one-child graph ports, inline/Details settings, and compiler validation.
 - Explicit timestamp overloads for timed trees, independent per-agent deadlines, deterministic deadline boundaries, and abort propagation. Cooldown starts after child completion and retains an existing deadline across aborts.
@@ -17,7 +20,7 @@
 - Changing a decorator in Details refreshes its inline node inspector.
 
 ### Verification
-- Unity 6000.0.51f1: 105/105 EditMode tests with decorators enabled and 81/81 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`.
+- Unity 6000.0.51f1: 124/124 EditMode tests with decorators enabled and 100/100 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
 - Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.
 - WebGL / IL2CPP / High stripping: build succeeded with zero errors and 11 NavMeshPlus/URP warnings. Browser execution has not been verified.
 - The standalone preview package imports without Odin Inspector or Unity Test Framework installed.

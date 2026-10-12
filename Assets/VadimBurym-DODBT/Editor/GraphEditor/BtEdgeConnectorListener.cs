@@ -28,28 +28,33 @@ internal sealed class BtEdgeConnectorListener : IEdgeConnectorListener
         var childNode = edge.input.node as BtNodeView;
         if (parentNode == null || childNode == null)
             return;
-        bool createsCycle = _graphView.WouldCreateCycle(parentNode, childNode);
+        bool createsCycle = _graphView.WouldCreateCycle(parentNode, childNode) || !_graphView.CanConnectGroups(parentNode.Guid, childNode.Guid);
         if (createsCycle)
         {
             _graphView.schedule.Execute(() => _graphView.ReloadWithoutLog());
             return;
         }
-        var newEdge = new Edge {
-            input = edge.input,
-            output = edge.output };
-        edge.input?.Disconnect(edge);
-        edge.output?.Disconnect(edge);
-        unityGraphView.RemoveElement(edge);
-        if (newEdge.input != null && newEdge.input.capacity == Port.Capacity.Single)
+        _graphView.BeginGroupEdit();
+        try
         {
-            var oldEdges = newEdge.input.connections.ToList();
-            unityGraphView.DeleteElements(oldEdges);
+            var newEdge = new Edge {
+                input = edge.input,
+                output = edge.output };
+            edge.input?.Disconnect(edge);
+            edge.output?.Disconnect(edge);
+            unityGraphView.RemoveElement(edge);
+            if (newEdge.input != null && newEdge.input.capacity == Port.Capacity.Single)
+            {
+                var oldEdges = newEdge.input.connections.ToList();
+                unityGraphView.DeleteElements(oldEdges);
+            }
+            if (newEdge.output != null && newEdge.output.capacity == Port.Capacity.Single)
+                unityGraphView.DeleteElements(newEdge.output.connections.ToList());
+            newEdge.input.Connect(newEdge);
+            newEdge.output.Connect(newEdge);
+            unityGraphView.AddElement(newEdge);
+            _graphView.OnEdgeCreated(newEdge);
         }
-        if (newEdge.output != null && newEdge.output.capacity == Port.Capacity.Single)
-            unityGraphView.DeleteElements(newEdge.output.connections.ToList());
-        newEdge.input.Connect(newEdge);
-        newEdge.output.Connect(newEdge);
-        unityGraphView.AddElement(newEdge);
-        _graphView.OnEdgeCreated(newEdge);
+        finally { _graphView.EndGroupEdit(); }
     }
 }

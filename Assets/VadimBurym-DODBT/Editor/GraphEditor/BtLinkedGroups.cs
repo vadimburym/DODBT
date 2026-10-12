@@ -82,6 +82,7 @@ internal static class BtLinkedGroups
 
     internal static BtGroupInstance Duplicate(BtGraphAsset graph, BtGroupInstance source, Vector2 offset)
     {
+        EnsureTypesAvailable(graph);
         var group = Family(graph, source) ?? throw new InvalidOperationException("The linked group no longer exists.");
         Undo.RegisterCompleteObjectUndo(graph, "BT Duplicate Group");
         var target = new BtGroupInstance();
@@ -115,12 +116,15 @@ internal static class BtLinkedGroups
     {
         var group = Family(graph, source);
         if (group == null) return;
-        if (graph.FindHeader(source.RootGuid) == null)
+        // A single selection may delete roots and edit other instances of the same family.
+        group.Instances.RemoveAll(i => graph.FindHeader(i.RootGuid) == null);
+        if (group.Instances.Count == 0)
         {
-            group.Instances.Remove(source);
-            if (group.Instances.Count == 0) graph.LinkedGroups.Remove(group);
+            graph.LinkedGroups.Remove(group);
             return;
         }
+        if (!group.Instances.Contains(source)) return;
+        EnsureTypesAvailable(graph);
         var ids = Branch(graph, source.RootGuid).ToHashSet();
         if (ids.Any(id => Find(graph, id) is BtGroupInstance other && other != source))
             throw new InvalidOperationException("Linked groups cannot overlap.");
@@ -195,6 +199,12 @@ internal static class BtLinkedGroups
         finally { Object.DestroyImmediate(snapshot); }
     }
 
+    private static void EnsureTypesAvailable(BtGraphAsset graph)
+    {
+        if (SerializationUtility.HasManagedReferencesWithMissingTypes(graph))
+            throw new InvalidOperationException("Restore missing serialized types before editing linked groups. Saved data is preserved.");
+    }
+
     internal static void DeleteNodes(BtGraphAsset graph, HashSet<string> ids)
     {
         graph.Nodes.RemoveAll(n => ids.Contains(n.Guid));
@@ -210,6 +220,13 @@ internal static class BtLinkedGroups
     internal static void Move(BtGraphAsset graph, IReadOnlyDictionary<string, Vector2> positions)
     {
         var affected = positions.Keys.Select(id => Find(graph, id)).Where(i => i != null).Distinct().ToList();
+        var changedLayout = affected.Where(instance =>
+        {
+            Vector2 delta = positions.TryGetValue(instance.RootGuid, out var origin)
+                ? origin - graph.FindHeader(instance.RootGuid).Position : Vector2.zero;
+            return instance.Members.Any(m => m.Guid != instance.RootGuid && positions.TryGetValue(m.Guid, out var p) &&
+                p != graph.FindHeader(m.Guid).Position + delta);
+        }).ToHashSet();
         foreach (var instance in affected)
         {
             if (!positions.TryGetValue(instance.RootGuid, out var origin)) continue;
@@ -220,7 +237,8 @@ internal static class BtLinkedGroups
             if (graph.FindHeader(pair.Key) is BtNodeHeader node) node.Position = pair.Value;
         SortChildren(graph);
         // One source per family prevents a multiple-instance drag from applying the same delta twice.
-        foreach (var source in affected.GroupBy(i => Family(graph, i)).Select(g => g.First())) Synchronize(graph, source);
+        foreach (var source in affected.GroupBy(i => Family(graph, i)).Select(g => g.FirstOrDefault(changedLayout.Contains)).Where(i => i != null))
+            Synchronize(graph, source);
         SortChildren(graph);
     }
 
