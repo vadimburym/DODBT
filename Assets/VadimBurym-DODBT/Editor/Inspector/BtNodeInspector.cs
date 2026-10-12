@@ -66,7 +66,6 @@ internal sealed class BtNodeInspector : IDisposable
                 case BtNodeKind.Inverter:
 #if DODBT_DECORATORS
                     if (_kind != BtNodeKind.Inverter) DrawField(root, "Duration");
-                    else EditorGUILayout.LabelField("Success ↔ Failure; Running unchanged", EditorStyles.miniLabel);
 #else
                     EditorGUILayout.HelpBox("Enable DODBT_DECORATORS to use this node. Saved data is preserved.", MessageType.Warning);
 #endif
