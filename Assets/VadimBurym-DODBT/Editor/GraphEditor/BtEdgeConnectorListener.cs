@@ -37,7 +37,7 @@ internal sealed class BtEdgeConnectorListener : IEdgeConnectorListener
         _graphView.BeginGroupEdit();
         try
         {
-            var newEdge = new Edge {
+            var newEdge = new BtEdge {
                 input = edge.input,
                 output = edge.output };
             edge.input?.Disconnect(edge);

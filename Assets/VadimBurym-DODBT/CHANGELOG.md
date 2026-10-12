@@ -18,6 +18,7 @@
 - Restyled the inline and Details leaf selector as a rounded dark row with a white leaf icon, hover/focus feedback, a separate parameter foldout, and a namespace tooltip. Leaves without visible serialized fields have no foldout; expanded fields sit below a subtle divider.
 
 ### Fixed
+- Ordinary connections keep a stable width and color when the pointer passes over nodes or edges. Linked-group highlighting survives GraphView hit testing, layout updates, and selection changes.
 - Multi-selection deletion and disconnection across linked group instances now combine all changes before synchronization, preventing deleted nodes or connections from returning. Undo/Redo restores the entire operation together.
 - Deleting nodes schedules one graph rebuild and preserves the selection of surviving nodes.
 - The focused leaf selector now opens with Space as well as Enter and the down arrow.
@@ -27,6 +28,7 @@
 - Changing a decorator in Details refreshes its inline node inspector.
 
 ### Verification
+- After the edge appearance fix, 133/133 EditMode tests passed with decorators enabled, including pointer events, edge hit testing, retained group highlighting, and explicit edge selection.
 - Unity 6000.0.51f1: 132/132 EditMode tests with decorators enabled and 108/108 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`. Linked-group coverage includes edits from duplicates, private fields, reference cycles, structural edits, asset reload, ordinary-node compilation, highlighting state, and Undo/Redo.
 - Editor interaction tests exercise separate leaf picker/foldout click targets, keyboard activation, disabled input, expanded cyclic managed references and collections, and selection after a scheduled graph rebuild. These tests require a graphics device and are explicitly skipped with `-nographics`; all four verification runs used graphics and skipped no tests.
 - Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.

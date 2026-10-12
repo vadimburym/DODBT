@@ -130,10 +130,10 @@ internal sealed partial class BtGraphView : GraphView
             if (inPort == null || outPort == null)
                 continue;
             
-            bool groupHighlight = IsHighlightedGroupEdge(edge);
-            ec.inputColor = groupHighlight ? GroupHighlight : inPort.portColor;
-            ec.outputColor = groupHighlight ? GroupHighlight : outPort.portColor;
-            ec.edgeWidth = groupHighlight ? 5 : 3;
+            if (edge is BtEdge btEdge)
+                btEdge.SetGroupHighlight(IsHighlightedGroupEdge(edge), GroupHighlight);
+            else
+                edge.UpdateEdgeControl();
             ec.MarkDirtyRepaint();
         }
         
@@ -545,7 +545,7 @@ internal sealed partial class BtGraphView : GraphView
             {
                 if (rootView.OutputPort != null && childView.InputPort != null)
                 {
-                    var edge = new Edge { output = rootView.OutputPort, input = childView.InputPort };
+                    var edge = new BtEdge { output = rootView.OutputPort, input = childView.InputPort };
                     edge.output.Connect(edge);
                     edge.input.Connect(edge);
                     AddElement(edge);
@@ -580,7 +580,7 @@ internal sealed partial class BtGraphView : GraphView
                 if (alreadyConnected)
                     continue;
 
-                var edge = new Edge
+                var edge = new BtEdge
                 {
                     output = parentView.OutputPort,
                     input = childView.InputPort
