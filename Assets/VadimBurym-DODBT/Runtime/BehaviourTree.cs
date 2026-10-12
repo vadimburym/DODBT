@@ -89,22 +89,25 @@ namespace VadimBurym.DodBehaviourTree
 #endif
         }
         
-        public void Tick(TContext context, BtState<TLeafState> state)
+        public void Tick(TContext context, BtState<TLeafState> state) => TickWithStatus(context, state);
+
+        public NodeStatus TickWithStatus(TContext context, BtState<TLeafState> state)
         {
 #if UNITY_EDITOR
             state.DebugRunningLeafs.Clear();
             state.DebugRunningLeafIndices.Clear();
             for (int i = 0; i < state.DebugStatus.Length; i++)
                 state.DebugStatus[i] = NodeStatus.None;
+#endif
             var status = TickNode(context, state, _asset.RootIndex);
+#if UNITY_EDITOR
             state.DebugStatus[_asset.RootIndex] = status;
             // A parent may abort leaves that returned Running earlier in this tick.
             foreach (int index in state.DebugRunningLeafIndices)
                 if (state.NodeStates[index].IsEntered)
                     state.DebugRunningLeafs.Add(DebugUtils.GetLeafName(_leafs[_asset.Nodes[index].DataIndex]));
-#else
-            TickNode(context, state, _asset.RootIndex);
 #endif
+            return status;
         }
 
         public void Abort(TContext context, BtState<TLeafState> state)
