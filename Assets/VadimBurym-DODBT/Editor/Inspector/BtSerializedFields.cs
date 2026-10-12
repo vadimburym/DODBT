@@ -95,7 +95,7 @@ internal sealed class BtSerializedFields : IDisposable
             {
                 string path = property.propertyPath;
                 var baseType = BtTypePicker.Resolve(property.managedReferenceFieldTypename);
-                _picker = new BtTypePicker(baseType, selected => Assign(path, selected));
+                _picker = new BtTypePicker(baseType, selected => Assign(path, selected), type);
                 _picker.Show(button);
             }
         }

@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.1] - 2026-10-12
+
+### Changed
+- Restyled the type picker with white leaf icons, emphasized class names, muted namespace labels, roomier rows, a current-type marker, and keyboard hints. Search matches class names and namespaces; long names expose their full qualified name in a tooltip. Assembly names remain hidden.
 
 ### Fixed
 - Isolated the shuffle storage of nested `MemorySelector` nodes. Random traversal no longer overwrites a parent's order, skips siblings, or visits the same child twice in a fresh traversal. Ordered selectors continue to execute left to right.
