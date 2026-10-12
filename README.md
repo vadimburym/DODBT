@@ -1,101 +1,102 @@
 <p align="center">
-  <a href="README.en.md">English</a> |
-  <a href="README.md">Русский</a>
+  <a href="README.md">English</a> |
+  <a href="README.ru.md">Русский</a>
 </p>
 
-## 10⭐ Почему DODBT? (Data-oriented design Behaviour Tree)
+## 10⭐ Why DODBT? (Data-oriented design Behaviour Tree)
 
-⭐ **0 MonoBehaviour**  
-Полностью отвязан от жизненного цикла Unity.
+⭐ **0 MonoBehaviour**<br>
+Completely decoupled from the Unity lifecycle.
 
-⭐ **0 runtime-аллокаций**  
-Предсказуемая работа без GC.
+⭐ **0 runtime allocations**<br>
+Predictable execution without GC.
 
-⭐ **1 shared BT на N агентов**  
-Архитектура, оптимизированная по памяти.
+⭐ **1 shared BT for N agents**<br>
+Memory-efficient architecture.
 
-⭐ **Debug-режим в runtime**  
-Чистая и удобная отладка.
+⭐ **Runtime Debug Mode**<br>
+Clean and convenient debugging.
 
-⭐ **Полноценный редактор Графов BT**  
-Логи, подсказки и наглядная визуализация.
+⭐ **Full-featured BT Graph Editor**<br>
+Logs, hints, and clear visualization.
 
-⭐ **Граф и Runtime разделены**  
-Граф компилируется в компактный и производительный BT.  
-В билд не попадают ни данные о графе, ни editor-инструменты.
+⭐ **Graph and Runtime are separated**<br>
+The graph is compiled into a compact and performant BT.<br>
+Neither graph data nor editor tools are included in builds.
 
-⭐ **BT это decision-layer**  
-Дерево тикает только выбор/смену поведения.  
-BT можно обновлять с любой частотой раз в N секунд.
+⭐ **BT is decision-layer**<br>
+Tree is responsible only for behavior selection and transitions.
+It can be updated at any frequency, for example once every N seconds.
 
-⭐ **Отказ от Blackboard**  
-Зависимости передаются напрямую, через DI или ServiceLocator.
+⭐ **No Blackboard**<br>
+Dependencies can be injected directly, via DI, or through a Service Locator.
 
-⭐ **ECS-friendly**  
-Отличная совместимость с ECS-архитектурой.
+⭐ **ECS-friendly**<br>
+Works great with ECS architecture.
 
-⭐ **Production-grade**  
-Покрытие тестами. Геймдизайнер настраивает BT без необходимости обращаться к коду.
+⭐ **Production-grade**<br>
+Tests coverage. Game designers can configure BTs without touching code.
 
-**DODBT 0.4.0**: связанные группы веток, поиск и копирование нод, `TickWithStatus`, опциональные Timeout/Cooldown/Inverter и обновленный инспектор Leaf. Редактор, компиляция и отладка используют Unity API; Odin Inspector не требуется.
+**DODBT 0.4.0**: linked branch groups, graph search and node copying, `TickWithStatus`, optional Timeout/Cooldown/Inverter, and a refreshed Leaf inspector. Editing, compilation, and debugging use Unity APIs; Odin Inspector is not required.
 
-Проверено на **Unity 6000.0.51f1**. Результаты тестов, проверенные сборки и границы проверки описаны в [заметках к релизу 0.4.0](docs~/releases/v0.4.0.md).
+Validated with **Unity 6000.0.51f1**. See the [0.4.0 release notes](docs~/releases/v0.4.0.md) for test results, verified builds, and validation scope.
 
-> ⚠ **ВАЖНО!** Для `DOTS` разрабатывается [отдельная версия плагина](https://github.com/vadimburym/DOTS-Battle-Simulator-Prototype) с поддержкой `BlobAsset` и `Burst`. Однако вы можете использовать и данную версию, если вас устраивает размещение BT и состояний в managed runtime как decision-layer на main thread с обновлением дерева раз в N секунд.
+> ⚠ **IMPORTANT!** A dedicated `DOTS` [version of this plugin](https://github.com/vadimburym/DOTS-Battle-Simulator-Prototype) with `BlobAsset` and `Burst` support is currently in development.
+This version can still be used if you're comfortable running the Behaviour Tree and states as a main-thread managed decision layer, ticking it once every N seconds.
 
 <p align="center">
   <img src="docs~/logo.png" width="1050">
 </p>
 
-## 📑 Содержание
+## 📑 Table of Contents
 
-- [Установка](#установка)
-- [Начало работы](#начало-работы)
-- [Редактор графов](#редактор-графов)
-- [Компиляция и сборка](#компиляция-и-сборка)
-- [Дебаг режим](#дебаг-режим)
-- [Проект для примера](#проект-для-примера)
-- [Публичные классы и методы](#публичные-классы-и-методы)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Graph Editor](#graph-editor)
+- [Compilation and Build](#compilation-and-build)
+- [Debug Mode](#debug-mode)
+- [Example Project](#example-project)
+- [Public Classes and Methods](#public-classes-and-methods)
 
-## Установка
-- **В виде unity-модуля**: Window → Package Manager → Install package from git URL:
-- **Последняя версия**:
+## Installation
+- **As a Unity module**: Window → Package Manager → Install package from git URL:
+- **Latest version**:
 ```
 https://github.com/vadimburym/DODBT.git?path=/source
 ```
-- **Стабильная версия** `РЕКОМЕНДУЕТСЯ`:
+- **Stable version** `RECOMMENDED`:
 ```
 https://github.com/vadimburym/DODBT.git?path=/source#v0.4.0
 ```
-- **В виде исходников**: Если вы хотите модифицировать плагин в своем проекте — склонируйте или скачайте его в виде архива и разместите исходники в своем проекте, например в папке Plugins.
+- **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
 
-### Обновление до 0.4.0
+### Upgrading to 0.4.0
 
-Обновите URL пакета до тега `v0.4.0`. Имена сериализованных полей и GUID скриптов сохранены; существующие графы и скомпилированные деревья поддерживаются. Параметры листьев используют сериализацию Unity: `[Serializable]` для классов, `[SerializeField]` для приватных полей и `[SerializeReference]` для полиморфных вложенных данных. Редактор поддерживает эти поля как внутри ноды, так и в `Details`.
+Update the package URL to the `v0.4.0` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
 
-Изменения версии перечислены в [CHANGELOG](source/CHANGELOG.md). Удалять Odin из самого проекта можно, если другие плагины и игровой код от него не зависят.
+See the [CHANGELOG](source/CHANGELOG.md) for release changes. Remove Odin from the consuming project only if no other plugins or game code depend on it.
 
-### Возможности 0.4.0
+### Features in 0.4.0
 
-- `TickWithStatus(context, state)` выполняет один обход и возвращает результат корня; прежний `Tick` сохранен.
-- `DODBT_DECORATORS` включает Timeout, Cooldown и Inverter для выбранной платформы. Для Timeout/Cooldown передавайте монотонное время: `TickWithStatus(context, state, now)`.
-- Поиск по графу, копирование одиночных нод и блоков, связанные группы с синхронизацией данных, структуры и относительных позиций. Группы существуют только в редакторе; порядок исполнения остается слева направо.
-- Параметры основного Leaf всегда раскрыты. Вложенные SerializeReference сохраняют свои стрелки. Предупреждения о связях появляются во внутренней консоли графа.
+- `TickWithStatus(context, state)` performs one traversal and returns the root result; the existing `Tick` API is retained.
+- `DODBT_DECORATORS` enables Timeout, Cooldown, and Inverter for the selected target. Supply monotonic time for Timeout/Cooldown: `TickWithStatus(context, state, now)`.
+- Graph search, individual/block copying, and linked groups that synchronize data, structure, and relative positions. Groups are editor-only; execution still follows left-to-right order.
+- Root Leaf parameters stay expanded. Nested SerializeReference fields keep their foldouts. Connection warnings appear in the graph editor's own console.
 
-Подробности, ограничения и правила Abort: [руководство 0.4.0](source/Documentation~/0.4.0.md).
+See the [0.4.0 guide](source/Documentation~/0.4.0.md) for usage, limitations, and Abort semantics.
 
-## Начало работы
+## Getting Started
 
-- **Создайте per-agent контекст**: `class` внешний runtime-контекст агента в котором работает BT.
-> **[ПРИМЕР]** Пример контекста для `LeoEcsLite`.
+- **Create a per-agent context**: a `class` representing the external runtime context in which the BT operates.
+> **[EXAMPLE]** Example context for `LeoEcsLite`.
 ```c#
 public sealed class LeoEcsContext
 {
     public int AgentIndex = -1;
 }
 ```
-- **Создайте per-leaf состояние**: `struct` состояние leaf-нод для конкретного агента.
-> **[ПРИМЕР]** Пример состояния для `LeoEcsLite`.
+- **Create a per-leaf state**: a `struct` that stores the state of leaf nodes for a specific agent.
+> **[EXAMPLE]** Example state for `LeoEcsLite`.
 ```c#
 [Serializable]
 public struct LeoEcsLeafState
@@ -104,21 +105,22 @@ public struct LeoEcsLeafState
     public void Reset() => StateIndex = -1;
 }
 ```
-- **Создайте листья**: конечные узлы BT, которые могут быть проверками условий, конкретными действиями или состояниями, выполняемые в контексте агента и обладающие собственным состоянием выполнения. Создайте их наследуя от `ILeaf<контекст, состояние>` в любом месте проекта - редактор DODBT найдет сериализуемые классы листьев в runtime-сборках проекта и предложит их в списке `ИмяКласса (Namespace)`. Добавьте аттрибут `[Serializable]` и обозначьте `[SerializeField]` параметры, которые вы хотите редактировать из графа.
-> ⚠ **ВАЖНО!** Важно понимать последовательность действий при изменении текущей Running ноды: `OnEnter`, `OnTick` новой Running ноды → `OnAbort` предыдущей Running ноды.
+- **Create leaves**: terminal BT nodes that represent condition checks, actions, or states executed within an agent context and maintaining their own execution state. Implement them by inheriting from `ILeaf<context, state>` anywhere in the project — the DODBT editor discovers serializable leaf classes in the project's runtime assemblies and lists them as `ClassName (Namespace)`. Add the `[Serializable]` attribute and mark parameters you want to edit from the graph with `[SerializeField]`.
 
-> **[ПРИМЕР]** Пример листа "Выстрели N раз в игрока" для `LeoEcsLite` с использованием `DI`. Лист не тикает поведение агента - он лишь добавляет/убирает у него состояние. Поведение тикают отдельные ECS-системы с фильтром по добавленному состоянию.
+> ⚠ **IMPORTANT!** It is important to understand the order of execution when the current Running node changes: `OnEnter`, `OnTick` of the new Running node → `OnAbort` of the previous Running node.
+
+> **[EXAMPLE]** Example leaf "Shoot the player N times" for `LeoEcsLite` using `DI`. The leaf does not tick the agent behavior itself — it only adds/removes a state from the agent. Actual behavior is ticked by separate ECS systems filtering entities by that state.
 ```c#
 [Serializable]
 public sealed class ShootPlayerLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 {
     [SerializeField] private int _targetShots;
-        
+
     private EcsWorld _world;
     private EcsPool<AgentEntity> _agentPool;
     private EcsPool<ShootEntityState> _shootStatePool;
     private EcsPool<PlayerVisibilitySensor> _sensorPool;
-        
+
     [Inject]
     public void Construct(IEcsWorldsService service)
     {
@@ -155,13 +157,13 @@ public sealed class ShootPlayerLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
     }
 }
 ```
-> **[ПРИМЕР]** Пример листа "Виден ли игрок" для `LeoEcsLite` с использованием `DI`. Лист не несет ответственности за прямой рейкаст в игрока - он лишь проверяет значение, которым обладает сенсор, а сенсор уже сам решает с какой частотой и как его обновлять.
+> **[EXAMPLE]** Example leaf "Is the player visible" for `LeoEcsLite` using `DI`. The leaf itself does not perform a raycast — it only checks a value maintained by the sensor. The sensor is responsible for how and how often that value is updated.
 ```c#
 [Serializable]
 public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
 {
     private EcsPool<PlayerVisibilitySensor> _sensorPool;
-        
+
     [Inject]
     public void Construct(IEcsWorldsService service)
     {
@@ -178,59 +180,61 @@ public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
     public void OnAbort(LeoEcsContext context, ref LeoEcsLeafState state) { }
 }
 ```
-
-## Редактор графов
+## Graph Editor
 
 <p align="center">
   <img src="docs~/graph-editor-00.png" width="700">
 </p>
 
-- **Откройте редактор графов**: Tools → VadimBurym → BT Editor.
+- **Open the graph editor**: Tools → VadimBurym → BT Editor.
 
 <img src="docs~/graph-editor-01.png" width="1050">
 
-- **Верхняя панель**: Кнопки слева направо: `Создать новый ассет графа` | `Удалить текущий ассет` | `Создать новый ассет - копию текущего` | `Переименовать текущий ассет` | `Выбрать ассет` | `Скомпилировать текущий граф в BT ассет`. Все ассеты попадают в папку Assets/VadimBurym-DODBT, откуда вы можете переместить их в удобное для вас место. Создайте новый ассет графа.
+- **Top panel**: Buttons from left to right: `Create new graph asset` | `Delete current asset` | `Duplicate current asset` | `Rename current asset` | `Select asset` | `Compile current graph into a BT asset`. All assets are initially placed in `Assets/VadimBurym-DODBT`, from where you can move them anywhere in your project. Create a new graph asset.
 <img src="docs~/graph-editor-02.png" width="1050">
 
-- **Канвас**: Нажмите ПКМ/Add/... чтобы создать новую ноду. Порядок выполнения дочерних нод у композитов определяется слева направо. Соберите граф поведения из выпадающих нод из списка и созданных вами листьев.
-- **Боковая панель**: Панель `Details` отображает информацию о выделенной ноде. Здесь вы можете изменить имя ноды, сверить порядок выполнения дочерних нод, редактировать настройки ноды, а также посмотреть описание того как именно работает нода.
+- **Canvas**: Right-click → Add/... to create a new node. Execution order for composite children goes from left to right. Build your behavior graph using available nodes and your custom leaves.
+- **Side panel**: The `Details` panel displays information about the selected node. Here you can rename the node, verify child execution order, edit node settings, and read a description of how the node works.
 
-> ⚠ **ВАЖНО!** Как говорил уважаемый AI Lead одного AAA-проекта, декораторы это костыли в мире Behaviour Tree и он старается не использовать их в своих деревьях. Я с ним согласен и т.к. плагин разрабатывался "для себя" декораторов пока что нет. Ноды существующие на данный момент: `Selector`, `Sequence`, `MemorySelector`, `MemorySequence`, `Parallel`. Из них уже можно собрать практически любой BT, но это не отменяет того, что в далеком или ближайшем будущем понемногу будут добавляться различные декораторы, если в этом будет потребность от аудитории. Но на данный момент их нет.
+> ⚠ **IMPORTANT!** As a respected AI Lead from a AAA project once said, decorators are basically crutches in the Behaviour Tree world and he tries to avoid them. I agree with this approach, and since this plugin was originally built for personal use, decorators are currently not implemented. Available nodes at the moment are: `Selector`, `Sequence`, `MemorySelector`, `MemorySequence`, `Parallel`. These are enough to build most BTs, but decorators may be added later if there is demand from the community.
 
-> ⚠ **ВАЖНО!** Ограничение по количеству дочерних нод у одного композита = `255`. Ограничение по количеству нод в BT = `65535`. Если вы уверены что у вас будет <= `255` нод в каждом BT, можете добавить `DODBT_SMALL_SIZE` в список директив компилятора, чтобы немного оптимизировать память.
+> ⚠ **IMPORTANT!** The maximum number of child nodes per composite is `255`, and the maximum number of nodes per Behaviour Tree is `65,535`. If you are sure your trees will contain ≤ `255` nodes, you can add `DODBT_SMALL_SIZE` to the Scripting Define Symbols to slightly optimize memory usage.
 <img src="docs~/graph-editor-03.png" width="1050">
 
-- **Нижняя панель**: Панель `Outputs` отображает различные логи. Здесь могут быть причины неудачной компиляции графа, предупреждения о циклических зависимостях, а также уведомления о изменении порядка дочерних нод у композитов.
+- **Bottom panel**: The `Outputs` panel shows logs. It may include compilation errors, warnings about cyclic dependencies, or notifications about changes in composite child order.
 
-## Компиляция и сборка
+## Compilation and Build
 
-- **Скомпилируйте граф**: Нажмите на кнопку компиляции на верхней панеле, чтобы получить скомпилированный `BehaviourTreeAsset` (не путать с ассетом графа). Положите скомпилированный ассет в удобное для вас место, к которому можно обратиться из кода.
-- **Создайте для каждого BT-ассета runtime-BT**: Соберите все ваши `BehaviourTreeAsset` и создайте для каждого `BehaviourTree`.
-> ⚠ **ВАЖНО!** Это делается 1 раз перед началом игры.
+- **Compile the graph**: Click the compile button in the top panel to produce a compiled `BehaviourTreeAsset` (not to be confused with the graph asset). Place the compiled asset somewhere accessible from code.
 
-> **[ПРИМЕР]** Пример создания runtime-BT из скомпилированного BT-ассета для предыдущих примеров.
+- **Create a runtime BT for each BT asset**: Collect all your `BehaviourTreeAsset` instances and create a `BehaviourTree` runtime instance for each.
+
+> ⚠ **IMPORTANT!** This is done once before the game starts.
+
+> **[EXAMPLE]** Creating a runtime BT from the compiled BT asset used in the previous examples.
 ```c#
-var btAsset = //Ссылка на ваш BehaviourTreeAsset
+var btAsset = //Reference to your BehaviourTreeAsset
 var runtimeBt = new BehaviourTree<LeoEcsContext, LeoEcsLeafState>();
 runtimeBt.Construct(btAsset);
 ```
-- **Прокиньте зависимости каждому листу у каждого runtime-BT**: Соберите листья, используя DI контейнер или ServiceLocator.
-> ⚠ **ВАЖНО!** Это делается 1 раз перед началом игры.
+- **Inject dependencies into every leaf of each runtime BT**: Construct leaves using your DI container or ServiceLocator.
 
-> **[ПРИМЕР]** Пример для `DI`.
+> ⚠ **IMPORTANT!** This is done once before the game starts.
+
+> **[EXAMPLE]** Using `DI`.
 ```c#
 var leafs = runtimeBt.Leafs;
 for (int i = 0; i < leafs.Length; i++)
-    _diContainer.Inject(leafs[i]); //Ваш DIContainer
+    _diContainer.Inject(leafs[i]); //Your DIContainer
 ```
-> **[ПРИМЕР]** Пример для `ServiceLocator`.
+> **[EXAMPLE]** Using `ServiceLocator`.
 ```c#
 var leafs = runtimeBt.Leafs;
 for (int i = 0; i < leafs.Length; i++)
-    if (leafs[i] is IConstruct constructable) //Реализуйте листьям контракт IConstruct
-        constructable.Construct(); //Собирайте листья внутри метода Construct
+    if (leafs[i] is IConstruct constructable)
+        constructable.Construct();
 ```
-> **[ПРИМЕР]** Пример без `DI` или `ServiceLocator`: Собирайте и передавайте зависимости через ваш контекст.
+> **[EXAMPLE]** No `DI` and `ServiceLocator`: Provide dependencies through context.
 ```c#
 public sealed class LeoEcsContext
 {
@@ -240,8 +244,9 @@ public sealed class LeoEcsContext
     public IService1 Service1;
 }
 ```
-- **Соберите контекст и состояния агентов**: В вашем месте сборки агентов создайте для каждого контекст и состояние `BtState`. Инициализируйте состояние от желаемого `BehaviourTree`.
-> **[ПРИМЕР]** Пример для каждого агента на `LeoEcsLite`. Над btContext и btState рекомендуется сделать MemoryPool и брать классы из пула.
+- **Create agent contexts and states**: Wherever agents are created, create a context and a `BtState` for each agent. Initialize the state from the desired `BehaviourTree`.
+
+> **[EXAMPLE]** Example for each agent in `LeoEcsLite`. It is recommended to use a MemoryPool for `btContext` and `btState`.
 ```c#
 var btContext = new LeoEcsContext();
 var btState = new BtState<LeoEcsLeafState>();
@@ -252,19 +257,20 @@ for (int i = 0; i < btState.LeafStates.Length; i++)
 var agent = _world.NewEntity();
 btContext.AgentIndex = agent;
 ```
-- **Тикайте runtime-BT**: Тикайте каждого агента через его `BehaviourTree` с угодной вам частотой.
-> ⚠ **ВАЖНО!** Не создавайте для каждого агента отдельный `BehaviourTree`. На каждый BT-asset создается только один runtime-BT. Для каждого агента создается только контекст и его состояние дерева.
+- **Tick the runtime BT**: Update each agent through its `BehaviourTree` at any frequency you prefer.
+
+> ⚠ **IMPORTANT!** Do not create a separate `BehaviourTree` for each agent. Only one runtime BT exists per BT asset. Each agent only needs its own context and BT state.
 ```c#
 runtimeBt.Tick(btContext, btState);
 ```
-
-## Дебаг режим
+## Debug Mode
 
 <p align="center">
   <img src="docs~/debug-00.png" width="1050">
 </p>
 
-- **Добавьте отладку для вашего агента**: Добавьте компонент `BtMonoDebug` и свяжите его с конкретным BT-ассетом и ссылкой на состояние агента.
+- **Add debugging for your agent**: Add the `BtMonoDebug` component and link it to the specific BT asset and the agent's state reference.
+
 <p align="center">
   <img src="docs~/debug-01.png" width="450">
 </p>
@@ -274,30 +280,31 @@ runtimeBt.Tick(btContext, btState);
 _btMonoDebug.Construct(btAsset, btState);
 #endif
 ```
-- **Откройте Debug-Mode**: Дебаг-режим открывает граф и окрашивает ноды в текущее состояние конкретного агента: `зеленый - success`, `красный - failure`, `синий - running`, `серый - none`. Также BtMonoDebug предоставляет публичное поле `RunningLeafs`, которое можно использовать в своих интересах, например для вывода текущих running-leafs в качестве текста возле каждого агента.
+- **Open Debug Mode**: Debug mode opens the graph and highlights nodes according to the current state of a specific agent: `green - success`, `red - failure`, `blue - running`, `gray - none`.<br>
+`BtMonoDebug` also exposes the public field `RunningLeafs`, which can be used for additional debugging — for example displaying currently running leaves as text above each agent.
 
-## Проект для примера
+## Example Project
 
-Полный [пример с DODBT 0.4.0](https://github.com/vadimburym/DODBT/tree/example-project) основан на `LeoEcsLite`. Запустите игровую сцену, чтобы посмотреть Debug Mode, редактор графов, компиляцию и интеграцию дерева в runtime. Сторонние инструменты самого примера не входят в пакет DODBT.
+The complete [DODBT 0.4.0 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
 
-## Публичные классы и методы
+## Public Classes and Methods
 
-| **Класс/Структура/Интерфейс** | **Метод/Поле** | **Описание** |
+| **Class/Struct/Interface** | **Method/Field** | **Description** |
 |------------|------------|-----------------|
-| class `BehaviourTree` <TContext, TLeafState> |  | runtime-BT, создается ровно 1 экземпляр для каждого скомпилированного BT-ассета перед началом игры. TContext - ваш контекст BT для каждого агента. TLeafState - ваше состояние для каждого листа |
-|  | ILeaf[] `Leafs` | Список всех листьев инициализированного runtime-BT. Нужен для сборки листьев через DIContainer или ServiceLocator |
-|  | void `Construct`( BehaviourTreeAsset) | Инициализирует runtime-BT BT-ассетом |
-|  | void `FillInitialState`( BtState< TLeafState>) | Заполняет BtState начальным значением, характерным для данного runtime-BT |
-|  | void `Tick`(TContext, BtState< TLeafState>) | Тикает runtime-BT для конкретного агента начиная с root-ноды |
-|  | void `Abort`(TContext, BtState< TLeafState>) | Абортит runtime-BT для конкретного агента начиная с root-ноды |
-| class `BehaviourTreeAsset` |  | BT-ассет, создается путем компиляции граф-ассета через BT Editor |
-|  | string `GUID` | Уникальный глобальный идентификатор |
-| class `BtMonoDebug` |  | MonoBehaviour отвечающий за дебаг-состояние агента. Editor-only |
-|  | void `Construct`( BehaviourTreeAsset, IBtDebugState) | Инициализирует дебаг конкретным ассетом и состоянием BtState конкретного агента |
-|  | IReadOnlyList< string> `RunningLeafs` | Список имен текущих листьев, имеющих статус Running |
-| struct `BtState`< TLeafState> |  | Данные о состоянии runtime-BT для одного агента |
-|  | TLeafState[] `LeafStates` | Список ваших состояний листьев. Нужно если требуется вручную делать Reset или т.п. этих состояний |
-| interface `ILeaf`<in TContext, TLeafState> |  | Интерфейс для создания своих листьев в вашем контексте с вашим состоянием листа |
-| interface `ILeaf` |  | Пустой маркер для определения всех листьев. В разработке не понадобится |
-| interface `IBtDebugState` |  | Интерфейс для определения дебаг-состояния. Его реализует BtState. В разработке не понадобится. Editor-only |
-| enum `NodeStatus` |  | Статус ноды |
+| class `BehaviourTree` <TContext, TLeafState> |  | Runtime BT. Exactly one instance is created per compiled BT asset before the game starts. TContext — your BT context per agent. TLeafState — your leaf state type |
+|  | ILeaf[] `Leafs` | List of all leaves in the initialized runtime BT. Used for dependency injection through DIContainer or ServiceLocator |
+|  | void `Construct`( BehaviourTreeAsset) | Initializes the runtime BT with the compiled asset |
+|  | void `FillInitialState`( BtState< TLeafState>) | Fills BtState with the initial values required for this runtime BT |
+|  | void `Tick`(TContext, BtState< TLeafState>) | Ticks the runtime BT for a specific agent starting from the root node |
+|  | void `Abort`(TContext, BtState< TLeafState>) | Aborts the runtime BT for a specific agent starting from the root node |
+| class `BehaviourTreeAsset` |  | BT asset created by compiling a graph asset through the BT Editor |
+|  | string `GUID` | Unique global identifier |
+| class `BtMonoDebug` |  | MonoBehaviour responsible for the agent debug state. Editor-only |
+|  | void `Construct`( BehaviourTreeAsset, IBtDebugState) | Initializes debugging with the specified asset and the agent's BtState |
+|  | IReadOnlyList< string> `RunningLeafs` | List of leaf names currently in the Running state |
+| struct `BtState`< TLeafState> |  | Runtime BT state data for a single agent |
+|  | TLeafState[] `LeafStates` | List of your leaf states. Useful if you need to manually reset or manipulate them |
+| interface `ILeaf`<in TContext, TLeafState> |  | Interface for implementing custom leaves within your context and leaf state |
+| interface `ILeaf` |  | Marker interface used internally to detect all leaves |
+| interface `IBtDebugState` |  | Interface representing debug state. Implemented by BtState. Editor-only |
+| enum `NodeStatus` |  | Node execution status |
