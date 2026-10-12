@@ -73,7 +73,7 @@ internal sealed class BtSerializedFields : IDisposable
             var header = new Rect(rect.x, rect.y, rect.width, BtLeafSelector.Height);
             bool nextExpanded = expanded;
             if (BtLeafSelector.Draw(header, BtTypePicker.Resolve(property.managedReferenceFullTypename), hasFields, ref nextExpanded, _leafControlName))
-                OpenPicker(header, property);
+                OpenPicker(header, property, leafSelection: true);
             if (expanded != nextExpanded) property.isExpanded = nextExpanded;
             // Use the measured expansion for this event; the next layout applies the foldout change.
             if (!expanded) return;
@@ -94,11 +94,11 @@ internal sealed class BtSerializedFields : IDisposable
         finally { foreach (var child in children) child.Dispose(); }
     }
 
-    private void OpenPicker(Rect rect, SerializedProperty property)
+    private void OpenPicker(Rect rect, SerializedProperty property, bool leafSelection = false)
     {
         string path = property.propertyPath;
         var baseType = BtTypePicker.Resolve(property.managedReferenceFieldTypename);
-        _picker = new BtTypePicker(baseType, selected => Assign(path, selected), BtTypePicker.Resolve(property.managedReferenceFullTypename));
+        _picker = new BtTypePicker(baseType, selected => Assign(path, selected), BtTypePicker.Resolve(property.managedReferenceFullTypename), leafSelection);
         _picker.Show(rect);
     }
 
