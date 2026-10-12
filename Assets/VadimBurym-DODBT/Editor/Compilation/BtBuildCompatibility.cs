@@ -19,8 +19,11 @@ internal sealed class BtBuildCompatibility : IPreprocessBuildWithReport
             if (path.Contains("/Resources/") && !path.Contains("/Editor/")) roots.Add(path);
         foreach (var asset in PlayerSettings.GetPreloadedAssets())
             if (asset != null) roots.Add(AssetDatabase.GetAssetPath(asset));
+        var treePaths = new HashSet<string>(AssetDatabase.FindAssets("t:BehaviourTreeAsset").Select(AssetDatabase.GUIDToAssetPath));
         foreach (var path in AssetDatabase.GetDependencies(roots.ToArray(), true))
         {
+            // Loading scene or DLL subassets here invokes unrelated importers during the build.
+            if (!treePaths.Contains(path)) continue;
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
             {
                 if (asset is not BehaviourTreeAsset tree) continue;

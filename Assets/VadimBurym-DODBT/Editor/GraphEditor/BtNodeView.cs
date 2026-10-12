@@ -261,7 +261,7 @@ internal sealed class BtNodeView : Node
                 _integerFieldTwo?.SetValueWithoutNotify(data.SuccessThreshold);
             }
         }
-        if (Kind == BtNodeKind.Leaf)
+        if (Kind == BtNodeKind.Leaf || BtNodeKinds.IsDecorator(Kind))
         {
             _leafContainer?.MarkDirtyRepaint();
         }

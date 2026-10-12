@@ -13,6 +13,15 @@
 ### Fixed
 - Replacing a connection on a single-capacity port updates both graph data and displayed edges.
 - Editing a graph without a compiled asset no longer tries to mark a null object dirty.
+- Build compatibility inspection only loads behavior-tree asset paths, avoiding unrelated scene and assembly importers during player builds.
+- Changing a decorator in Details refreshes its inline node inspector.
+
+### Verification
+- Unity 6000.0.51f1: 105/105 EditMode tests with decorators enabled and 81/81 with decorators disabled, each with default indices and `DODBT_SMALL_SIZE`.
+- Windows x64 / Mono / High stripping: build succeeded with zero errors and two URP shader warnings. The player passed serialization, runtime audit, root-result, and decorator smoke checks with exit code 0. The existing ComputeBuffer disposal warning remains at shutdown.
+- WebGL / IL2CPP / High stripping: build succeeded with zero errors and 11 NavMeshPlus/URP warnings. Browser execution has not been verified.
+- The standalone preview package imports without Odin Inspector or Unity Test Framework installed.
+- The example AI system supplies `Time.timeAsDouble` when decorators are enabled, so timers follow scaled game time.
 
 ## [0.3.1] - 2026-10-12
 

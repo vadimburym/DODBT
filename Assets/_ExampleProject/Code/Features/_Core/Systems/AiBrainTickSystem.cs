@@ -29,7 +29,11 @@ namespace _ExampleProject.Code.Features._Core.Systems
                 {
                     aiBrain.TickTime -= aiBrain.TickInterval;
                     var bt = _behaviourTreeService.GetBehaviourTree(aiBrain.BehaviourTreeGUID);
+#if DODBT_DECORATORS
+                    bt.Tick(aiBrain.ContextRef, aiBrain.StateRef, Time.timeAsDouble);
+#else
                     bt.Tick(aiBrain.ContextRef, aiBrain.StateRef);
+#endif
                 }
             }
         }
