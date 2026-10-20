@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d1c4e32cd5a584695ff59cd1f447c1, type: 3}
+  m_Name: VATAnimationLibrary
+  m_EditorClassIdentifier: DODBT.Example::DODBT.Example.Battle.Animation.VATAnimationLibrary
+  positionTexture: {fileID: 2800000, guid: 4ee873516f673a341859aadef8a0b9b5, type: 3}
+  normalTexture: {fileID: 2800000, guid: c76905876e4ea79498a64dc2a48770ab, type: 3}
+  metadataTexture: {fileID: 2800000, guid: 7c43f2c21a05b74449848aced37d2335, type: 3}
+  boundsMin: {x: -1.744209, y: -0.37061113, z: -2.401978}
+  boundsExtent: {x: 4.111844, y: 3.9983132, z: 5.1455774}
+  maxVertexCount: 1620
+  totalFrameRows: 96
+  meshes:
+  - name: footman
+    sourceMesh: {fileID: 4300000, guid: 84b42445372ad5347aebd5d216a95d4f, type: 3}
+    meshIndex: 0
+    vertexCount: 1006
+  - name: orc
+    sourceMesh: {fileID: 4300000, guid: eb5e3fc8d0caf3945a6effdb6372a9c7, type: 3}
+    meshIndex: 1
+    vertexCount: 1620
+  clips:
+  - name: footman/Victory
+    clipName: Victory
+    clipIndex: 0
+    meshIndex: 0
+    rowStart: 0
+    frameCount: 12
+    length: 3.3333335
+  - name: footman/Run
+    clipName: Run
+    clipIndex: 1
+    meshIndex: 0
+    rowStart: 12
+    frameCount: 12
+    length: 0.6666667
+  - name: footman/Attack02
+    clipName: Attack02
+    clipIndex: 2
+    meshIndex: 0
+    rowStart: 24
+    frameCount: 12
+    length: 1.3333334
+  - name: footman/Death
+    clipName: Death
+    clipIndex: 3
+    meshIndex: 0
+    rowStart: 36
+    frameCount: 12
+    length: 1
+  - name: orc/Victory
+    clipName: Victory
+    clipIndex: 4
+    meshIndex: 1
+    rowStart: 48
+    frameCount: 12
+    length: 3.3333335
+  - name: orc/Run
+    clipName: Run
+    clipIndex: 5
+    meshIndex: 1
+    rowStart: 60
+    frameCount: 12
+    length: 0.6666667
+  - name: orc/Attack01
+    clipName: Attack01
+    clipIndex: 6
+    meshIndex: 1
+    rowStart: 72
+    frameCount: 12
+    length: 1.3333334
+  - name: orc/Die
+    clipName: Die
+    clipIndex: 7
+    meshIndex: 1
+    rowStart: 84
+    frameCount: 12
+    length: 1

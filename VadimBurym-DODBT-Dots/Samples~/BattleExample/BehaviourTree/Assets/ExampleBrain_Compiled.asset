@@ -1,0 +1,164 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 526ae62ac9b84af3a0d5d5f6f1b45f06, type: 3}
+  m_Name: ExampleBrain_Compiled
+  m_EditorClassIdentifier: VadimBurym.DodBehaviourTree.Dots::VadimBurym.DodBehaviourTree.Dots.BehaviourTreeAsset
+  InternalGUID: 9e6ca0c5a0f4a9842a8125f094292d35
+  InternalCompiledRevision: f6faa08e124e49d28f69e2c2f202abe4
+  RootIndex: 0
+  Nodes:
+  - Id: 1
+    DataIndex: 0
+    ParentIndex: 65535
+  - Id: 2
+    DataIndex: 0
+    ParentIndex: 0
+  - Id: 0
+    DataIndex: 0
+    ParentIndex: 0
+  - Id: 0
+    DataIndex: 1
+    ParentIndex: 0
+  - Id: 0
+    DataIndex: 2
+    ParentIndex: 1
+  - Id: 1
+    DataIndex: 1
+    ParentIndex: 1
+  - Id: 0
+    DataIndex: 3
+    ParentIndex: 1
+  - Id: 2
+    DataIndex: 1
+    ParentIndex: 5
+  - Id: 0
+    DataIndex: 4
+    ParentIndex: 5
+  - Id: 0
+    DataIndex: 5
+    ParentIndex: 7
+  - Id: 0
+    DataIndex: 6
+    ParentIndex: 7
+  SelectorNodes:
+  - FirstChild: 1
+    ChildCount: 3
+  - FirstChild: 7
+    ChildCount: 2
+  SequenceNodes:
+  - FirstChild: 4
+    ChildCount: 3
+  - FirstChild: 9
+    ChildCount: 2
+  MemorySelectorNodes: []
+  MemorySequenceNodes: []
+  ParallelNodes: []
+  Leafs:
+  - LeafId: 5
+    Int0: 0
+    Float0: 0
+    Byte0: 1
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  - LeafId: 7
+    Int0: 0
+    Float0: 0
+    Byte0: 0
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  - LeafId: 1
+    Int0: 0
+    Float0: 0
+    Byte0: 0
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  - LeafId: 6
+    Int0: 0
+    Float0: 0
+    Byte0: 0
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  - LeafId: 4
+    Int0: 0
+    Float0: 0
+    Byte0: 0
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  - LeafId: 3
+    Int0: 0
+    Float0: 0
+    Byte0: 0
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  - LeafId: 5
+    Int0: 0
+    Float0: 0
+    Byte0: 0
+    Bytes:
+      data:
+        offset0000:
+          byte0000: 0
+          byte0008: 0
+        offset0016:
+          byte0000: 0
+          byte0008: 0
+  InternalFormatVersion: 1
+  InternalContextIdentity: DODBT.Example:DODBT.Example.BehaviourTree.ExampleContext
+  InternalLeafBindings:
+  - Id: 1
+    TypeIdentity: DODBT.Example:DODBT.Example.BehaviourTree.Leaves.IsEnemyDetectedLeaf
+  - Id: 3
+    TypeIdentity: DODBT.Example:DODBT.Example.BehaviourTree.Leaves.InAttackRangeLeaf
+  - Id: 4
+    TypeIdentity: DODBT.Example:DODBT.Example.BehaviourTree.Leaves.ChaseEnemyLeaf
+  - Id: 5
+    TypeIdentity: DODBT.Example:DODBT.Example.BehaviourTree.Leaves.IsMovingLeaf
+  - Id: 6
+    TypeIdentity: DODBT.Example:DODBT.Example.BehaviourTree.Leaves.AttackEnemyLeaf
+  - Id: 7
+    TypeIdentity: DODBT.Example:DODBT.Example.BehaviourTree.Leaves.IdleLeaf

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8650606e7e501d4186b05aa86c809ff, type: 3}
+  m_Name: Footman
+  m_EditorClassIdentifier: DODBT.Example::DODBT.Example.UnitDefinition
+  Mesh: {fileID: 4300000, guid: 84b42445372ad5347aebd5d216a95d4f, type: 3}
+  Material: {fileID: 2100000, guid: 57c8304a3d814204c981b0a696d6584f, type: 2}
+  AnimationLibrary: {fileID: 11400000, guid: 2b9fb953e71860f478b394b1d0b2df51, type: 2}
+  Tree: {fileID: 11400000, guid: d1d27afc36f06d74999370b8155ad20d, type: 2}
+  Speed: 4
+  RotationSpeed: 5
+  Health: 200
+  AttackInterval: 1.5
+  AttackRangeCells: 2
+  Damage: 10
+  DetectRadius: 10
+  ChaseRadius: 15
+  UpdateNearestInterval: 3
+  ScanInterval: 0.3
+  FootprintX: 1
+  FootprintY: 1

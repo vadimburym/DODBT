@@ -1,310 +1,244 @@
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.ru.md">Русский</a>
+<p align="right">
+  🌐 <a href="README-ru.md">Русский</a> &nbsp;|&nbsp; <strong>English</strong>
 </p>
 
-## 10⭐ Why DODBT? (Data-oriented design Behaviour Tree)
-
-⭐ **0 MonoBehaviour**<br>
-Completely decoupled from the Unity lifecycle.
-
-⭐ **0 runtime allocations**<br>
-Predictable execution without GC.
-
-⭐ **1 shared BT for N agents**<br>
-Memory-efficient architecture.
-
-⭐ **Runtime Debug Mode**<br>
-Clean and convenient debugging.
-
-⭐ **Full-featured BT Graph Editor**<br>
-Logs, hints, and clear visualization.
-
-⭐ **Graph and Runtime are separated**<br>
-The graph is compiled into a compact and performant BT.<br>
-Neither graph data nor editor tools are included in builds.
-
-⭐ **BT is decision-layer**<br>
-Tree is responsible only for behavior selection and transitions.
-It can be updated at any frequency, for example once every N seconds.
-
-⭐ **No Blackboard**<br>
-Dependencies can be injected directly, via DI, or through a Service Locator.
-
-⭐ **ECS-friendly**<br>
-Works great with ECS architecture.
-
-⭐ **Production-grade**<br>
-Tests coverage. Game designers can configure BTs without touching code.
-
-**DODBT 0.4.0**: linked branch groups, graph search and node copying, `TickWithStatus`, optional Timeout/Cooldown/Inverter, and a refreshed Leaf inspector. Editing, compilation, and debugging use Unity APIs; Odin Inspector is not required.
-
-Validated with **Unity 6000.0.51f1**. See the [0.4.0 release notes](docs~/releases/v0.4.0.md) for test results, verified builds, and validation scope.
-
-> ⚠ **IMPORTANT!** A dedicated `DOTS` [version of this plugin](https://github.com/vadimburym/DOTS-Battle-Simulator-Prototype) with `BlobAsset` and `Burst` support is currently in development.
-This version can still be used if you're comfortable running the Behaviour Tree and states as a main-thread managed decision layer, ticking it once every N seconds.
-
 <p align="center">
-  <img src="docs~/logo.png" width="1050">
+  <a href="VadimBurym-DODBT-Light/DOCUMENTATION-en.md">DODBT-Light</a> &nbsp;·&nbsp;
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md">DODBT-Dots</a> &nbsp;·&nbsp;
+  <a href="VadimBurym-DODBT-Light/Samples~/Example2D/README-RU.md">Example2D</a> &nbsp;·&nbsp;
+  <a href="VadimBurym-DODBT-Dots/Samples~/BattleExample/README-RU.md">Battle Example</a> &nbsp;·&nbsp;
+  <a href="#gallery">Gallery</a> &nbsp;·&nbsp;
+  <a href="LICENSE.md">License</a>
 </p>
 
-## 📑 Table of Contents
+<h1 align="center">DODBT</h1>
 
-- [Installation](#installation)
-- [Getting Started](#getting-started)
-- [Graph Editor](#graph-editor)
-- [Compilation and Build](#compilation-and-build)
-- [Debug Mode](#debug-mode)
-- [Example Project](#example-project)
-- [Public Classes and Methods](#public-classes-and-methods)
-
-## Installation
-- **As a Unity module**: Window → Package Manager → Install package from git URL:
-- **Latest version**:
-```
-https://github.com/vadimburym/DODBT.git?path=/source
-```
-- **Stable version** `RECOMMENDED`:
-```
-https://github.com/vadimburym/DODBT.git?path=/source#v0.4.0
-```
-- **As source code**: If you want to modify a plugin in your project, clone or download it as an archive and place the source code in your project, for example in the Plugins folder.
-
-### Upgrading to 0.4.0
-
-Update the package URL to the `v0.4.0` tag. Serialized field names and script GUIDs are retained for existing graphs and compiled trees. Leaf parameters use Unity serialization: `[Serializable]` classes, `[SerializeField]` private fields, and `[SerializeReference]` for nested polymorphic data. These fields can be edited both inline and in `Details`.
-
-See the [CHANGELOG](source/CHANGELOG.md) for release changes. Remove Odin from the consuming project only if no other plugins or game code depend on it.
-
-### Features in 0.4.0
-
-- `TickWithStatus(context, state)` performs one traversal and returns the root result; the existing `Tick` API is retained.
-- `DODBT_DECORATORS` enables Timeout, Cooldown, and Inverter for the selected target. Supply monotonic time for Timeout/Cooldown: `TickWithStatus(context, state, now)`.
-- Graph search, individual/block copying, and linked groups that synchronize data, structure, and relative positions. Groups are editor-only; execution still follows left-to-right order.
-- Root Leaf parameters stay expanded. Nested SerializeReference fields keep their foldouts. Connection warnings appear in the graph editor's own console.
-
-See the [0.4.0 guide](source/Documentation~/0.4.0.md) for usage, limitations, and Abort semantics.
-
-## Getting Started
-
-- **Create a per-agent context**: a `class` representing the external runtime context in which the BT operates.
-> **[EXAMPLE]** Example context for `LeoEcsLite`.
-```c#
-public sealed class LeoEcsContext
-{
-    public int AgentIndex = -1;
-}
-```
-- **Create a per-leaf state**: a `struct` that stores the state of leaf nodes for a specific agent.
-> **[EXAMPLE]** Example state for `LeoEcsLite`.
-```c#
-[Serializable]
-public struct LeoEcsLeafState
-{
-    public int StateIndex;
-    public void Reset() => StateIndex = -1;
-}
-```
-- **Create leaves**: terminal BT nodes that represent condition checks, actions, or states executed within an agent context and maintaining their own execution state. Implement them by inheriting from `ILeaf<context, state>` anywhere in the project — the DODBT editor discovers serializable leaf classes in the project's runtime assemblies and lists them as `ClassName (Namespace)`. Add the `[Serializable]` attribute and mark parameters you want to edit from the graph with `[SerializeField]`.
-
-> ⚠ **IMPORTANT!** It is important to understand the order of execution when the current Running node changes: `OnEnter`, `OnTick` of the new Running node → `OnAbort` of the previous Running node.
-
-> **[EXAMPLE]** Example leaf "Shoot the player N times" for `LeoEcsLite` using `DI`. The leaf does not tick the agent behavior itself — it only adds/removes a state from the agent. Actual behavior is ticked by separate ECS systems filtering entities by that state.
-```c#
-[Serializable]
-public sealed class ShootPlayerLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
-{
-    [SerializeField] private int _targetShots;
-
-    private EcsWorld _world;
-    private EcsPool<AgentEntity> _agentPool;
-    private EcsPool<ShootEntityState> _shootStatePool;
-    private EcsPool<PlayerVisibilitySensor> _sensorPool;
-
-    [Inject]
-    public void Construct(IEcsWorldsService service)
-    {
-        _world = service.GetWorld(EcsWorlds.BT_STATES);
-        _agentPool = service.GetPool<AgentEntity>(EcsWorlds.BT_STATES);
-        _shootStatePool = service.GetPool<ShootEntityState>(EcsWorlds.BT_STATES);
-        _sensorPool = service.GetPool<PlayerVisibilitySensor>(EcsWorlds.DEFAULT);
-    }
-
-    public NodeStatus OnTick(LeoEcsContext context, ref LeoEcsLeafState state)
-    {
-        var status = _shootStatePool.Get(state.StateIndex).StateStatus;
-        return status == NodeStatus.None ? NodeStatus.Running : status;
-    }
-
-    public void OnEnter(LeoEcsContext context, ref LeoEcsLeafState state)
-    {
-        var playerIndex = _sensorPool.Get(context.AgentIndex).DetectedPlayer;
-        state.StateIndex = _world.NewEntity();
-        _agentPool.Add(state.StateIndex).AgentIndex = context.AgentIndex;
-        _shootStatePool.Add(state.StateIndex).Setup(
-            targetShots: _targetShots,
-            entityIndex: playerIndex);
-    }
-
-    public void OnExit(LeoEcsContext context, ref LeoEcsLeafState state, NodeStatus exitStatus)
-    {
-        _world.DelEntity(state.StateIndex);
-    }
-
-    public void OnAbort(LeoEcsContext context, ref LeoEcsLeafState state)
-    {
-        _world.DelEntity(state.StateIndex);
-    }
-}
-```
-> **[EXAMPLE]** Example leaf "Is the player visible" for `LeoEcsLite` using `DI`. The leaf itself does not perform a raycast — it only checks a value maintained by the sensor. The sensor is responsible for how and how often that value is updated.
-```c#
-[Serializable]
-public sealed class IsPlayerRayCastLeaf : ILeaf<LeoEcsContext, LeoEcsLeafState>
-{
-    private EcsPool<PlayerVisibilitySensor> _sensorPool;
-
-    [Inject]
-    public void Construct(IEcsWorldsService service)
-    {
-        _sensorPool = service.GetPool<PlayerVisibilitySensor>(EcsWorlds.DEFAULT);
-    }
-
-    public NodeStatus OnTick(LeoEcsContext context, ref LeoEcsLeafState state)
-    {
-        return _sensorPool.Get(context.AgentIndex).IsPlayerRaycast ? NodeStatus.Success : NodeStatus.Failure;
-    }
-
-    public void OnEnter(LeoEcsContext context, ref LeoEcsLeafState state) { }
-    public void OnExit(LeoEcsContext context, ref LeoEcsLeafState state, NodeStatus exitStatus) { }
-    public void OnAbort(LeoEcsContext context, ref LeoEcsLeafState state) { }
-}
-```
-## Graph Editor
+<p align="center"><strong>Behaviour trees in C# for Unity, ECS architectures, and Unity DOTS — a complete workflow from building trees visually to debugging individual agents.</strong></p>
 
 <p align="center">
-  <img src="docs~/graph-editor-00.png" width="700">
+  <img src="https://img.shields.io/badge/Unity-6-59616E?style=for-the-badge&amp;logo=unity&amp;logoColor=white&amp;labelColor=343B45" alt="Unity 6">
+  <img src="https://img.shields.io/badge/Light-C%23-397E94?style=for-the-badge&amp;labelColor=343B45" alt="Light: C#">
+  <img src="https://img.shields.io/badge/Dots-Burst_%2B_Jobs-658A5A?style=for-the-badge&amp;labelColor=343B45" alt="Dots: Burst + Jobs">
+  <img src="https://img.shields.io/badge/Editor-Observe-756790?style=for-the-badge&amp;labelColor=343B45" alt="Editor: Observe">
 </p>
 
-- **Open the graph editor**: Tools → VadimBurym → BT Editor.
+<a id="benefits"></a>
 
-<img src="docs~/graph-editor-01.png" width="1050">
+<h2 align="center">⭐ 10 reasons to choose DODBT</h2>
 
-- **Top panel**: Buttons from left to right: `Create new graph asset` | `Delete current asset` | `Duplicate current asset` | `Rename current asset` | `Select asset` | `Compile current graph into a BT asset`. All assets are initially placed in `Assets/VadimBurym-DODBT`, from where you can move them anywhere in your project. Create a new graph asset.
-<img src="docs~/graph-editor-02.png" width="1050">
+**⭐ 0 MonoBehaviour**<br>
+Tree execution is independent of Unity's lifecycle.
 
-- **Canvas**: Right-click → Add/... to create a new node. Execution order for composite children goes from left to right. Build your behavior graph using available nodes and your custom leaves.
-- **Side panel**: The `Details` panel displays information about the selected node. Here you can rename the node, verify child execution order, edit node settings, and read a description of how the node works.
+**⭐ 0 GC allocations**<br>
+Predictable tree traversal without GC.
 
-> ⚠ **IMPORTANT!** As a respected AI Lead from a AAA project once said, decorators are basically crutches in the Behaviour Tree world and he tries to avoid them. I agree with this approach, and since this plugin was originally built for personal use, decorators are currently not implemented. Available nodes at the moment are: `Selector`, `Sequence`, `MemorySelector`, `MemorySequence`, `Parallel`. These are enough to build most BTs, but decorators may be added later if there is demand from the community.
+**⭐ One shared BT for N agents**<br>
+A memory-efficient architecture.
 
-> ⚠ **IMPORTANT!** The maximum number of child nodes per composite is `255`, and the maximum number of nodes per Behaviour Tree is `65,535`. If you are sure your trees will contain ≤ `255` nodes, you can add `DODBT_SMALL_SIZE` to the Scripting Define Symbols to slightly optimize memory usage.
-<img src="docs~/graph-editor-03.png" width="1050">
+**⭐ Debug during gameplay**<br>
+Inspect the selected agent's behaviour in Play Mode.
 
-- **Bottom panel**: The `Outputs` panel shows logs. It may include compilation errors, warnings about cyclic dependencies, or notifications about changes in composite child order.
+**⭐ A full BT graph editor**<br>
+Logs, hints, search, and clear visual feedback.
 
-## Compilation and Build
+**⭐ Separate graph and runtime**<br>
+The graph compiles into compact data. Editor tools are not needed in the build.
 
-- **Compile the graph**: Click the compile button in the top panel to produce a compiled `BehaviourTreeAsset` (not to be confused with the graph asset). Place the compiled asset somewhere accessible from code.
+**⭐ BT is a decision layer**<br>
+The tree chooses behaviour; game systems carry it out. You decide how often to Tick.
 
-- **Create a runtime BT for each BT asset**: Collect all your `BehaviourTreeAsset` instances and create a `BehaviourTree` runtime instance for each.
+**⭐ No Blackboard**<br>
+Dependencies are passed directly. Light supports DI and ServiceLocator.
 
-> ⚠ **IMPORTANT!** This is done once before the game starts.
+**⭐ ECS-friendly**<br>
+Light fits into regular C# systems; Dots fits into Unity Entities with Burst and Jobs.
 
-> **[EXAMPLE]** Creating a runtime BT from the compiled BT asset used in the previous examples.
-```c#
-var btAsset = //Reference to your BehaviourTreeAsset
-var runtimeBt = new BehaviourTree<LeoEcsContext, LeoEcsLeafState>();
-runtimeBt.Construct(btAsset);
-```
-- **Inject dependencies into every leaf of each runtime BT**: Construct leaves using your DI container or ServiceLocator.
-
-> ⚠ **IMPORTANT!** This is done once before the game starts.
-
-> **[EXAMPLE]** Using `DI`.
-```c#
-var leafs = runtimeBt.Leafs;
-for (int i = 0; i < leafs.Length; i++)
-    _diContainer.Inject(leafs[i]); //Your DIContainer
-```
-> **[EXAMPLE]** Using `ServiceLocator`.
-```c#
-var leafs = runtimeBt.Leafs;
-for (int i = 0; i < leafs.Length; i++)
-    if (leafs[i] is IConstruct constructable)
-        constructable.Construct();
-```
-> **[EXAMPLE]** No `DI` and `ServiceLocator`: Provide dependencies through context.
-```c#
-public sealed class LeoEcsContext
-{
-    public int AgentIndex = -1;
-    public EcsPool<Component1> PoolC1;
-    public EcsPool<Component2> PoolC2;
-    public IService1 Service1;
-}
-```
-- **Create agent contexts and states**: Wherever agents are created, create a context and a `BtState` for each agent. Initialize the state from the desired `BehaviourTree`.
-
-> **[EXAMPLE]** Example for each agent in `LeoEcsLite`. It is recommended to use a MemoryPool for `btContext` and `btState`.
-```c#
-var btContext = new LeoEcsContext();
-var btState = new BtState<LeoEcsLeafState>();
-runtimeBt.FillInitialState(btState);
-for (int i = 0; i < btState.LeafStates.Length; i++)
-    btState.LeafStates[i].Reset();
-
-var agent = _world.NewEntity();
-btContext.AgentIndex = agent;
-```
-- **Tick the runtime BT**: Update each agent through its `BehaviourTree` at any frequency you prefer.
-
-> ⚠ **IMPORTANT!** Do not create a separate `BehaviourTree` for each agent. Only one runtime BT exists per BT asset. Each agent only needs its own context and BT state.
-```c#
-runtimeBt.Tick(btContext, btState);
-```
-## Debug Mode
+**⭐ Production quality**<br>
+Core features are covered by tests, graphs are checked during compilation, and agent behaviour can be debugged visually.
 
 <p align="center">
-  <img src="docs~/debug-00.png" width="1050">
+  <img src="docs~/images/dodbt.png" width="100%" alt="DODBT: visual behaviour tree editor and debugging">
 </p>
 
-- **Add debugging for your agent**: Add the `BtMonoDebug` component and link it to the specific BT asset and the agent's state reference.
+<a id="versions"></a>
+
+<h2 align="center">Which version to choose</h2>
+
+<table width="100%">
+<thead>
+<tr>
+<th width="24%" align="left"></th>
+<th width="38%" align="left">DODBT-Light</th>
+<th width="38%" align="left">DODBT-Dots</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Execution</td>
+<td>Regular C#</td>
+<td>Unity Entities, Burst, and Jobs</td>
+</tr>
+<tr>
+<td>When to choose it</td>
+<td>Projects that do not need to run BT inside Burst Jobs</td>
+<td>DOTS projects with many agents and AI processing in Jobs</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>A user-defined class, including managed references and services</td>
+<td>An unmanaged struct with data and access to ECS</td>
+</tr>
+<tr>
+<td>Leaf state</td>
+<td>A user-defined LeafState struct</td>
+<td>A fixed state format; extra data lives in ECS components</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td>Simpler; supports DI and works well as a managed layer for ECS</td>
+<td>Requires knowledge of Entities, Job dependencies, and the lifetime of native data</td>
+</tr>
+<tr>
+<td>Core dependencies</td>
+<td>—</td>
+<td>Entities, Burst, Collections, and Mathematics</td>
+</tr>
+<tr>
+<td>Sample</td>
+<td>Example2D with LeoEcsLite and ServiceLocator</td>
+<td>Battle Example: a battle with 10,000 agents</td>
+</tr>
+</tbody>
+</table>
+
+> [!NOTE]
+> DODBT-Light was originally built for easy integration with ECS architectures, but it is not tied to ECS: you can also use it in OOP projects and with your own C# game systems.
+
+> [!TIP]
+> If you need a Behaviour Tree for **LeoEcsLite, LeoEcsProto, Entitas, Morpeh**, or a similar ECS framework and plan to run the tree as regular C# code, choose **DODBT-Light**. It fits into an ECS architecture as a managed decision layer: the context can hold references to your ECS data and services, while game systems carry out the chosen behaviour.
+>
+> **DODBT-Dots** is designed for **Unity Entities**, with tree execution through **Burst and Jobs** and data stored in **unmanaged memory**. It uses a different approach to data layout and agent state, designed for high performance when processing large numbers of AI agents.
+
+> [!IMPORTANT]
+> Upgrading from 0.4.0? Read the [upgrade guide](UPGRADING.md) before replacing the old package. Version 1.0.0 changes package names, namespaces, and asset identities.
+
+<a id="installation"></a>
+
+<h2 align="center">Installation</h2>
+
+### With Package Manager and Git
+
+Open **Window → Package Management → Package Manager**, select **+ → Install package from git URL**, and enter the URL of the package you need.
+
+- **Light:** `https://github.com/vadimburym/DODBT.git?path=/VadimBurym-DODBT-Light`
+- **Dots:** `https://github.com/vadimburym/DODBT.git?path=/VadimBurym-DODBT-Dots`
+
+### From a ZIP without Git
+
+1. Extract the plugin ZIP to a permanent folder on disk.
+2. In Package Manager, select **+ → Install package from disk**.
+3. Select `package.json` inside `VadimBurym-DODBT-Light` or `VadimBurym-DODBT-Dots`.
+
+Unity uses this folder as a local package, so do not delete or move it after adding it. The ZIP itself is not a UPM package. [Installing a local package](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui-local.html).
+
+### From a `.unitypackage`
+
+Download a `.unitypackage` from the [1.0.0 release](https://github.com/vadimburym/DODBT/releases/tag/v1.0.0), then open **Assets → Import Package → Custom Package** and select the file. Keep the entire folder of the plugin you need, or both folders; you can exclude samples from the import.
+
+This method places files in `Assets`. For Dots, install dependencies through Package Manager first: importing a `.unitypackage` does not automatically install dependencies from `package.json`. [Importing an asset package](https://docs.unity3d.com/6000.0/Documentation/Manual/AssetPackagesImport.html).
+
+> [!WARNING]
+> Do not install the same version through both UPM and `Assets`: this creates duplicate types and assemblies. Select the entire plugin folder — partial imports of Runtime, Editor, or the generator DLL are not supported. Light and Dots can be used together.
+
+<a id="samples"></a>
+
+<h2 align="center">Installing samples</h2>
+
+For a UPM installation, open the package in **Package Manager → Samples** and click **Import**:
+
+- **DODBT-Light → LeoECS 2D Example** — a small 2D game with LeoEcsLite and ServiceLocator.
+- **DODBT-Dots → Battle Example** — a battle with a shared tree blob, separate agent states, and Burst Jobs.
+
+Unity copies the selected sample into your project:
+
+```text
+Assets/Samples/DODBT-Light/<package version>/LeoECS 2D Example/
+Assets/Samples/DODBT-Dots/<package version>/Battle Example/
+```
+
+This is your copy: you can study and change it. Updating the package does not update a sample you have already imported. Before importing a new version, save your changes and keep only one copy of each sample to avoid duplicate assemblies and types.
+
+> [!IMPORTANT]
+> Install the sample's dependencies first. Battle Example requires **Entities Graphics 1.5.0, URP 17.3.0, Input System 1.18.0**, and a configured URP project. Example2D's dependencies are listed in its [README](VadimBurym-DODBT-Light/Samples~/Example2D/README-RU.md). These packages are not required by the Light core.
+
+With a `.unitypackage` installation, there is no Samples tab: samples are selected in the import window or provided as separate asset packages. If a sample is already in `Assets`, open its scene directly. [How Unity samples work](https://docs.unity3d.com/6000.0/Documentation/Manual/cus-samples.html).
+
+> [!NOTE]
+> The samples show how to use the plugin. They are not a recommended architecture for a game project.
+
+<a id="documentation"></a>
+
+<h2 align="center">Documentation</h2>
+
+<table width="100%">
+<thead>
+<tr>
+<th width="32%" align="left">Guide</th>
+<th width="68%" align="left">Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="VadimBurym-DODBT-Light/DOCUMENTATION-en.md">DODBT-Light</a></td>
+<td>Context and LeafState, leaves, editor, DI, execution, debugging, and public API.</td>
+</tr>
+<tr>
+<td><a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md">DODBT-Dots</a></td>
+<td>Context, leaves, editor, blob, agent setup, Burst Jobs, debugging, and public API.</td>
+</tr>
+<tr>
+<td><a href="VadimBurym-DODBT-Light/Samples~/Example2D/README-RU.md">Example2D</a></td>
+<td>Running the Light 2D sample with LeoEcsLite and connecting it to game systems.</td>
+</tr>
+<tr>
+<td><a href="VadimBurym-DODBT-Dots/Samples~/BattleExample/README-RU.md">Battle Example</a></td>
+<td>Running the Dots sample, ECS integration, and tree execution in Jobs.</td>
+</tr>
+</tbody>
+</table>
+
+To get started, import the sample for your chosen version and open `ExampleBrain` in BT Editor. Run the scene, select an agent, and click **Observe** to see how the tree's decisions relate to behaviour in the game.
+
+<a id="gallery"></a>
+
+<h2 align="center">Gallery</h2>
 
 <p align="center">
-  <img src="docs~/debug-01.png" width="450">
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#debugging"><img src="VadimBurym-DODBT-Dots/docs~/images/03-battle-observe.webp" width="100%" alt="Observe in Battle Example: the selected agent in Scene View and the active tree branches."></a>
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#create-graph"><img src="VadimBurym-DODBT-Dots/docs~/images/08-create-graph.webp" width="100%" alt="Creating a graph, adding nodes, and configuring leaves."></a>
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#graph-editing"><img src="VadimBurym-DODBT-Dots/docs~/images/07-select-leaf.webp" width="100%" alt="Changing a leaf implementation directly in the node."></a>
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#quality-of-life"><img src="VadimBurym-DODBT-Dots/docs~/images/06-linked-groups.webp" width="100%" alt="Editing one branch updates its linked instances."></a>
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#graph-editor"><img src="VadimBurym-DODBT-Dots/docs~/images/03-editor-overview.webp" width="100%" alt="Graph, minimap, selected node settings, and Output messages in one window."></a>
+  <a href="VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#quality-of-life"><img src="VadimBurym-DODBT-Dots/docs~/images/05-parallel-details.webp" width="100%" alt="Parallel settings are available directly in the node and in the Details panel."></a>
 </p>
 
-```c#
-#if UNITY_EDITOR
-_btMonoDebug.Construct(btAsset, btState);
-#endif
-```
-- **Open Debug Mode**: Debug mode opens the graph and highlights nodes according to the current state of a specific agent: `green - success`, `red - failure`, `blue - running`, `gray - none`.<br>
-`BtMonoDebug` also exposes the public field `RunningLeafs`, which can be used for additional debugging — for example displaying currently running leaves as text above each agent.
+<a id="tests-and-performance"></a>
 
-## Example Project
+<h2 align="center">Tests and performance</h2>
 
-The complete [DODBT 0.4.0 example project](https://github.com/vadimburym/DODBT/tree/example-project) uses `LeoEcsLite`. Run its gameplay scene to inspect Debug Mode, graph editing, compilation, and runtime integration. Third-party tools used by the example are separate from the DODBT package.
+**Behaviour tests.** The packages include [Light tests](VadimBurym-DODBT-Light/Tests) and [Dots tests](VadimBurym-DODBT-Dots/Tests) for lifecycle, node execution, compilation, serialization, and editor operations.
 
-## Public Classes and Methods
+**Burst + Jobs performance gain.** In a Dots comparison test with **10,000 agents**, processing time dropped from **126 ms to 1 ms** when Burst and Jobs were enabled. This is the same Dots scenario with and without them; the data layout that enables this execution is tied to the limitations of this version. [More about the gain and limitations](VadimBurym-DODBT-Dots/DOCUMENTATION-en.md#performance-gain).
 
-| **Class/Struct/Interface** | **Method/Field** | **Description** |
-|------------|------------|-----------------|
-| class `BehaviourTree` <TContext, TLeafState> |  | Runtime BT. Exactly one instance is created per compiled BT asset before the game starts. TContext — your BT context per agent. TLeafState — your leaf state type |
-|  | ILeaf[] `Leafs` | List of all leaves in the initialized runtime BT. Used for dependency injection through DIContainer or ServiceLocator |
-|  | void `Construct`( BehaviourTreeAsset) | Initializes the runtime BT with the compiled asset |
-|  | void `FillInitialState`( BtState< TLeafState>) | Fills BtState with the initial values required for this runtime BT |
-|  | void `Tick`(TContext, BtState< TLeafState>) | Ticks the runtime BT for a specific agent starting from the root node |
-|  | void `Abort`(TContext, BtState< TLeafState>) | Aborts the runtime BT for a specific agent starting from the root node |
-| class `BehaviourTreeAsset` |  | BT asset created by compiling a graph asset through the BT Editor |
-|  | string `GUID` | Unique global identifier |
-| class `BtMonoDebug` |  | MonoBehaviour responsible for the agent debug state. Editor-only |
-|  | void `Construct`( BehaviourTreeAsset, IBtDebugState) | Initializes debugging with the specified asset and the agent's BtState |
-|  | IReadOnlyList< string> `RunningLeafs` | List of leaf names currently in the Running state |
-| struct `BtState`< TLeafState> |  | Runtime BT state data for a single agent |
-|  | TLeafState[] `LeafStates` | List of your leaf states. Useful if you need to manually reset or manipulate them |
-| interface `ILeaf`<in TContext, TLeafState> |  | Interface for implementing custom leaves within your context and leaf state |
-| interface `ILeaf` |  | Marker interface used internally to detect all leaves |
-| interface `IBtDebugState` |  | Interface representing debug state. Implemented by BtState. Editor-only |
-| enum `NodeStatus` |  | Node execution status |
+> [!NOTE]
+> This is the result of one test, not a comparison of Light and Dots or a guarantee of frame time. Tree structure, leaves, tick rate, and hardware all affect the result. Frame/FPS in the sample measures the entire frame, including game systems and rendering.
+
+**Integration check.** Battle Example runs 10,000 agents with an AI interval of 0.2 seconds and ticks spread across frames. Example2D shows the same separation of tree decisions and action execution in regular C#.
+
+<a id="license"></a>
+
+<h2 align="center">License</h2>
+
+DODBT-Light and DODBT-Dots share the [DODBT Custom Game-Use and Redistribution License](LICENSE.md). The full text is also included in each package.
+
+Sample code and third-party assets have separate terms listed in their README and LICENSE files.

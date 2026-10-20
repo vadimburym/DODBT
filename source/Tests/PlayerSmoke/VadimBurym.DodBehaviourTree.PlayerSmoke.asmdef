@@ -1,6 +1,0 @@
-{
-    "name": "VadimBurym.DodBehaviourTree.PlayerSmoke",
-    "references": ["VadimBurym.DodBehaviourTree"],
-    "autoReferenced": false,
-    "defineConstraints": ["UNITY_EDITOR || DODBT_PLAYER_SMOKE"]
-}

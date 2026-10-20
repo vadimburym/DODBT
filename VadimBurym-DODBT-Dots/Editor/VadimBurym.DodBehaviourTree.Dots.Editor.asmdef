@@ -1,0 +1,22 @@
+{
+    "name": "VadimBurym.DodBehaviourTree.Dots.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e50a8a81f3be9ed49a8b587bb10aa1f9",
+        "GUID:734d92eba21c94caba915361bd5ac177",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "Unity.Transforms",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,62 @@
+{
+  "name": "DODBT.Light.Example.Editor",
+  "references": [
+    "DODBT.Light.Example"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false,
+  "versionDefines": [
+    {
+      "name": "com.leopotam.ecslite",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_0"
+    },
+    {
+      "name": "com.leopotam.ecslite.di",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_1"
+    },
+    {
+      "name": "com.leopotam.ecslite.unityeditor",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_2"
+    },
+    {
+      "name": "com.h8man.2d.navmeshplus",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_3"
+    },
+    {
+      "name": "com.unity.ai.navigation",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_4"
+    },
+    {
+      "name": "com.unity.inputsystem",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_5"
+    },
+    {
+      "name": "com.unity.render-pipelines.universal",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_6"
+    },
+    {
+      "name": "com.unity.ugui",
+      "expression": "0.0.0",
+      "define": "DODBT_LIGHT_SAMPLE_DEP_7"
+    }
+  ],
+  "defineConstraints": [
+    "DODBT_LIGHT_SAMPLE_DEP_0",
+    "DODBT_LIGHT_SAMPLE_DEP_1",
+    "DODBT_LIGHT_SAMPLE_DEP_2",
+    "DODBT_LIGHT_SAMPLE_DEP_3",
+    "DODBT_LIGHT_SAMPLE_DEP_4",
+    "DODBT_LIGHT_SAMPLE_DEP_5",
+    "DODBT_LIGHT_SAMPLE_DEP_6",
+    "DODBT_LIGHT_SAMPLE_DEP_7"
+  ]
+}
