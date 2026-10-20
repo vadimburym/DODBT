@@ -119,6 +119,9 @@ Core features are covered by tests, graphs are checked during compilation, and a
 >
 > **DODBT-Dots** is designed for **Unity Entities**, with tree execution through **Burst and Jobs** and data stored in **unmanaged memory**. It uses a different approach to data layout and agent state, designed for high performance when processing large numbers of AI agents.
 
+> [!IMPORTANT]
+> Upgrading from 0.4.0? Read the [upgrade guide](UPGRADING.md) before replacing the old package. Version 1.0.0 changes package names, namespaces, and asset identities.
+
 <a id="installation"></a>
 
 <h2 align="center">Installation</h2>
@@ -140,7 +143,7 @@ Unity uses this folder as a local package, so do not delete or move it after add
 
 ### From a `.unitypackage`
 
-If the release includes a `.unitypackage`, open **Assets → Import Package → Custom Package** and select the file. Keep the entire folder of the plugin you need, or both folders; you can exclude samples from the import.
+Download a `.unitypackage` from the [1.0.0 release](https://github.com/vadimburym/DODBT/releases/tag/v1.0.0), then open **Assets → Import Package → Custom Package** and select the file. Keep the entire folder of the plugin you need, or both folders; you can exclude samples from the import.
 
 This method places files in `Assets`. For Dots, install dependencies through Package Manager first: importing a `.unitypackage` does not automatically install dependencies from `package.json`. [Importing an asset package](https://docs.unity3d.com/6000.0/Documentation/Manual/AssetPackagesImport.html).
 

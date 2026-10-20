@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — Unreleased
+## [1.0.0] - 2026-10-21
 
 ### Changed
 - Renamed the package to `com.vadimburym.dodbt.light` and the API namespace to `VadimBurym.DodBehaviourTree.Light`.

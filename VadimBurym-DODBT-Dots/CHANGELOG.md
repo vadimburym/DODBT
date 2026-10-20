@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — Unreleased
+## [1.0.0] - 2026-10-21
 
 ### Added and fixed
 - Added a Unity Entities version with Burst and Jobs execution.

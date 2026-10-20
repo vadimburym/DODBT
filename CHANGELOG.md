@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — Unreleased
+## [1.0.0] - 2026-10-21
 
 Changes since DODBT 0.4.0.
 
