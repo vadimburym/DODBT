@@ -1,0 +1,22 @@
+{
+    "name": "VadimBurym.DodBehaviourTree.Light.Tests",
+    "rootNamespace": "",
+    "references": [
+        "VadimBurym.DodBehaviourTree.Light.Editor",
+        "VadimBurym.DodBehaviourTree.Light"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

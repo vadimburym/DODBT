@@ -1,0 +1,495 @@
+using Unity.Collections;
+using Unity.Entities;
+using Random = Unity.Mathematics.Random;
+
+namespace VadimBurym.DodBehaviourTree.Dots.Generated
+{
+    $ACCESS$ struct BTRunner_$NAME$
+    {
+#if DODBT_SMALL_SIZE
+        private const ushort None = 0xFF;
+#else
+        private const ushort None = 0xFFFF;
+#endif
+
+        public NodeStatus Tick(
+            Entity entity,
+            ref BehaviourTreeBlob blob,
+            ref Random rng,
+            DynamicBuffer<NodeStateElement> nodeStates,
+            DynamicBuffer<LeafStateElement> leafStates,
+            in $CONTEXT$ leafContext,
+            int sortKey)
+        {
+            var pc = blob.RootIndex;
+            var childStatus = NodeStatus.Running;
+            bool returning = false;
+
+            while (pc != None)
+            {
+                var nodeData = blob.Nodes[pc];
+                var nodeStatePc = pc;
+                var nodeState = nodeStates[nodeStatePc];
+                ushort abortingNode = None;
+                switch (nodeData.Id)
+                {
+                    case NodeId.Leaf:
+                    {
+                        var leafState = leafStates[nodeState.LeafStateIndex];
+                        var leafData = blob.Leafs[nodeData.DataIndex];
+
+                        var runnerState = new RunnerState_$NAME$ {
+                            Agent = entity,
+                            Context = leafContext,
+                            LeafData = leafData,
+                            LeafState = leafState,
+                            Random = rng,
+                            SortKey = sortKey
+                        };
+
+                        if (leafState.IsEntered == 0)
+                        {
+                            LeafTables_$NAME$.EnterLeaf(leafData.LeafId, ref runnerState);
+                            runnerState.LeafState.IsEntered = 1;
+                        }
+                        var status = LeafTables_$NAME$.TickLeaf(leafData.LeafId, ref runnerState);
+                        if (status != NodeStatus.Running)
+                        {
+                            LeafTables_$NAME$.ExitLeaf(leafData.LeafId, ref runnerState);
+                            runnerState.LeafState.IsEntered = 0;
+                        }
+
+                        rng = runnerState.Random;
+                        leafStates[nodeState.LeafStateIndex] = runnerState.LeafState;
+                        childStatus = status;
+                        returning = true;
+                        pc = nodeData.ParentIndex;
+                        break;
+                    }
+                    case NodeId.Sequence:
+                    {
+                        NodeExecutor.ExecuteSequence(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref abortingNode,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.Selector:
+                    {
+                        NodeExecutor.ExecuteSelector(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref abortingNode,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySequence:
+                    {
+                        NodeExecutor.ExecuteMemorySequence(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySelector:
+                    {
+                        NodeExecutor.ExecuteMemorySelector(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob,
+                            ref rng);
+                        break;
+                    }
+                    case NodeId.Parallel:
+                    {
+                        NodeExecutor.ExecuteParallel(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref abortingNode,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob,
+                            ref nodeStates);
+                        break;
+                    }
+                    default:
+                    {
+                        childStatus = NodeStatus.Failure;
+                        returning = true;
+                        pc = nodeData.ParentIndex;
+                        break;
+                    }
+                }
+                nodeStates[nodeStatePc] = nodeState;
+                if (abortingNode != None)
+                    AbortSubtree(entity, ref blob, ref rng, nodeStates, leafStates, abortingNode, leafContext, sortKey);
+            }
+            return childStatus;
+        }
+
+#if UNITY_EDITOR
+        public NodeStatus TickWithDebug(
+            Entity entity,
+            ref BehaviourTreeBlob blob,
+            ref Random rng,
+            DynamicBuffer<NodeStateElement> nodeStates,
+            DynamicBuffer<LeafStateElement> leafStates,
+            in $CONTEXT$ leafContext,
+            int sortKey,
+            DynamicBuffer<BtDebugNodeState> debugStates)
+        {
+            for (int i = 0; i < debugStates.Length; i++) debugStates[i] = new BtDebugNodeState { Status = nodeStates[i].DebugCachedStatus };
+            var pc = blob.RootIndex;
+            var childStatus = NodeStatus.Running;
+            bool returning = false;
+
+            while (pc != None)
+            {
+                var nodeData = blob.Nodes[pc];
+                var nodeStatePc = pc;
+                var nodeState = nodeStates[nodeStatePc];
+                ushort abortingNode = None;
+                switch (nodeData.Id)
+                {
+                    case NodeId.Leaf:
+                    {
+                        var leafState = leafStates[nodeState.LeafStateIndex];
+                        var leafData = blob.Leafs[nodeData.DataIndex];
+
+                        var runnerState = new RunnerState_$NAME$ {
+                            Agent = entity,
+                            Context = leafContext,
+                            LeafData = leafData,
+                            LeafState = leafState,
+                            Random = rng,
+                            SortKey = sortKey
+                        };
+
+                        if (leafState.IsEntered == 0)
+                        {
+                            LeafTables_$NAME$.EnterLeaf(leafData.LeafId, ref runnerState);
+                            runnerState.LeafState.IsEntered = 1;
+                        }
+                        var status = LeafTables_$NAME$.TickLeaf(leafData.LeafId, ref runnerState);
+                        if (status != NodeStatus.Running)
+                        {
+                            LeafTables_$NAME$.ExitLeaf(leafData.LeafId, ref runnerState);
+                            runnerState.LeafState.IsEntered = 0;
+                        }
+
+                        rng = runnerState.Random;
+                        leafStates[nodeState.LeafStateIndex] = runnerState.LeafState;
+                        childStatus = status;
+                        returning = true;
+                        pc = nodeData.ParentIndex;
+                        break;
+                    }
+                    case NodeId.Sequence:
+                    {
+                        NodeExecutor.ExecuteSequence(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref abortingNode,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.Selector:
+                    {
+                        NodeExecutor.ExecuteSelector(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref abortingNode,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySequence:
+                    {
+                        NodeExecutor.ExecuteMemorySequence(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySelector:
+                    {
+                        NodeExecutor.ExecuteMemorySelector(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob,
+                            ref rng);
+                        break;
+                    }
+                    case NodeId.Parallel:
+                    {
+                        NodeExecutor.ExecuteParallel(
+                            ref pc,
+                            ref childStatus,
+                            ref returning,
+                            ref abortingNode,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob,
+                            ref nodeStates);
+                        break;
+                    }
+                    default:
+                    {
+                        childStatus = NodeStatus.Failure;
+                        returning = true;
+                        pc = nodeData.ParentIndex;
+                        break;
+                    }
+                }
+                nodeStates[nodeStatePc] = nodeState;
+                if (abortingNode != None)
+                    AbortSubtreeWithDebug(entity, ref blob, ref rng, nodeStates, leafStates, abortingNode, leafContext, sortKey, debugStates);
+                if (returning && pc == nodeData.ParentIndex)
+                    debugStates[nodeStatePc] = new BtDebugNodeState { Status = childStatus };
+            }
+            return childStatus;
+        }
+
+#endif
+
+        [System.Obsolete("Pass the agent Random by ref to preserve random state used by abort callbacks.")]
+        public void Abort(Entity entity, ref BehaviourTreeBlob blob, DynamicBuffer<NodeStateElement> nodeStates,
+            DynamicBuffer<LeafStateElement> leafStates, in $CONTEXT$ leafContext, int sortKey)
+        {
+            var rng = new Random(1);
+            Abort(entity, ref blob, ref rng, nodeStates, leafStates, leafContext, sortKey);
+        }
+
+        public void Abort(
+            Entity entity,
+            ref BehaviourTreeBlob blob,
+            ref Random rng,
+            DynamicBuffer<NodeStateElement> nodeStates,
+            DynamicBuffer<LeafStateElement> leafStates,
+            in $CONTEXT$ leafContext,
+            int sortKey)
+        {
+            AbortSubtree(entity, ref blob, ref rng, nodeStates, leafStates, (ushort)blob.RootIndex, leafContext, sortKey);
+        }
+
+        private void AbortSubtree(
+            Entity entity,
+            ref BehaviourTreeBlob blob,
+            ref Random rng,
+            DynamicBuffer<NodeStateElement> nodeStates,
+            DynamicBuffer<LeafStateElement> leafStates,
+            ushort root,
+            in $CONTEXT$ leafContext,
+            int sortKey)
+        {
+            FixedList4096Bytes<int> stack = default;
+            stack.Add(root);
+
+            while (stack.Length > 0)
+            {
+                var nodeIndex = stack[^1];
+                stack.RemoveAt(stack.Length - 1);
+                var nodeData = blob.Nodes[nodeIndex];
+                var nodeState = nodeStates[nodeIndex];
+                switch (nodeData.Id)
+                {
+                    case NodeId.Leaf:
+                    {
+                        var leafState = leafStates[nodeState.LeafStateIndex];
+
+                        if (leafState.IsEntered != 0)
+                        {
+                            leafState.IsEntered = 0;
+                            var leafData = blob.Leafs[nodeData.DataIndex];
+
+                            var runnerState = new RunnerState_$NAME$ {
+                                Agent = entity,
+                                Context = leafContext,
+                                LeafData = leafData,
+                                LeafState = leafState,
+                                Random = rng,
+                                SortKey = sortKey
+                            };
+
+                            LeafTables_$NAME$.AbortLeaf(leafData.LeafId, ref runnerState);
+                            rng = runnerState.Random;
+                            leafStates[nodeState.LeafStateIndex] = runnerState.LeafState;
+                        }
+                        break;
+                    }
+                    case NodeId.Selector:
+                    {
+                        NodeExecutor.AbortSelector(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.Sequence:
+                    {
+                        NodeExecutor.AbortSequence(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySelector:
+                    {
+                        NodeExecutor.AbortMemorySelector(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySequence:
+                    {
+                        NodeExecutor.AbortMemorySequence(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.Parallel:
+                    {
+                        NodeExecutor.AbortParallel(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob,
+                            ref nodeStates);
+                        break;
+                    }
+                }
+                nodeStates[nodeIndex] = nodeState;
+            }
+        }
+#if UNITY_EDITOR
+        private void AbortSubtreeWithDebug(
+            Entity entity,
+            ref BehaviourTreeBlob blob,
+            ref Random rng,
+            DynamicBuffer<NodeStateElement> nodeStates,
+            DynamicBuffer<LeafStateElement> leafStates,
+            ushort root,
+            in $CONTEXT$ leafContext,
+            int sortKey,
+            DynamicBuffer<BtDebugNodeState> debugStates)
+        {
+            FixedList4096Bytes<int> stack = default;
+            stack.Add(root);
+
+            while (stack.Length > 0)
+            {
+                var nodeIndex = stack[^1];
+                stack.RemoveAt(stack.Length - 1);
+                if (debugStates[nodeIndex].Status == NodeStatus.Running) debugStates[nodeIndex] = default;
+                var nodeData = blob.Nodes[nodeIndex];
+                var nodeState = nodeStates[nodeIndex];
+                switch (nodeData.Id)
+                {
+                    case NodeId.Leaf:
+                    {
+                        var leafState = leafStates[nodeState.LeafStateIndex];
+
+                        if (leafState.IsEntered != 0)
+                        {
+                            leafState.IsEntered = 0;
+                            var leafData = blob.Leafs[nodeData.DataIndex];
+
+                            var runnerState = new RunnerState_$NAME$ {
+                                Agent = entity,
+                                Context = leafContext,
+                                LeafData = leafData,
+                                LeafState = leafState,
+                                Random = rng,
+                                SortKey = sortKey
+                            };
+
+                            LeafTables_$NAME$.AbortLeaf(leafData.LeafId, ref runnerState);
+                            rng = runnerState.Random;
+                            leafStates[nodeState.LeafStateIndex] = runnerState.LeafState;
+                        }
+                        break;
+                    }
+                    case NodeId.Selector:
+                    {
+                        NodeExecutor.AbortSelector(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.Sequence:
+                    {
+                        NodeExecutor.AbortSequence(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySelector:
+                    {
+                        NodeExecutor.AbortMemorySelector(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.MemorySequence:
+                    {
+                        NodeExecutor.AbortMemorySequence(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob);
+                        break;
+                    }
+                    case NodeId.Parallel:
+                    {
+                        NodeExecutor.AbortParallel(
+                            ref stack,
+                            ref nodeState,
+                            ref nodeData,
+                            ref blob,
+                            ref nodeStates);
+                        break;
+                    }
+                }
+                nodeStates[nodeIndex] = nodeState;
+            }
+        }
+#endif
+    }
+}

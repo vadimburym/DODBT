@@ -1,0 +1,48 @@
+{
+    "name": "DODBT.Example",
+    "rootNamespace": "DODBT.Example",
+    "references": [
+        "VadimBurym.DodBehaviourTree.Dots",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Transforms",
+        "Unity.Entities.Graphics",
+        "Unity.Collections",
+        "Unity.Mathematics",
+        "Unity.Burst",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.ugui",
+        "Unity.Mathematics.Extensions"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "DODBT_SAMPLE_GRAPHICS",
+        "DODBT_SAMPLE_INPUT",
+        "DODBT_SAMPLE_URP"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.entities.graphics",
+            "expression": "1.5.0",
+            "define": "DODBT_SAMPLE_GRAPHICS"
+        },
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.18.0",
+            "define": "DODBT_SAMPLE_INPUT"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "17.3.0",
+            "define": "DODBT_SAMPLE_URP"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -1,0 +1,33 @@
+using DODBT.Light.Example.BehaviourTree;
+using DODBT.Light.Example.Gameplay.Scene;
+using DODBT.Light.Example.Gameplay.Components;
+using DODBT.Light.Example.Gameplay.Settings;
+using DODBT.Light.Example.Services;
+using Leopotam.EcsLite;
+using Leopotam.EcsLite.Di;
+
+namespace DODBT.Light.Example.Gameplay.Systems
+{
+    public sealed class ProjectileCollisionSystem : IEcsRunSystem
+    {
+        private readonly EcsFilterInject<Inc<CollisionEvent>> _filter = EcsWorlds.EVENTS;
+        private readonly EcsPoolInject<CollisionEvent> _eventPool= EcsWorlds.EVENTS;
+        private readonly EcsPoolInject<ProjectileTag> _projPool;
+        private readonly EcsPoolInject<DeathRequest> _deathRequestPool;
+        
+        public void Run(IEcsSystems systems)
+        {
+            foreach (var entity in _filter.Value)
+            {
+                ref var eventData = ref _eventPool.Value.Get(entity);
+                if (!_projPool.Value.Has(eventData.Entity) || _deathRequestPool.Value.Has(eventData.Entity))
+                    continue;
+                _deathRequestPool.Value.Add(eventData.Entity);
+                if (eventData.CollisionRef.TryGetComponent<EcsEntity>(out var collider))
+                {
+                    //Take damage
+                }
+            }
+        }
+    }
+}

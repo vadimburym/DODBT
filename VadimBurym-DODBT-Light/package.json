@@ -1,0 +1,33 @@
+{
+  "name": "com.vadimburym.dodbt.light",
+  "version": "1.0.0",
+  "displayName": "DODBT-Light",
+  "description": "High-performance Behaviour Tree system inspired by Data-Oriented Design. Zero MonoBehaviour, zero runtime allocations, graph-to-runtime compilation and production-ready ECS-friendly architecture.",
+  "unity": "6000.0",
+  "unityRelease": "0f1",
+  "author": {
+    "name": "vadimburym",
+    "email": "",
+    "url": "https://github.com/vadimburym"
+  },
+  "licensesUrl": "https://github.com/vadimburym/DODBT/blob/main/VadimBurym-DODBT-Light/LICENSE.md",
+  "documentationUrl": "https://github.com/vadimburym/DODBT/blob/main/VadimBurym-DODBT-Light/DOCUMENTATION-en.md",
+  "changelogUrl": "https://github.com/vadimburym/DODBT/blob/main/VadimBurym-DODBT-Light/CHANGELOG.md",
+  "keywords": [
+    "behaviour tree",
+    "ai",
+    "data oriented",
+    "ecs",
+    "runtime",
+    "unity"
+  ],
+  "category": "AI",
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "LeoECS 2D Example",
+      "description": "A 2D example using LeoEcsLite, LeoEcsLite.Di and ServiceLocator. See the sample README for required packages.",
+      "path": "Samples~/Example2D"
+    }
+  ]
+}

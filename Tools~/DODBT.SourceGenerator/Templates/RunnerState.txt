@@ -1,0 +1,16 @@
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
+
+namespace VadimBurym.DodBehaviourTree.Dots.Generated
+{
+    $ACCESS$ ref struct RunnerState_$NAME$
+    {
+        public Entity Agent;
+        [ReadOnly] public LeafData LeafData;
+        public LeafStateElement LeafState;
+        [ReadOnly] public $CONTEXT$ Context;
+        public Random Random;
+        public int SortKey;
+    }
+}

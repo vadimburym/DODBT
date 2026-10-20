@@ -1,0 +1,167 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14627dfdb24d4be0bc005970e5642721, type: 3}
+  m_Name: ExampleBrain
+  m_EditorClassIdentifier: VadimBurym.DodBehaviourTree.Dots.Editor::VadimBurym.DodBehaviourTree.Dots.Editor.BtGraphAsset
+  ContextIdentity: DODBT.Example:DODBT.Example.BehaviourTree.ExampleContext
+  CompiledAsset: {fileID: 11400000, guid: d1d27afc36f06d74999370b8155ad20d, type: 2}
+  GuidsByCompiledId:
+  - 52538ee8d23641f980fe2d7b5278cda8
+  - 941c572ba2cc48509d957aa089df334a
+  - 7ec99d21de874ee582d54aebc6a36973
+  - ab87addaa517418cbd855f1106bfd5bc
+  - d004a206f84d4050aa8f0d1d8bf74f38
+  - 05a3a05c6c844ad1bff4a8cee6bf05b3
+  - 763bf1b73e494e15a18c83d92d438e55
+  - 2f087b7395e74ee6a08c012ea63a2b66
+  - 6dd5b54c54084940b18f60755aee5858
+  - 9b75c566118d4cac89ab5c7988469efe
+  - 14c412394340495f8ec22a3b194452b1
+  CompiledRevision: f6faa08e124e49d28f69e2c2f202abe4
+  CreationDate: 18.03.2026 21:28:19
+  LastModifiedDate: 19.10.2026 21:26:01
+  CompiledVersion: 19.10.2026 21:26:01
+  NodesCount: 11
+  LeafNodesCount: 7
+  NotActualCompiledVersion: 0
+  RootNode:
+    Guid: d96a9aa175f94bee998bab161ac3a2b6
+    Position: {x: 0, y: 7}
+    ChildrenGuid: 52538ee8d23641f980fe2d7b5278cda8
+  Nodes:
+  - Guid: 941c572ba2cc48509d957aa089df334a
+    Kind: 3
+    Position: {x: -160, y: 404}
+    Title: Sequence
+    ParentGuid: 52538ee8d23641f980fe2d7b5278cda8
+  - Guid: d004a206f84d4050aa8f0d1d8bf74f38
+    Kind: 2
+    Position: {x: -659, y: 616}
+    Title: IsEnemyDetected
+    ParentGuid: 941c572ba2cc48509d957aa089df334a
+  - Guid: 9b75c566118d4cac89ab5c7988469efe
+    Kind: 2
+    Position: {x: -734, y: 991}
+    Title: InAttackRange
+    ParentGuid: 2f087b7395e74ee6a08c012ea63a2b66
+  - Guid: 52538ee8d23641f980fe2d7b5278cda8
+    Kind: 4
+    Position: {x: 0, y: 162}
+    Title: Selector
+    ParentGuid: d96a9aa175f94bee998bab161ac3a2b6
+  - Guid: 6dd5b54c54084940b18f60755aee5858
+    Kind: 2
+    Position: {x: -108, y: 813}
+    Title: ChaseEnemy
+    ParentGuid: 05a3a05c6c844ad1bff4a8cee6bf05b3
+  - Guid: 05a3a05c6c844ad1bff4a8cee6bf05b3
+    Kind: 4
+    Position: {x: -276, y: 616}
+    Title: Selector
+    ParentGuid: 941c572ba2cc48509d957aa089df334a
+  - Guid: 763bf1b73e494e15a18c83d92d438e55
+    Kind: 2
+    Position: {x: 96, y: 616}
+    Title: AttackEnemy
+    ParentGuid: 941c572ba2cc48509d957aa089df334a
+  - Guid: 2f087b7395e74ee6a08c012ea63a2b66
+    Kind: 3
+    Position: {x: -491, y: 813}
+    Title: Sequence
+    ParentGuid: 05a3a05c6c844ad1bff4a8cee6bf05b3
+  - Guid: 14c412394340495f8ec22a3b194452b1
+    Kind: 2
+    Position: {x: -352, y: 991}
+    Title: IsMoving
+    ParentGuid: 2f087b7395e74ee6a08c012ea63a2b66
+  - Guid: 7ec99d21de874ee582d54aebc6a36973
+    Kind: 2
+    Position: {x: 137, y: 404}
+    Title: IsMoving
+    ParentGuid: 52538ee8d23641f980fe2d7b5278cda8
+  - Guid: ab87addaa517418cbd855f1106bfd5bc
+    Kind: 2
+    Position: {x: 540, y: 404}
+    Title: Idle
+    ParentGuid: 52538ee8d23641f980fe2d7b5278cda8
+  LeafNodes:
+  - Guid: d004a206f84d4050aa8f0d1d8bf74f38
+    Leaf:
+      rid: 1545529026523168862
+  - Guid: 9b75c566118d4cac89ab5c7988469efe
+    Leaf:
+      rid: 1545529026523168863
+  - Guid: 6dd5b54c54084940b18f60755aee5858
+    Leaf:
+      rid: 1545529030437503047
+  - Guid: 763bf1b73e494e15a18c83d92d438e55
+    Leaf:
+      rid: 1545529030437503048
+  - Guid: 14c412394340495f8ec22a3b194452b1
+    Leaf:
+      rid: 1545529030437503049
+  - Guid: 7ec99d21de874ee582d54aebc6a36973
+    Leaf:
+      rid: 1545529074700779594
+  - Guid: ab87addaa517418cbd855f1106bfd5bc
+    Leaf:
+      rid: 1545529074700779595
+  SequenceNodes:
+  - Guid: 941c572ba2cc48509d957aa089df334a
+    ChildrenGuids:
+    - d004a206f84d4050aa8f0d1d8bf74f38
+    - 05a3a05c6c844ad1bff4a8cee6bf05b3
+    - 763bf1b73e494e15a18c83d92d438e55
+  - Guid: 2f087b7395e74ee6a08c012ea63a2b66
+    ChildrenGuids:
+    - 9b75c566118d4cac89ab5c7988469efe
+    - 14c412394340495f8ec22a3b194452b1
+  MemorySequenceNodes: []
+  SelectorNodes:
+  - Guid: 52538ee8d23641f980fe2d7b5278cda8
+    ChildrenGuids:
+    - 941c572ba2cc48509d957aa089df334a
+    - 7ec99d21de874ee582d54aebc6a36973
+    - ab87addaa517418cbd855f1106bfd5bc
+  - Guid: 05a3a05c6c844ad1bff4a8cee6bf05b3
+    ChildrenGuids:
+    - 2f087b7395e74ee6a08c012ea63a2b66
+    - 6dd5b54c54084940b18f60755aee5858
+  MemorySelectorNodes: []
+  ParallelNodes: []
+  LinkedGroups: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1545529026523168862
+      type: {class: IsEnemyDetectedLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data: 
+    - rid: 1545529026523168863
+      type: {class: InAttackRangeLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data: 
+    - rid: 1545529030437503047
+      type: {class: ChaseEnemyLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data: 
+    - rid: 1545529030437503048
+      type: {class: AttackEnemyLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data: 
+    - rid: 1545529030437503049
+      type: {class: IsMovingLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data:
+        _isMoving: 0
+    - rid: 1545529074700779594
+      type: {class: IsMovingLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data:
+        _isMoving: 1
+    - rid: 1545529074700779595
+      type: {class: IdleLeaf, ns: DODBT.Example.BehaviourTree.Leaves, asm: DODBT.Example}
+      data: 

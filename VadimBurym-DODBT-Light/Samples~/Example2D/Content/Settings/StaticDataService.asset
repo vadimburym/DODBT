@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5997516de0cb4a2a884f87b1fd3193ad, type: 3}
+  m_Name: StaticDataService
+  m_EditorClassIdentifier: 
+  MemoryPoolPipeline: {fileID: 11400000, guid: c5a2e93fbe3ddc14d81dcdf09bd21e29, type: 2}
+  EnemyStaticData: {fileID: 11400000, guid: 600a4b6cd2a863a4895f57b0a1ba2838, type: 2}
+  BehaviourTreeStaticData: {fileID: 11400000, guid: 4fdcb2da3c5df1f43b11a842406f3bc6, type: 2}
+  PlayerStaticData: {fileID: 11400000, guid: 94c95de94c6705f43833fda3c68d568e, type: 2}
+  WeaponsStaticData: {fileID: 11400000, guid: 520a847f1bb907843a31be929a68d5f1, type: 2}
+  ProjectilesStaticData: {fileID: 11400000, guid: 903445076e06c1b41ab84ec0606f1e08, type: 2}
